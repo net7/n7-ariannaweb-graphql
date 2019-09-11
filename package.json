@@ -1,0 +1,27 @@
+{
+  "name": "arianna-web-apollo",
+  "version": "1.0.0",
+  "description": "",
+  "nodemonConfig": {
+    "ext": "ts, graphql"
+  },
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "develop": "nodemon index.ts"
+  },
+  "author": "piotrowicz@netseven.it",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-datasource-rest": "^0.6.1",
+    "apollo-server": "^2.7.1",
+    "apollo-server-micro": "^2.6.7",
+    "convert-excel-to-json": "^1.6.1",
+    "graphql": "^14.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
+  }
+}
