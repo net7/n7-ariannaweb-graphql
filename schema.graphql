@@ -69,7 +69,7 @@ input genericDataInput {
 
 #"""Standard GraphQL Query type used to define the possible queries"""
 type Query {
- getSomeGenericData: genericData
+ getSomeGenericData: [genericData]
 }
 
 
