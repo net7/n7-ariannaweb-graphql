@@ -73,7 +73,7 @@ type Hero {
 type Query {
  getId: ID!
  getSomeGenericData: [genericData]
- getTestHero: Hero
+ getTestHero(title:String): Hero
 }
 
 
