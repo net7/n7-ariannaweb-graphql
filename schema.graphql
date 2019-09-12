@@ -56,7 +56,9 @@ input genericDataInput {
 
 
 
-
+type Hero {
+    title: String
+}
 
 
 
@@ -71,6 +73,7 @@ input genericDataInput {
 type Query {
  getId: ID!
  getSomeGenericData: [genericData]
+ getTestHero: Hero
 }
 
 
