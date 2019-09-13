@@ -7,11 +7,6 @@ import { UserInputError } from 'apollo-server';
 
 
 
-// Variable to be exported to other modules containing all the helper functions
-var helpers = this;
-
-
-
 
 
 
@@ -33,7 +28,7 @@ var helpers = this;
  *  (and will prompt a warning in the console)
  *
  */
-helpers.randomPick = function(array: any[],probab?: number[]){
+export function randomPick(array: any[],probab?: number[]){
     if(!probab)
     return array[ Math.floor(Math.random()*(array.length))];
   
@@ -94,7 +89,7 @@ helpers.randomPick = function(array: any[],probab?: number[]){
  *  Maximum possible integer
  *
  */
-helpers.getRandomIntInclusive = function(min:number, max:number): number {
+export function getRandomIntInclusive(min:number, max:number): number {
   if(!(min<max)) return -1;
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -117,7 +112,7 @@ helpers.getRandomIntInclusive = function(min:number, max:number): number {
  *  Maximum possible float
  *
  */
-helpers.getRandomFloat = function(min:number, max:number): number {
+export function getRandomFloat(min:number, max:number): number {
   if(!(min<max)) return -1;
   var shift = 0;
   if(min<0) shift = Math.abs(min);
@@ -143,11 +138,11 @@ helpers.getRandomFloat = function(min:number, max:number): number {
  *  Ending possible date
  *
  */
-helpers.getRandomDate = function(startDate: Date,endDate: Date): Date {
+export function getRandomDate(startDate: Date,endDate: Date): Date {
   if(!startDate || !endDate) return new Date();
   if(startDate>endDate) return new Date();
 
-  var timeInMillis = helpers.getRandomIntInclusive(startDate.getTime(),endDate.getTime());
+  var timeInMillis = getRandomIntInclusive(startDate.getTime(),endDate.getTime());
   return new Date( timeInMillis );
 }
 
@@ -167,8 +162,8 @@ helpers.getRandomDate = function(startDate: Date,endDate: Date): Date {
  *  Ending possible date
  *
  */
-helpers.getRandomDateStr = function(startDate:Date,endDate:Date): string {
-  var m: Date = helpers.getRandomDate(startDate,endDate);
+export function getRandomDateStr(startDate:Date,endDate:Date): string {
+  var m: Date = getRandomDate(startDate,endDate);
   /*var dateString =
     m.getUTCFullYear() + "-" +
     ("0" + (m.getUTCMonth()+1)).slice(-2) + "-" +
@@ -192,7 +187,7 @@ helpers.getRandomDateStr = function(startDate:Date,endDate:Date): string {
  *  Length of the random string generated (10 if not given)
  *
  */
-helpers.getRandomString = function(length:number): String {
+export function getRandomString(length:number): String {
   var l = 10;
   if(length && length>0) l = length+1;
   var strTmp = '';
@@ -215,10 +210,10 @@ helpers.getRandomString = function(length:number): String {
  * @returns object with the three fields 'r','g' and 'b' each containing
  *          a randomly generated integer between 0 and 255
  */
-helpers.getRandomRGB = function(): any {
-  var randomR: number = helpers.getRandomIntInclusive(0,255);
-  var randomG: number = helpers.getRandomIntInclusive(0,255);
-  var randomB: number = helpers.getRandomIntInclusive(0,255);
+export function getRandomRGB(): any {
+  var randomR: number = getRandomIntInclusive(0,255);
+  var randomG: number = getRandomIntInclusive(0,255);
+  var randomB: number = getRandomIntInclusive(0,255);
   return {
     'r':randomR,
     'g':randomG,
@@ -234,8 +229,8 @@ helpers.getRandomRGB = function(): any {
 /**
  * Function which returns a randomly generated rgb css string
  */
-helpers.getRandomRgbCssString = function(): String {
-  var rgb = helpers.getRandomRGB();
+export function getRandomRgbCssString(): String {
+  var rgb = getRandomRGB();
   return `rgb(${rgb.r},${rgb.g},${rgb.b})`;
 }
 
@@ -266,8 +261,8 @@ function convertRgbComponentToHex(c: number): string{
  * Function which returns a randomly generated hexadecimal string
  * representing a color
  */
-helpers.getRandomHexColorString = function(): String {
-  var rgb = helpers.getRandomRGB();
+export function getRandomHexColorString(): String {
+  var rgb = getRandomRGB();
   var hex1 : string = convertRgbComponentToHex(rgb.r);
   var hex2 : string = convertRgbComponentToHex(rgb.g);
   var hex3 : string = convertRgbComponentToHex(rgb.b);
@@ -283,7 +278,7 @@ helpers.getRandomHexColorString = function(): String {
 /**
  * Function which randomly shuffles a given array.
  */
-helpers.shuffleArray = function(array:any[]) : void {
+export function shuffleArray(array:any[]) : void {
   array.sort(() => Math.random() - 0.5);
 }
 
@@ -301,7 +296,7 @@ helpers.shuffleArray = function(array:any[]) : void {
  * @param array containing the picked numbers or null if wrong inputs hav
  *              been given to the function
  */
-helpers.pickNDistinctPositiveIntegers = function(max:number,n:number): number[] {
+export function pickNDistinctPositiveIntegers(max:number,n:number): number[] {
   if(max<0) return null;
   if(n>max) return null;
 
@@ -312,7 +307,7 @@ helpers.pickNDistinctPositiveIntegers = function(max:number,n:number): number[] 
 
   var toRemove = max - n + 1;
   while(toRemove>0){
-    var tmpIdx = Helpers.getRandomIntInclusive(0,nums.length-1);
+    var tmpIdx = getRandomIntInclusive(0,nums.length-1);
     nums.splice(tmpIdx,1);
     toRemove--;
   }
@@ -343,7 +338,7 @@ helpers.pickNDistinctPositiveIntegers = function(max:number,n:number): number[] 
  *
  * @param parameter name of the argument of the query/mutation
  */
-helpers.throwUserInputErrorWrongDateFormat = function(param: String) : void {
+function throwUserInputErrorWrongDateFormat(param: String) : void {
   throw new UserInputError('Form Arguments invalid', {
     message: param+" is not a valid ISO Date String",
     invalidArgs: param
@@ -368,7 +363,7 @@ helpers.throwUserInputErrorWrongDateFormat = function(param: String) : void {
  *
  * @returns true is the string represents a valid date, false otherwise
  */
-helpers.isValidIsoDateString = function(string:string) : boolean {
+export function isValidIsoDateString(string:string) : boolean {
   return ( ! isNaN( Date.parse(string) ) );
 }
 
@@ -386,7 +381,7 @@ helpers.isValidIsoDateString = function(string:string) : boolean {
  *
  * @returns boolean indicating if the order is correct or not
  */
-helpers.areInCorrectOrderDateStrings = function(startDate:string,endDate:string) : boolean{
+export function areInCorrectOrderDateStrings(startDate:string,endDate:string) : boolean{
   var startDateNum:number = Date.parse(startDate);
   if(isNaN(startDateNum)) startDateNum=-1;
   var endDateNum:number = Date.parse(endDate);
@@ -406,7 +401,7 @@ helpers.areInCorrectOrderDateStrings = function(startDate:string,endDate:string)
  * @param endDate name of the end date argument (in the query or mutation)
  *
  */
-helpers.throwUserInputErrorWrongStartEndDates = function(startDate:string,endDate:string) : void {
+export function throwUserInputErrorWrongStartEndDates(startDate:string,endDate:string) : void {
   throw new UserInputError('Form Arguments invalid', {
     message: startDate+" does not preceed "+endDate,
     invalidArgs: [startDate,endDate]
@@ -421,7 +416,7 @@ helpers.throwUserInputErrorWrongStartEndDates = function(startDate:string,endDat
  *
  * @param parameter name of the missing parameter
  */
-helpers.throwUserInputErrorParameterNotProvided = function(parameter:string) : void {
+export function throwUserInputErrorParameterNotProvided(parameter:string) : void {
   throw new UserInputError('Form Arguments invalid', {
     message: "Argument " + parameter + ' not given',
     invalidArgs: [parameter]
@@ -438,7 +433,7 @@ helpers.throwUserInputErrorParameterNotProvided = function(parameter:string) : v
  * @returns an array of string identical to the input one but
  *          completely independent
  */
-helpers.cloneArrayOfStrings = function(array:string[]): string[] {
+export function cloneArrayOfStrings(array:string[]): string[] {
   var clone = [];
   array.forEach(str => {
     var c = str+'';
@@ -457,7 +452,7 @@ helpers.cloneArrayOfStrings = function(array:string[]): string[] {
 
 
 
-helpers.randomRangesForValues = [
+export const randomRangesForValues = [
   {
     currentValueStart:50,
     currentValueEnd:150,
@@ -510,12 +505,9 @@ helpers.randomRangesForValues = [
 
 
 
-helpers.dateToString = function(date:Date) : string {
+export function dateToString(date:Date) : string {
  return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
 }
 
-helpers.millisecondsInADay = 86400000;
-helpers.millisecondsInAnHour = 3600000;
-
-
-export const Helpers = helpers;
+export const millisecondsInADay = 86400000;
+export const millisecondsInAnHour = 3600000;
