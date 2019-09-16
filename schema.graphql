@@ -26,11 +26,22 @@ type BasicEntity {
     label: String!
 }
 
+
+
+""" A pair of strings, of which the first is a key and the second is
+its value both represented as strings
+(such as : key:"Autore",value:"Mimmo Jodice")"""
+type basicInfo {
+    key: String!
+    value: String!
+}
+
+
 """ An basic item (such as: "Genova, la sopraelevata", etc...)"""
 type BasicItem {
     id: ID!
     label: String!
-    author: String
+    info: [basicInfo!]
     icon: String
 }
 
@@ -39,7 +50,6 @@ type BasicItem {
 """ Data about an Item necessary to present in a concise listing"""
 type ItemListing {
     item: BasicItem!
-    description: String
     thumbnail: String
     relatedTOEData: [TypeOfEntityCountData!]
 }
@@ -98,6 +108,13 @@ type GlobalFilterData {
     items: [ItemListing!] # TO DO : add/implement a paginatedItemListing type
 }
 
+""" Tree structure containing a label for each branch and basic items as its leaves
+(used for navigation, as: Patrimonio)"""
+type Tree {
+    label: String
+    branches: [Tree!]
+    leaves: [ItemListing!]
+}
 
 #======================================================================================
 #                                INPUT TYPES
@@ -115,6 +132,11 @@ input TypeOfEntityFilterInput {
 
 
 
+""" Range of dates used for filtering results """
+input datesRangeInput {
+    startDate: String!
+    endDate: String!
+}
 
 
 ############################################# TO REMOVE
@@ -140,9 +162,11 @@ type Query {
 
  getAllBasicItems: [BasicItem!] #### ONLY FOR TESTING the mocks
 
- globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!] , selectedEntitiesIds: [ID!] ) : GlobalFilterData
+ globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!] , selectedEntitiesIds: [ID!] , dateFilter: datesRangeInput ) : GlobalFilterData
 
  getItemDetails( itemId:ID! ): ItemDetails
+
+ getTreeOfItems( treeId: ID! ): Tree
 }
 
 

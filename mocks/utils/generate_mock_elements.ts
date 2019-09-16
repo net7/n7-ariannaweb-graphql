@@ -44,6 +44,25 @@
   
   
   
+  
+  const allPossibleRandomItemShortDescription = [
+    "Ricamo su tela cm 29 X 29",
+    "Dipinto ad olio",
+    "News",
+    "Informazione rilevante",
+    "Avviso importante",
+    "Opera d'arte",
+    "Capolavoro Artistico"
+  ];
+
+
+
+
+
+
+
+
+
   const allPossibleRandomItemTexts = [
     '<html>A short text for a random item!</html>',
     '<html>This is a text for an item! maybe the filed should be called "html" instead of "text"</html>',
@@ -98,7 +117,14 @@
     let basicItem = {
       id: makeRandomItemId(),
       label: Helpers.randomPick(allPossibleRandomItemLabels),
-      author: Helpers.randomPick(allPossibleRandomItemAuthors),
+      info : [{ 
+        key: 'author',
+        value: Helpers.randomPick(allPossibleRandomItemAuthors)
+      },
+      {
+        key: 'short_description',
+        value: Helpers.randomPick(allPossibleRandomItemShortDescription)
+      }],
       icon: Helpers.randomPick(allPossibleRandomItemIcons)
     };
     allRandomBasicItems.push(basicItem);

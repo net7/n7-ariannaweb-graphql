@@ -11,6 +11,8 @@ import * as Mock_Entities from './mock_entities';
 
 import * as Mock_Items from './mock_items';
 
+import * as Mock_Trees from './mock_trees';
+
 // Inserire qui i mock per le varie query
 export const mocks = {
   Query:() => ({
@@ -20,7 +22,8 @@ export const mocks = {
     ///////////////////////////////////////////////////////////////////////
     getAllTypesOfEntity: Mock_TypesOfEntity.getAllTypesOfEntity ,
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// only for testing the mocks!
-    getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId)
+    getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
+    getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId)
   }),
   Mutation: () => ({
   })
