@@ -127,7 +127,7 @@ input TypeOfEntityFilterInput {
     typeOfEntityId: ID!
     """ the type of entity can be present but not enabled, for example for updating a global
     count but not presenting its sepcific items"""
-    enabled: Boolean
+    enabled: Boolean!
 }
 
 
@@ -167,6 +167,7 @@ type Query {
  getItemDetails( itemId:ID! ): ItemDetails
 
  getTreeOfItems( treeId: ID! ): Tree
+
 }
 
 

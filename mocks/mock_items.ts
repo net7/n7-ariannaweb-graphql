@@ -21,3 +21,20 @@ export function getItemDetails(itemId: String){
   let itemDetails = allRandomItemDetails[itemId+''];
   return ( itemDetails ? itemDetails : null );
 }
+
+
+
+export function generateRandomBunchOfItemListings(allPossibleThumbnails): any[]{
+  let itemListings = [];
+  let numOfItems = Helpers.getRandomIntInclusive(10,30);
+  let basicItemsIdx = Helpers.pickNDistinctPositiveIntegers(allRandomBasicItems.length-1,numOfItems);
+  basicItemsIdx.forEach(bIdx => {
+      let itemL = {
+          item:allRandomBasicItems[bIdx],
+          thumbnail: Helpers.randomPick(allPossibleThumbnails),
+          relatedTOEData: null
+      };
+      itemListings.push(itemL);
+  });
+  return itemListings;
+}
