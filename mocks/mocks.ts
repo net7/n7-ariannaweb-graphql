@@ -15,6 +15,8 @@ import * as Mock_Trees from './mock_trees';
 
 import * as Mock_Filters from './mock_filters';
 
+import * as Mock_Autocomplete from './mock_autocomplete';
+
 // Inserire qui i mock per le varie query
 export const mocks = {
   Query:() => ({
@@ -26,7 +28,8 @@ export const mocks = {
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// only for testing the mocks!
     getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
-    globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args )
+    globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),
+    autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args )
   }),
   Mutation: () => ({
   })

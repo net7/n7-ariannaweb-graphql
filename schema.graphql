@@ -189,7 +189,7 @@ type Query {
  getTreeOfItems( treeId: ID! ): Tree
 
  autoComplete(
-     input: String!
+    input: String!
     ### , autoCompleteOptions (<--- to add?)
  ): [ItemListing!]
 }
