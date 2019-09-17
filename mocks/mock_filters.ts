@@ -38,14 +38,14 @@ export function getGlobalFilterResult( args:any ){
                 invalidArgs: [typeOfEntityFiler]
             });
         } else {
-            let toeCount = Helpers.getRandomIntInclusive(8000,300000);
+            let toeCount = Helpers.getRandomIntInclusive(20000,50000);
             let countData = {
                 type:toe,
                 count: toeCount
             };
             let entitiesCountData = [];
             while(toeCount>0){
-                let count = Helpers.getRandomIntInclusive(1,toeCount);
+                let count = Helpers.getRandomIntInclusive(1000,5000);
                 toeCount -= count;
                 let eCdta = {
                     entity: makeRandomBasicEntity(toe),
