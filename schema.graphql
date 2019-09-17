@@ -53,6 +53,9 @@ type ItemListing {
     item: BasicItem!
     thumbnail: String
     relatedTOEData: [TypeOfEntityCountData!]
+    """ optionally an Item listing could need to be cathegorized in
+    a specific typeOfEntity """
+    typeOfEntity: TypeOfEntity
 }
 
 
@@ -185,6 +188,10 @@ type Query {
 
  getTreeOfItems( treeId: ID! ): Tree
 
+ autoComplete(
+     input: String!
+    ### , autoCompleteOptions (<--- to add?)
+ ): [ItemListing!]
 }
 
 
