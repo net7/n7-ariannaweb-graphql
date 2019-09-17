@@ -48,7 +48,7 @@ export function getGlobalFilterResult( args:any ){
                 let count = Helpers.getRandomIntInclusive(1,toeCount);
                 toeCount -= count;
                 let eCdta = {
-                    entity: makeRandomBasicEntity(toe.id),
+                    entity: makeRandomBasicEntity(toe),
                     count
                 };
                 entitiesCountData.push(eCdta);

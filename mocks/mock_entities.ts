@@ -48,9 +48,10 @@ function makeRandomBasicEntityLabel(typeOfEntityId:string):string{
 }
 
 
-export function makeRandomBasicEntity(typeOfEntityId:string){
+export function makeRandomBasicEntity(typeOfEntity:any){
     return {
         id: makeRandomBasicEntityId(),
-        label:makeRandomBasicEntityLabel(typeOfEntityId)
+        label:makeRandomBasicEntityLabel(typeOfEntity.id),
+        typeOfEntity
     }
 }

@@ -24,6 +24,7 @@ type TypeOfEntity {
 type BasicEntity {
     id: ID!
     label: String!
+    typeOfEntity: TypeOfEntity!
 }
 
 
@@ -55,17 +56,17 @@ type ItemListing {
 }
 
 
-type ItemField {
+type KeyValueField {
     id: ID!
     key: String!
     value: String!
 }
 
 
-type ItemFieldGroup {
+type KeyValueFieldGroup {
     id: ID!
     label: String
-    fields: [ItemField!]
+    fields: [KeyValueField!]
 }
 
 
@@ -76,10 +77,23 @@ type ItemDetails {
     subTitle: String
     image: String
     text: String
-    fields: [ItemFieldGroup!]
+    fields: [KeyValueFieldGroup!]
     connectedEntities: [EntityCountData!]
     similarItems: [ItemListing!]
 }
+
+
+
+type EntityDetails {
+    entity: BasicEntity!
+    overviewTab: String
+    fieldsTab: [KeyValueFieldGroup!]
+    Items: [ItemListing!]
+    Entities: [EntityCountData!]
+    ExtraTabUrl: String
+    WikiTabUrl: String
+}
+
 
 """ Used to associate a typeOfEntity with a count/number (as: "People, 6" or "Organizzazioni, 12") 
 optionally can be enabled or disabled """
@@ -156,6 +170,7 @@ type Hero { ###########################################
 
 #"""Standard GraphQL Query type used to define the possible queries"""
 type Query {
+
  getTestHero(title:String): Hero ########## TO REMOVE #############################
 
  getAllTypesOfEntity: [TypeOfEntity!]!
@@ -165,6 +180,8 @@ type Query {
  globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!] , selectedEntitiesIds: [ID!] , dateFilter: datesRangeInput ) : GlobalFilterData
 
  getItemDetails( itemId:ID! ): ItemDetails
+
+ getEntityDetails( entityId:ID! ): EntityDetails
 
  getTreeOfItems( treeId: ID! ): Tree
 
