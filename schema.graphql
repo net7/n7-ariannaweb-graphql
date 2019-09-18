@@ -133,6 +133,22 @@ type Tree {
     leaves: [ItemListing!]
 }
 
+
+
+
+
+
+type configsObject {
+    id: ID!
+    configurations: [singleConfiguration!]
+}
+
+type singleConfiguration {
+    key: String!
+    value: String!
+}
+
+
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
@@ -192,6 +208,8 @@ type Query {
     input: String!
     ### , autoCompleteOptions (<--- to add?)
  ): [ItemListing!]
+
+ getPageConfiguration( pageId:ID! ): [ configsObject! ]
 }
 
 

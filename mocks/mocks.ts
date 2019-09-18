@@ -17,6 +17,8 @@ import * as Mock_Filters from './mock_filters';
 
 import * as Mock_Autocomplete from './mock_autocomplete';
 
+import * as Mock_Configs from './mock_configs';
+
 // Inserire qui i mock per le varie query
 export const mocks = {
   Query:() => ({
@@ -29,7 +31,8 @@ export const mocks = {
     getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
     globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),
-    autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args )
+    autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args ),
+    getPageConfiguration: (_,{pageId}) => Mock_Configs.getPageConfiguration(pageId)
   }),
   Mutation: () => ({
   })
