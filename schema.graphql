@@ -8,11 +8,13 @@
 
 
 
+
+
 #======================================================================================
 #                                DATA TYPES
 #======================================================================================
 
-""" A generic type of entity (such as: "persone", "luoghi", etc...)"""
+""" A generic type of entity (such as: 'persone', 'luoghi', etc...) """
 type TypeOfEntity {
     id: ID!
     label: String!
@@ -20,7 +22,8 @@ type TypeOfEntity {
     color: String
 }
 
-""" An basic entity (such as: "Alighiero Boetti", "Luce", etc...)"""
+
+""" An basic entity (such as: 'Alighiero Boetti', 'Luce', etc...) """
 type BasicEntity {
     id: ID!
     label: String!
@@ -31,7 +34,7 @@ type BasicEntity {
 
 """ A pair of strings, of which the first is a key and the second is
 its value both represented as strings
-(such as : key:"Autore",value:"Mimmo Jodice")"""
+(such as : key:'Autore',value:'Mimmo Jodice') """
 type basicInfo {
     key: String!
     value: String!
@@ -58,14 +61,17 @@ type ItemListing {
     typeOfEntity: TypeOfEntity
 }
 
-
+""" Data containing an id, as a reference and a key-value pair, to be used
+for generic data files (as for example: key:"authod", value:"Giulio Andreini")
+(FIXME: maybe id is not necessary) """
 type KeyValueField {
     id: ID!
     key: String!
     value: String!
 }
 
-
+""" Group of generic key-value pairs, the gourp has also unique identifier and
+an optional label assigned to it """
 type KeyValueFieldGroup {
     id: ID!
     label: String
@@ -73,7 +79,7 @@ type KeyValueFieldGroup {
 }
 
 
-
+""" Details about an item element (as for example: 'Genova, la sopraelevata')"""
 type ItemDetails {
     item: BasicItem!
     title: String!
@@ -86,7 +92,7 @@ type ItemDetails {
 }
 
 
-
+""" Details about an entity element (as for example: 'Milano') """
 type EntityDetails {
     entity: BasicEntity!
     overviewTab: String
@@ -133,16 +139,13 @@ type Tree {
     leaves: [ItemListing!]
 }
 
-
-
-
-
-
+""" Object to be used for page configurations """
 type configsObject {
     id: ID!
     configurations: [singleConfiguration!]
 }
 
+""" Single basic configuration """
 type singleConfiguration {
     key: String!
     value: String!
@@ -187,9 +190,8 @@ type Hero { ###########################################
 
 
 
-#"""Standard GraphQL Query type used to define the possible queries"""
+"""Standard GraphQL Query type used to define the possible queries"""
 type Query {
-
  getTestHero(title:String): Hero ########## TO REMOVE #############################
 
  getAllTypesOfEntity: [TypeOfEntity!]!
