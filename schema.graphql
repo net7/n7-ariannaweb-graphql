@@ -59,6 +59,7 @@ type ItemListing {
     """ optionally an Item listing could need to be cathegorized in
     a specific typeOfEntity """
     typeOfEntity: TypeOfEntity
+    breadcrumbs: [LinkElement!]
 }
 
 """ Data containing an id, as a reference and a key-value pair, to be used
@@ -89,6 +90,7 @@ type ItemDetails {
     fields: [KeyValueFieldGroup!]
     connectedEntities: [EntityCountData!]
     similarItems: [ItemListing!]
+    breadcrumbs: [LinkElement!]
 }
 
 
@@ -97,10 +99,10 @@ type EntityDetails {
     entity: BasicEntity!
     overviewTab: String
     fieldsTab: [KeyValueFieldGroup!]
-    Items: [ItemListing!]
-    Entities: [EntityCountData!]
-    ExtraTabUrl: String
-    WikiTabUrl: String
+    items: [ItemListing!]
+    entities: [EntityCountData!]
+    extraTabUrl: String
+    wikiTabUrl: String
 }
 
 
@@ -139,6 +141,12 @@ type Tree {
     leaves: [ItemListing!]
 }
 
+""" Element containing a label and an optional link for the element
+(Note: the link doesn't have to be an url, it just has to bee an indication)"""
+type LinkElement {
+    label: String!
+    link: String
+}
 
 #======================================================================================
 #                                INPUT TYPES

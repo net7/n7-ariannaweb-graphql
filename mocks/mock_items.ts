@@ -28,12 +28,30 @@ export function generateRandomBunchOfItemListings(allPossibleThumbnails): any[]{
   let itemListings = [];
   let numOfItems = Helpers.getRandomIntInclusive(10,30);
   let basicItemsIdx = Helpers.pickNDistinctPositiveIntegers(allRandomBasicItems.length-1,numOfItems);
+  let randNum = Helpers.getRandomIntInclusive(1,9);
+  let randYear = Helpers.getRandomIntInclusive(1890,2002);
+  let randMonth = Helpers.randomPick(['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic']);
+  let randomDay = Helpers.getRandomIntInclusive(1,28);
+  const dateBlabel = `${randNum}(${randYear} ${randMonth}.${randomDay})`;
   basicItemsIdx.forEach(bIdx => {
       let itemL = {
           item:allRandomBasicItems[bIdx],
           thumbnail: Helpers.randomPick(allPossibleThumbnails),
-          relatedTOEData: null
-      };
+          relatedTOEData: null,
+          breadcrumbs: [ // TODO: improve the mock (if needed)
+            { label: Helpers.randomPick(["Raccolte speciali","Raccolte standard","Archivio"]),
+              link: null },
+            { label: Helpers.randomPick([ "Ministero dell'interno",
+                                          "Ministero dell'estero",
+                                          "Ufficio Principale",
+                                          "Ufficio Secondario" ]), link: null },
+            { label: "..." , link: null },{ label: "...", link: null },
+            { label: Helpers.randomPick([ "Fascicolo della segreteria",
+                                          "Fascicolo primario",
+                                          "Documento generale" ]), link: null },
+            { label: dateBlabel , link: null }
+          ]
+        };
       itemListings.push(itemL);
   });
   return itemListings;

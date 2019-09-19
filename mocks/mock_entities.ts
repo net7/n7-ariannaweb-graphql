@@ -1,5 +1,10 @@
 import * as Helpers from './helpers';
 
+import { getAllTypesOfEntity } from './mock_typesOfEntity';
+
+import { generateRandomBunchOfItemListings } from './mock_items';
+
+import { makeRandomFieldGroups } from './mock_fields';
 
 function makeRandomBasicEntityId():string{
     return Helpers.getRandomString(3)+"-entity-"+Helpers.getRandomString(3);
@@ -54,4 +59,36 @@ export function makeRandomBasicEntity(typeOfEntity:any){
         label:makeRandomBasicEntityLabel(typeOfEntity.id),
         typeOfEntity
     }
+}
+
+
+let allPossibleThumbnails = [];
+for(var i=30;i<150;i++) allPossibleThumbnails.push(`https://placeimg.com/${i}/${i}/any`);
+
+
+export function getEntityDetails(entityId:String){
+  const allToes = getAllTypesOfEntity();
+  let basicEntity = makeRandomBasicEntity(Helpers.randomPick(allToes));
+
+  let entities = [];
+  const nBubbles = Helpers.getRandomIntInclusive(30,70);
+  for(var i=0;i<nBubbles;i++){
+    let eCdta = {
+        entity: makeRandomBasicEntity(Helpers.randomPick(allToes)),
+        count: Helpers.getRandomIntInclusive(1000,5000)
+    };
+    entities.push(eCdta);
+  }
+
+  return {
+    entity: basicEntity,
+    overviewTab: "Milano e' un comune italiano di 1372810 abitanti," +
+                 " capoluogo della regione Lombardia, dell'omonima citta' matropolitana," +
+                 " e centro di una delle piu' popolose aree metropolitane d'Europa. Etc...",
+    fieldsTab: makeRandomFieldGroups(),
+    Items: generateRandomBunchOfItemListings(allPossibleThumbnails),
+    entities,
+    extraTabUrl: null,
+    wikiTabUrl: null
+  }
 }

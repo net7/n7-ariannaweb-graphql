@@ -27,6 +27,7 @@ export const mocks = {
     getAllTypesOfEntity: Mock_TypesOfEntity.getAllTypesOfEntity ,
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// only for testing the mocks!
     getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
+    getEntityDetails: (_,args) => Mock_Entities.getEntityDetails(args.entityId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
     globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),
     autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args )

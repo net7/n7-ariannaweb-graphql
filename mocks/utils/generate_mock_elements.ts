@@ -1,6 +1,11 @@
 
   import * as Helpers from '../helpers';
 
+import { makeRandomFieldGroups } from '../mock_fields';
+import { makeRandomBasicEntity } from '../mock_entities';
+import { getAllTypesOfEntity } from '../mock_typesOfEntity';
+
+
 
   const allPossibleRandomItemLabels = [
     "Green squares C",
@@ -74,37 +79,8 @@
     return Helpers.getRandomString(3)+"-item-"+Helpers.getRandomString(3);
   }
 
-  function makeRandomFieldGroupId():String{
-    return Helpers.getRandomString(3)+"-fieldGroup-"+Helpers.getRandomString(3);
-  }
-
-  function makeRandomFieldId():String{
-    return Helpers.getRandomString(3)+"-field-"+Helpers.getRandomString(3);
-  }
 
 
-  function makeRandomFieldGroups():any{
-    let nOfGroups = Helpers.getRandomIntInclusive(0,5);
-    if(nOfGroups==0) return null;
-
-    let groups = [];
-    for(var i=0;i<nOfGroups;i++){
-      let group = {};
-      group['id']=makeRandomFieldGroupId();
-      group['label']=Helpers.randomPick(['Gruppo A','Gruppo 1']);// add random pick
-      group['fields']=[];
-      let nOfFields = Helpers.getRandomIntInclusive(1,5);
-      for(var j=0;j<nOfFields;j++){
-        let field = {};
-        field['id']=makeRandomFieldId();
-        field['key']='testKey';// add random pick
-        field['value']='testValue';// add random pick
-        group['fields'].push(field);
-      }
-      groups.push(group);
-    }
-    return groups;
-  }
 
   
   const numOfAllItems = 500;
@@ -132,14 +108,31 @@
     var width = Helpers.getRandomIntInclusive(900,1800);
     var height = Helpers.getRandomIntInclusive(500,800);
   
+    const allToes = getAllTypesOfEntity();
+    let connectedEntities = [];
+    const nBubbles = Helpers.getRandomIntInclusive(20,50);
+    for(var i=0;i<nBubbles;i++){
+      let eCdta = {
+          entity: makeRandomBasicEntity(Helpers.randomPick(allToes)),
+          count: Helpers.getRandomIntInclusive(1000,5000)
+      };
+      connectedEntities.push(eCdta);
+    }
+
     allRandomItemDetails[basicItem.id+''] = {
       item: basicItem,
       title: basicItem.label,
       image: `https://placeimg.com/${width}/${height}/any`,
       text: Helpers.randomPick(allPossibleRandomItemTexts),
       fields: makeRandomFieldGroups(),
-      connectedEntities: null, // add random pick
-      similarItems: null // add random pick
+      connectedEntities,
+      similarItems: null, // add random pick
+      breadcrumbs: [ // TODO: improve the mock!
+        { label: "Collezione d'arte" },
+        { label: "Collezione 1" },
+        { label: "..." },
+        { label: basicItem.label }
+      ]
     };
   
   }
