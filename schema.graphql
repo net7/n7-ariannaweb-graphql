@@ -139,18 +139,6 @@ type Tree {
     leaves: [ItemListing!]
 }
 
-""" Object to be used for page configurations """
-type configsObject {
-    id: ID!
-    configurations: [singleConfiguration!]
-}
-
-""" Single basic configuration """
-type singleConfiguration {
-    key: String!
-    value: String!
-}
-
 
 #======================================================================================
 #                                INPUT TYPES
@@ -211,7 +199,6 @@ type Query {
     ### , autoCompleteOptions (<--- to add?)
  ): [ItemListing!]
 
- getPageConfiguration( pageId:ID! ): [ configsObject! ]
 }
 
 
