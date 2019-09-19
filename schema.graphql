@@ -133,12 +133,13 @@ type GlobalFilterData {
     items: [ItemListing!] # TO DO : add/implement a paginatedItemListing type
 }
 
-""" Tree structure containing a label for each branch and basic items as its leaves
+""" Tree structure containing an id,label and icon for each element
 (used for navigation, as: Patrimonio)"""
 type Tree {
-    label: String
+    id: ID!
+    label: String!
+    icon: String
     branches: [Tree!]
-    leaves: [ItemListing!]
 }
 
 """ Element containing a label and an optional link for the element
