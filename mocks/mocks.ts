@@ -20,10 +20,6 @@ import * as Mock_Autocomplete from './mock_autocomplete';
 // Inserire qui i mock per le varie query
 export const mocks = {
   Query:() => ({
-    /////////////// TO REMOVE /////////////////////////////////////////////
-    getTestHero: (_,args) => { if(args.title) return { title:args.title };
-                                else return {title: "default title"}; },
-    ///////////////////////////////////////////////////////////////////////
     getAllTypesOfEntity: Mock_TypesOfEntity.getAllTypesOfEntity ,
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// only for testing the mocks!
     getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
