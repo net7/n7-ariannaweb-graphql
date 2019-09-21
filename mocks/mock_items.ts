@@ -39,9 +39,10 @@ function makeRandomTOEData(){
 }
 
 
-export function generateRandomBunchOfItemListings(allPossibleThumbnails): any[]{
+export function generateRandomBunchOfItemListings(allPossibleThumbnails:string[],numOfItemsInput?:number): any[]{
   let itemListings = [];
   let numOfItems = Helpers.getRandomIntInclusive(10,30);
+  if(numOfItemsInput && numOfItemsInput>0) numOfItems = numOfItemsInput;
   let basicItemsIdx = Helpers.pickNDistinctPositiveIntegers(allRandomBasicItems.length-1,numOfItems);
   let randNum = Helpers.getRandomIntInclusive(1,9);
   let randYear = Helpers.getRandomIntInclusive(1890,2002);

@@ -54,8 +54,13 @@ export function getGlobalFilterResult( args:any ){
         }
     }
 
+    let items = [];
+    if(args.selectedEntitiesIds && args.selectedEntitiesIds.length>0){
+        let numOfItems = Helpers.getRandomIntInclusive(5,8)*args.selectedEntitiesIds.length;
+        items = generateRandomBunchOfItemListings(allPossibleThumbnails,numOfItems);
+    }
     return {
         entitiesData,
-        items: generateRandomBunchOfItemListings(allPossibleThumbnails)
+        items
     };
 }
