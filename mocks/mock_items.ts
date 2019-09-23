@@ -67,7 +67,7 @@ export function generateRandomBunchOfItemListings(allPossibleThumbnails:string[]
                                           "Documento generale" ]), link: null },
             { label: dateBlabel , link: null }
           ]
-        };
+      };
       itemListings.push(itemL);
   });
   return itemListings;

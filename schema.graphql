@@ -35,7 +35,7 @@ type BasicEntity {
 """ A pair of strings, of which the first is a key and the second is
 its value both represented as strings
 (such as : key:'Autore',value:'Mimmo Jodice') """
-type basicInfo {
+type BasicInfo {
     key: String!
     value: String!
 }
@@ -45,7 +45,7 @@ type basicInfo {
 type BasicItem {
     id: ID!
     label: String!
-    info: [basicInfo!]
+    info: [BasicInfo!]
     icon: String
 }
 
@@ -149,6 +149,9 @@ type LinkElement {
     link: String
 }
 
+
+
+
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
@@ -183,18 +186,32 @@ input datesRangeInput {
 """Standard GraphQL Query type used to define the possible queries"""
 type Query {
 
+ """ Returns all the types of entity present in the system """
  getAllTypesOfEntity: [TypeOfEntity!]!
 
- getAllBasicItems: [BasicItem!] #### ONLY FOR TESTING the mocks
+ """ Restuns all the basic items present in the systems (those items are never
+ used in this way in the application, this is a simple query used to testing the mocks)"""
+ getAllBasicItems: [BasicItem!]
 
+ """ Returns all the values needed to represent the main section of the homepage (meaning the
+ typeofentity-facets, bubblechart and items)"""
  globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!] , selectedEntitiesIds: [ID!] , dateFilter: datesRangeInput ) : GlobalFilterData
 
+ """ Returns the details specific to a single item """
  getItemDetails( itemId:ID! ): ItemDetails
 
+ """ Returns the details specific to a single entity """
  getEntityDetails( entityId:ID! ): EntityDetails
 
+ """ Returns a tree (there are two notable points in this query, 1. the maximum depth of the
+ result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
+ tree represents the tree's root, therefore any branch of a grater tree can be fetched by specifing
+ the branch root's id as the treeId)"""
  getTreeOfItems( treeId: ID! ): Tree
 
+ """ Given a string it returns an array of item listings which match the input string based on
+ a certain logic (currently an itemListing is returned if its item's label or at least one of its
+ values contains the input string)"""
  autoComplete(
     input: String!
     ### , autoCompleteOptions (<--- to add?)
@@ -228,6 +245,7 @@ type Query {
 #                                MUTATION DEFINITIONS
 #======================================================================================
 
+# mutations are currently not used in the arianna web project
 
 #"""Standard GraphQL Mutation type used to define the possible mutations"""
 #type Mutation {
