@@ -54,13 +54,23 @@ export function getGlobalFilterResult( args:any ){
         }
     }
 
-    let items = [];
+    let itemsPagination = null;
     if(args.selectedEntitiesIds && args.selectedEntitiesIds.length>0){
-        let numOfItems = Helpers.getRandomIntInclusive(5,8)*args.selectedEntitiesIds.length;
-        items = generateRandomBunchOfItemListings(allPossibleThumbnails,numOfItems);
+        let numOfItems = 5*Math.floor(Helpers.getRandomIntInclusive(900,2000)/(Math.pow(args.selectedEntitiesIds.length,3)));
+        if(!args.itemsPagination){
+          itemsPagination = {
+            totalCount: numOfItems,
+            items: generateRandomBunchOfItemListings(allPossibleThumbnails,numOfItems)
+          }
+        } else {
+          itemsPagination = {
+            totalCount: numOfItems,
+            items: generateRandomBunchOfItemListings(allPossibleThumbnails,args.itemsPagination.limit)
+          }
+        }
     }
     return {
         entitiesData,
-        items
+        itemsPagination
     };
 }

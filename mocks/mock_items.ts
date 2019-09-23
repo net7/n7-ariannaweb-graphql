@@ -43,6 +43,7 @@ export function generateRandomBunchOfItemListings(allPossibleThumbnails:string[]
   let itemListings = [];
   let numOfItems = Helpers.getRandomIntInclusive(10,30);
   if(numOfItemsInput && numOfItemsInput>0) numOfItems = numOfItemsInput;
+  numOfItems = Math.min(numOfItems,allRandomBasicItems.length-1);
   let basicItemsIdx = Helpers.pickNDistinctPositiveIntegers(allRandomBasicItems.length-1,numOfItems);
   let randNum = Helpers.getRandomIntInclusive(1,9);
   let randYear = Helpers.getRandomIntInclusive(1890,2002);

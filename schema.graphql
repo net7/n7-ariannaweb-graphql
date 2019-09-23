@@ -130,7 +130,7 @@ type TypeOfEntityFilterData {
 """ Filter data used as the result of a global filer query """
 type GlobalFilterData {
     entitiesData: [TypeOfEntityFilterData!]
-    items: [ItemListing!] # TO DO : add/implement a paginatedItemListing type
+    itemsPagination: ItemListingPaginationResult
 }
 
 """ Tree structure containing an id,label and icon for each element
@@ -150,6 +150,16 @@ type LinkElement {
 }
 
 
+
+""" Used to represent a pagination of ItemListings, result of a query """
+type ItemListingPaginationResult {
+   """ the total count of the itemListings that matched the query request
+   if no pagination was requested """
+   totalCount: Int!
+   """ subset of the totalCount itemListings which have been requested
+   by the query's pagination section """
+   items: [ItemListing!]
+}
 
 
 #======================================================================================
@@ -175,6 +185,16 @@ input datesRangeInput {
 }
 
 
+"""Input type used to request items in a pagination manner"""
+input PaginationInput {
+  """Offset for the pagination ("starting point" for the request)"""
+  offset: Int!
+  """Limit for the pagination ("length" for the request)"""
+  limit: Int!
+}
+
+
+
 
 
 #======================================================================================
@@ -195,7 +215,10 @@ type Query {
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
- globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!] , selectedEntitiesIds: [ID!] , dateFilter: datesRangeInput ) : GlobalFilterData
+ globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!],
+               selectedEntitiesIds: [ID!],
+               dateFilter: datesRangeInput,
+               itemsPagination: PaginationInput ) : GlobalFilterData
 
  """ Returns the details specific to a single item """
  getItemDetails( itemId:ID! ): ItemDetails
