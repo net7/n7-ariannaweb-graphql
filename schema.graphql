@@ -238,7 +238,8 @@ type Query {
  autoComplete(
     input: String!
     ### , autoCompleteOptions (<--- to add?)
- ): [ItemListing!]
+    itemsPagination: PaginationInput
+ ): ItemListingPaginationResult!
 
 }
 

@@ -34,5 +34,20 @@ export function autocomplete( args:any ){
     );
   });
 
-  return results;
+  let totalCount = results.length;
+  if(!args.itemsPagination)
+    return {
+      totalCount,
+      items: results
+    };
+
+  let pagination = args.itemsPagination;
+  let mockOffset = 0;
+
+  while( (mockOffset<pagination.offset) &&
+      (mockOffset<results.length-pagination.limit) ) mockOffset+=1;
+
+  let items = results.slice(mockOffset,mockOffset+pagination.limit);
+
+  return { totalCount , items };
 }
