@@ -1,6 +1,3 @@
-import * as Helpers from './helpers';
-
-
 const allTypesOfEntity = [
  {
     id: 'toe-people',
@@ -30,4 +27,13 @@ const allTypesOfEntity = [
 
 export function getAllTypesOfEntity(){
   return allTypesOfEntity;
+}
+
+
+export function getTypesOfEntity(typeOfEntityId:string){
+  for(var i=0; i<allTypesOfEntity.length; i++){
+    const toe = allTypesOfEntity[i];
+    if(toe.id===typeOfEntityId) return toe;
+  }
+  return null;
 }
