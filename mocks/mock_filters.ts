@@ -31,8 +31,7 @@ export function getGlobalFilterResult( args:any ){
         if(!toe){
             throw new UserInputError('Form Arguments invalid', {
                 message: "No Type of entity present with id: '" + typeOfEntityFiler[i].typeOfEntityId + "'",
-                invalidArgs: [typeOfEntityFiler]
-            });
+                invalidArgs: [typeOfEntityFiler] });
         } else {
             const typeOfEMinCount = Math.floor(20000/Math.pow(reductionFactor,2));
             const typeOfEMaxCount = Math.floor(50000/Math.pow(reductionFactor,2));
@@ -42,6 +41,22 @@ export function getGlobalFilterResult( args:any ){
                 count: toeCount
             };
             let entitiesCountData = [];
+            args.selectedEntitiesIds.forEach( (selId) => {
+              if( ( toe.id === "toe-people" && selId.startsWith("pe_") ) ||
+                  ( toe.id === "toe-places" && selId.startsWith("pl_") ) ||
+                  ( toe.id === "toe-concepts" && selId.startsWith("cn_") ) ||
+                  ( toe.id === "toe-organizations" && selId.startsWith("or_") ) ){
+                      const typeOfEMinCount = Math.floor(toeCount/2.5);
+                      const typeOfEMaxCount = Math.floor(toeCount/1.5);
+                      let count = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
+                      toeCount -= count;
+                      let eCdta = {
+                          entity: makeRandomBasicEntity(toe,selId),
+                          count
+                      };
+                      entitiesCountData.push(eCdta);
+              }
+            });
             while(toeCount>0){
                 let count = Helpers.getRandomIntInclusive(1000/reductionFactor,5000/reductionFactor);
                 toeCount -= count;

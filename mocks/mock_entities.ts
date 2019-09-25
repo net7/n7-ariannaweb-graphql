@@ -6,8 +6,25 @@ import { generateRandomBunchOfItemListings } from './mock_items';
 
 import { makeRandomFieldGroups } from './mock_fields';
 
-function makeRandomBasicEntityId():string{
-    return Helpers.getRandomString(3)+"-entity-"+Helpers.getRandomString(3);
+function makeRandomBasicEntityId(typeOfEntityId?:string):string{
+    let prefix = "";
+    switch( typeOfEntityId ){
+      case "toe-people":
+          prefix = "pe_";
+          break;
+      case "toe-places":
+          prefix = "pl_";
+          break;
+      case "toe-concepts":
+          prefix = "cn_";
+          break;
+      case "toe-organizations":
+          prefix = "or_";
+          break;
+      default:
+          break;
+  }
+    return prefix+Helpers.getRandomString(3)+"-entity-"+Helpers.getRandomString(3);
 }
 
 const allPossiblePeopleEntityLabels = [
@@ -53,12 +70,12 @@ function makeRandomBasicEntityLabel(typeOfEntityId:string):string{
 }
 
 
-export function makeRandomBasicEntity(typeOfEntity:any){
+export function makeRandomBasicEntity(typeOfEntity:any,entityId?:string){
     return {
-        id: makeRandomBasicEntityId(),
+        id: ( entityId ? entityId : makeRandomBasicEntityId(typeOfEntity.id) ),
         label:makeRandomBasicEntityLabel(typeOfEntity.id),
         typeOfEntity
-    }
+    };
 }
 
 
