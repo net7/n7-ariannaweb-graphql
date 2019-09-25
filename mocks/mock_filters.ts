@@ -24,6 +24,8 @@ export function getGlobalFilterResult( args:any ){
 
     let entitiesData = [];
 
+    const reductionFactor = ( args.selectedEntitiesIds ? (args.selectedEntitiesIds.length+1) : 1 );
+
     for(var i=0;i<typeOfEntityFiler.length;i++){
         let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
         if(!toe){
@@ -32,14 +34,16 @@ export function getGlobalFilterResult( args:any ){
                 invalidArgs: [typeOfEntityFiler]
             });
         } else {
-            let toeCount = Helpers.getRandomIntInclusive(20000,50000);
-            let countData = {
+            const typeOfEMinCount = Math.floor(20000/Math.pow(reductionFactor,2));
+            const typeOfEMaxCount = Math.floor(50000/Math.pow(reductionFactor,2));
+            let toeCount = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
+            const countData = {
                 type:toe,
                 count: toeCount
             };
             let entitiesCountData = [];
             while(toeCount>0){
-                let count = Helpers.getRandomIntInclusive(1000,5000);
+                let count = Helpers.getRandomIntInclusive(1000/reductionFactor,5000/reductionFactor);
                 toeCount -= count;
                 let eCdta = {
                     entity: makeRandomBasicEntity(toe),
