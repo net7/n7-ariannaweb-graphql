@@ -27,7 +27,7 @@ export function getGlobalFilterResult( args:any ){
 
     const reductionFactor = ( args.selectedEntitiesIds ? (args.selectedEntitiesIds.length+1) : 1 );
 
-    for(var i=0;i<typeOfEntityFiler.length;i++){
+    for(let i=0;i<typeOfEntityFiler.length;i++){
         let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
         if(!toe){
             throw new UserInputError('Form Arguments invalid', {
@@ -64,7 +64,15 @@ export function getGlobalFilterResult( args:any ){
                     entity: getRandomBasicEntityFromType(toe),
                     count
                 };
-                entitiesCountData.push(eCdta);
+                let alreadyPresent = false;
+                for(let j=0;j<entitiesCountData.length;j++){
+                  if(entitiesCountData[j].entity.id===eCdta.entity.id){
+                    alreadyPresent = true;
+                    break;
+                  }
+                }
+                if(!alreadyPresent)
+                  entitiesCountData.push(eCdta);
             }
             entitiesData.push({
                 countData,
