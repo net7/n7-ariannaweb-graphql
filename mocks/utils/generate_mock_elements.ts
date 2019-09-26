@@ -88,22 +88,74 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     'Emilio Magoni', 'Alighiero Boetti', 'Carla Badiali', 'Mafonso',
     'Merz', 'Francesco Clemente', 'William Kentridge', 'Battaglia',
     'Michel Cacioppo', 'Sara Zorzi', 'Luci Rosi', 'Gerhard Richter',
-    'Jonh Smith', 'Mario Rossi', 'Guido Andreotti'
+    'Jonh Smith', 'Mario Rossi', 'Guido Andreotti', 'Pasqualino	Fes'
+    ,'Gianluigi	Sio'  ,'Silvia	Cavaleri'  ,'Maria	Malara'  ,'Silvana	Curci'
+    ,'Carmine	Ciarallo'  ,'Paolo	Gaetani'  ,'Mauro	Mammucari'
+    ,'Davide	Leoca'  ,'Valeria	Leopardi'  ,'Paola	Sardelli'  ,'Giacomo	Sonaglia'
+    ,'Nicola	Parzia'  ,'Armando	De Matt'  ,'Egidio	Minnucci'  ,'Ignazio	Bio'
+    ,'Lanfranco	Finocchioli'  ,'Antonio	Zucchiatti'  ,'Michelangelo	Sassi'  ,'Santo Antonino	Coppola'
+    ,'Francesco	Licciardi'  ,'Davide	Tedeschi'  ,'Duilio	Ro'  ,'Silvano	Palmisa'
+    ,'Marina	Meleleo'  ,'Daniela	Polchi'  ,'Angelo	Bottaro'  ,'Maria	Ferrara'
+    ,'Antonello	Maiorano'  ,'Daniele	Falanga'  ,'Valentina	Griga'  ,'Valerio	Doddi'
+    ,'Maria Giulia	Pagliaroli'  ,'Pietro	Olivieri' ,'Maria Teresa	Inciocchi'  ,'Domenico Mauro	Conoscen'
+    ,'Alex	Vriz'  ,'Giovani	Gabassi'  ,'Stefano	Pan' ,'Mariella	Capomolla'
+    ,'Stefania	Tiralongo'  ,'Anna	Di Pasquale'  ,'Mirella	Paoletti'
+    ,'Genny	Ramundo'  ,'Carlos	Passoni'  ,'Sara	Garri'
+    ,'Paola Nazzarena	Ferretti'  ,'Fosca Nota Fosca Arte	Manca'  ,'Gioacchino	Spera'
+    ,'Giuseppe (noto) Pino	Congiu Manca'  ,'Alfredo	Ferri'  ,'Svetlana	Potoran'  ,'Mario	Fanuli'
+    ,'Gianfranco	Serafin'  ,'Francesco	Startari'  ,'Zanfranco	Finocchio'  ,'Antonello	Maiorano'
+    ,'Gabriella	Tolli'  ,'Andrea	Palermo'  ,'Elena	Cricenti'  ,'Umberto	Stefanini'
+    ,'Il Mondo Della Cornice	Di Merchion' ,'Paolo	Federico'  ,'Rosanna	Miccolis'
+    ,'Francesca	Mosetti'  ,'Antonello	Maiorano'  ,'Giovanni Comodo	Gi.co.'  ,'Tiziana	Nicolai'
+    ,'Nanda	Rago'  ,'Andrea	Petrucci'  ,'Antonello	Maiorano'  ,'Sery	Mastropietro'
+    ,'Guerino	Casella'  ,'Giovani	Gabassi'  ,'Eltjon	Valle'  ,'Battistel	Giovanni'
+    ,'Armando	De Matt'  ,'Renzo	Tonel'  ,'Giuseppina	Perugini'
+    ,'Claudia	Piccoli'  ,'Eltjon	Valle'  ,'Massimiliano	De Sena'  ,'Carlo	Gatti'
+    ,'Nadia	Guglielmo'  ,'Tamara	Pierbattisti'  ,'Antonino	Ferro'
+    ,'Nanda	Rago'  ,'Anna	Di Pasquale'  ,'Alessandro	Golfi'  ,'Vincenzo	Valenziano'  ,'Michele	Galletta'
   ];
   const allPossiblePlacesEntityLabels = [
       'Torino', 'Milano', 'Bari', 'Napoli', 'Roma', 'Arezzo', 'Toscana',
       'Pisa', 'Uffizi', 'Bologna', 'Lazio', 'Grosseto', 'Arezzo', 'Massa',
-      'Ancona'
+      'Ancona', 'Palermo','Genova','Firenze','Catania','Venezia','Verona','Messina',
+      'Padova','Trieste','Taranto','Brescia','Parma','Prato','Modena','Reggio Calabria',
+      'Reggio Emilia','Perugia','Ravenna','Livorno','Cagliari','Foggia','Rimini',
+      'Salerno','Ferrara','Sassari','Latina','Giugliano in Campania','Monza','Siracusa',
+      'Pescara','Bergamo','Forlì','Trento','Vicenza','Terni','Bolzano','Novara',
+      'Piacenza','Ancona','Andria','Arezzo','Udine','Cesena','Lecce'
   ];
+
+
+
   const allPossibleConceptsEntityLabels = [
       'Ombra', 'Happening', 'Luce', 'Contemporaneo', 'Liquido', 'Spazio', 'Tempo',
       'Gassoso', 'Amore', 'Odio', 'Astratto', 'Concreto', 'Materia', 'Sentimento', 'Vita',
-      'Morte', 'Paura', 'Coraggio', 'Ansia'
+      'Morte', 'Paura', 'Coraggio', 'Ansia', 'Pigment','Paint', 'Canvas','Panel',
+      'Paper','Plaster','Linseed oil','Graphite','Charcoal','Pastels','Clay','Stone',
+      'Watercolor','Tempera','Gouache','Casein paint','Ink','Light','Pencil','Wood',
+      'Ivory','Ceramic','Stoneware','Metal','Plastic','Plexiglass','Fiberglass',
+      'Glass','Wax','Fabric','Thread','Yarn','Film','Glaze','Pen','Crayon',
+      'Vitreous enamel','Lacquer','Gelatin','Hide','Vellum and parchment','Glitter',
+      'Art techniques','Aquatint','Cameraless photography',,'Casting','Chromoxylography',
+      'Cloisonné','Damascening','Drawing','Drypoint','Embroidery','Encaustic',
+      'Engraving','Engraved gem','Etching','Filigree','Fresco','Gilding','Glassblowing',
+      'Goldsmithing','Gouache','Linocut','Lithography',
+      'Lost-wax casting','Mezzotint','Modeling','Monotype','Oil painting',
+      ,'Intaglio printing','Planographic printing','Pottery','Printmaking','Relief',
+      'Relief printing','Sculpture','Seriography','Stippling','Tapestry','Paper cutting',
+      'Photography','Slipcasting','Watercolor','Weaving','Woodcut'
   ];
   const allPossibleOrganizationsEntityLabels = [
       'Moma', 'Mac', 'Uffizi', 'Comune di Roma', 'Regione Lazio', 'Regione Toscana',
       'Comune di Pisa', 'Organization A', 'Istutito d\'arte', 'Istituzione Pisana',
-      'Max', 'Mono', 'Comitato Arte Moderna', 'ModernArt'
+      'Max', 'Mono', 'Comitato Arte Moderna', 'ModernArt','Wolf Systems','Raptor Systems',
+      'Whiz Co.','Silver Linetworks','Grottolutions','Solsticetems','Tucanterprises',
+      'Tigernite','Marswheels','Nimbleworks','Prodigy Brews','Zeus Foods','Smile Limited',
+      'Wooductions','Equinetworks','Signetworks','Quaductions','Apexwood','Vortexbooks',
+      'Oakcast','Neptune Security','Zeus Technologies','Apricot Networks','Aprico',
+      'Shrubrews','Smilectronics','Neroductions','Websys','Tigerking','Alligatorshack',
+      'Beedle','Crow Lighting','Grizzly Motors','Spiritechnologies','Marsecuriy',
+      'Raptolutions','Electrorks','Pinkex','Marshstones','Thunderwalk'
   ];
 
 
