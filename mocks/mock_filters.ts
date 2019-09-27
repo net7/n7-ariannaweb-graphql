@@ -34,8 +34,8 @@ export function getGlobalFilterResult( args:any ){
                 message: "No Type of entity present with id: '" + typeOfEntityFiler[i].typeOfEntityId + "'",
                 invalidArgs: [typeOfEntityFiler] });
         } else {
-            const typeOfEMinCount = Math.floor(20000/Math.pow(reductionFactor,2));
-            const typeOfEMaxCount = Math.floor(50000/Math.pow(reductionFactor,2));
+            const typeOfEMinCount = Math.floor(40000/Math.pow(reductionFactor,2));
+            const typeOfEMaxCount = Math.floor(100000/Math.pow(reductionFactor,2));
             let toeCount = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
             const countData = {
                 type:toe,
@@ -46,10 +46,10 @@ export function getGlobalFilterResult( args:any ){
               args.selectedEntitiesIds.forEach( (selId) => {
                 let bEntity = getBasicEntityById(selId);
                 if( bEntity && (bEntity.typeOfEntity.id === toe.id) ){
-                  const typeOfEMinCount = Math.floor(toeCount/2.5);
-                  const typeOfEMaxCount = Math.floor(toeCount/1.5);
-                  let count = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
-                  toeCount -= count;
+                  const selElementMinCount = Math.floor(toeCount/2.3);
+                  const selElementMaxCount = Math.floor(toeCount/2.1);
+                  let count = Helpers.getRandomIntInclusive(selElementMinCount,selElementMaxCount);
+                  toeCount -= (count/2.5);
                   let eCdta = {
                       entity: bEntity,
                       count
@@ -57,9 +57,12 @@ export function getGlobalFilterResult( args:any ){
                   entitiesCountData.push(eCdta);
                 }
               });
+            const elementMinCount = Math.floor(toeCount/9);
+            const elementMaxCount = Math.floor(toeCount/2.3);
             while(toeCount>0){
-                let count = Helpers.getRandomIntInclusive(1000/reductionFactor,5000/reductionFactor);
-                toeCount -= count;
+                //let count = Helpers.getRandomIntInclusive(3000/reductionFactor,5000/reductionFactor);
+                let count = Helpers.getRandomIntInclusive(elementMinCount,elementMaxCount);
+                toeCount -= (count/2.5);
                 let eCdta = {
                     entity: getRandomBasicEntityFromType(toe),
                     count
