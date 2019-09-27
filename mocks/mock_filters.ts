@@ -27,16 +27,40 @@ export function getGlobalFilterResult( args:any ){
 
     const reductionFactor = ( args.selectedEntitiesIds ? (args.selectedEntitiesIds.length+1) : 1 );
 
+
+    let selectedBubblesMinCount = -1;
+    let selectedBubblesMaxCount = 0;
+
+    let toeCounts:number[] = [];
+    let selectedEntitiesIdsCounts: any = {};
     for(let i=0;i<typeOfEntityFiler.length;i++){
+      const typeOfEMinCount = Math.floor(40000/Math.pow(reductionFactor,2));
+      const typeOfEMaxCount = Math.floor(100000/Math.pow(reductionFactor,2));
+      toeCounts[i] = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
+      let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
+      if(args.selectedEntitiesIds)
+      args.selectedEntitiesIds.forEach( (selId) => {
+        let bEntity = getBasicEntityById(selId);
+        if( bEntity && (bEntity.typeOfEntity.id === toe.id) ){
+          const selElementMinCount = Math.floor(toeCounts[i]/2.1);
+          const selElementMaxCount = Math.floor(toeCounts[i]/2.05);
+          let count = Helpers.getRandomIntInclusive(selElementMinCount,selElementMaxCount);
+          if(count>selectedBubblesMaxCount) selectedBubblesMaxCount=count;
+          if(selectedBubblesMinCount===-1 || count<selectedBubblesMinCount) selectedBubblesMinCount=count;
+          selectedEntitiesIdsCounts[selId] = count;
+        }
+      });
+    };
+
+
+    for(let i=0;i<typeOfEntityFiler.length;i++){
+        let toeCount:number = toeCounts[i];
         let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
         if(!toe){
             throw new UserInputError('Form Arguments invalid', {
                 message: "No Type of entity present with id: '" + typeOfEntityFiler[i].typeOfEntityId + "'",
                 invalidArgs: [typeOfEntityFiler] });
         } else {
-            const typeOfEMinCount = Math.floor(40000/Math.pow(reductionFactor,2));
-            const typeOfEMaxCount = Math.floor(100000/Math.pow(reductionFactor,2));
-            let toeCount = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
             const countData = {
                 type:toe,
                 count: toeCount
@@ -46,9 +70,7 @@ export function getGlobalFilterResult( args:any ){
               args.selectedEntitiesIds.forEach( (selId) => {
                 let bEntity = getBasicEntityById(selId);
                 if( bEntity && (bEntity.typeOfEntity.id === toe.id) ){
-                  const selElementMinCount = Math.floor(toeCount/2.3);
-                  const selElementMaxCount = Math.floor(toeCount/2.1);
-                  let count = Helpers.getRandomIntInclusive(selElementMinCount,selElementMaxCount);
+                  let count = selectedEntitiesIdsCounts[selId];
                   toeCount -= (count/2.5);
                   let eCdta = {
                       entity: bEntity,
@@ -58,7 +80,7 @@ export function getGlobalFilterResult( args:any ){
                 }
               });
             const elementMinCount = Math.floor(toeCount/9);
-            const elementMaxCount = Math.floor(toeCount/2.3);
+            const elementMaxCount = (selectedBubblesMinCount>0 ? Math.floor(selectedBubblesMinCount*0.85) : Math.floor(toeCount/2.3) );
             while(toeCount>0){
                 //let count = Helpers.getRandomIntInclusive(3000/reductionFactor,5000/reductionFactor);
                 let count = Helpers.getRandomIntInclusive(elementMinCount,elementMaxCount);
