@@ -8,59 +8,64 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
 
 
   const allPossibleRandomItemLabels = [
-    "Green squares C",
-    "As Nights fall over...",
-    "Pisa, la torre pendente",
-    "Randomness madness",
-    "Untitled Item",
-    "Placeholder Item",
-    "This is a Test",
-    "Random Element",
-    "Generic Label/Title"
+    'Dirty Lighthouse', 'Cavern Research Center', 'Arcane Convention Center',
+    'Japanese Arcade', 'Hellish Dungeon', 'Distopian Meteor Crater',
+    'Evil Dungeon Entrance', 'Misty Bunker', 'Ancient Ruins', 'Forsaken Outpost',
+    'Bioluminescent Trainstation', 'Dwarvish Shop', 'Snowy City',
+    'Forsaken Trainstation', 'Evil Hangar', 'Tundra Camp', 'Horror Mill',
+    'Weathered Insane Asylum', 'Collapsing Town Center', 'Self-Sufficient Farm Fields',
+    'Sports in the clubhouse', 'Job in a sand castle',
+    'Discoveries in an underground lair', 'Death in a bus stop',
+    'Loyalty in the playground', 'Bad day in the forest',
+    'False accusations in a wasteland', 'Comfort of a wasteland',
+    'Bag of money in a construction yard', 'Incident in the playground',
+    'Personification of a waterfall', 'Reunited in a cartoon universe',
+    'War of the town hall', 'Vacation in a laboratory', 'Guilt in a forgotten bunker',
+    'Fresh start in an underground lair', 'Audience in a circus',
+    'Changes in the playground', 'Long lost twin in the sport stadium',
+    'Insecurity in a sand castle', 'Car accident with your wife',
+    'Celebrating an anniversary with your wife', 'Cheated by a dog',
+    'Making history with a minotaur', 'New year\'s eve with a blind person',
+    'Fight to death with an alien', 'Wrong choice of a professional thief',
+    'Day at the beach with the boy scouts', 'Guarding your house with an Olympic athlete',
+    'Surprise party for your complete opposite'
   ];
   
   const allPossibleRandomItemAuthors = [
-    "Giulio Andreini",
-    "Romeo Zitarosa",
-    "Dario Piotrowicz",
-    "Edgar Gomez",
-    "Duccio Duccio",
-    "Chiara Aiola",
-    "Anonymous",
-    "Generic Author"
+    'Egidio Crifasi', 'Mario Castoro', 'Furio Melchiorre', 'Iginio Scaccia',
+    'Araldo Finizio', 'Fuscolo Miserendino', 'Rubiano Ciotola', 'Silverio Francia',
+    'Ippolito Sarli', 'Virone Marcantonio', 'Sibilla Torino', 'Marcella Tonelli',
+    'Annabella De Lucchi', 'Minervina Cinotti', 'Virginia Alterio', 'Ornella Caterina',
+    'Gertrude Cangemi', 'Zosima Cecere', 'Andromeda Piccininni', 'Ivetta Castelli',
+    'Enzo Morgese', 'Valfrido Capozza', 'Pupolo Ferranti', 'Zanobi Sartini',
+    'Annibale Mucci', 'Guerrino Moglia', 'Ildebrando Borsari', 'Italo Casa',
+    'Archimede Cina', 'Semiramide Tambasco'
   ];
-  
   
   const allPossibleRandomItemIcons = [
-    "n7-icon-action-alt",
-    "n7-icon-archive",
-    "n7-icon-atlas",
-    "n7-icon-biography-alt",
-    "n7-icon-books",
-    "n7-icon-calendar-alt",
-    "n7-icon-camera",
-    "n7-icon-clipboard-check",
-    "n7-icon-compass",
-    "n7-icon-earth",
-    "n7-icon-file3",
-    "n7-icon-illustration",
+    "n7-icon-action-alt", "n7-icon-archive", "n7-icon-atlas", "n7-icon-biography-alt",
+    "n7-icon-books", "n7-icon-calendar-alt", "n7-icon-camera", "n7-icon-clipboard-check",
+    "n7-icon-compass", "n7-icon-earth", "n7-icon-file3", "n7-icon-illustration",
     "n7-icon-lightbulb"
   ];
-  
-  
-  
-  
-  const allPossibleRandomItemShortDescription = [
-    "Ricamo su tela cm 29 X 29",
-    "Dipinto ad olio",
-    "News",
-    "Informazione rilevante",
-    "Avviso importante",
-    "Opera d'arte",
-    "Capolavoro Artistico"
+
+
+  let allPossibleRandomItemShortDescriptionTmp = [
+    "Dipinto ad olio", "News", "Informazione rilevante", "Avviso importante",
+    "Opera d'arte", "Capolavoro Artistico", "Idea innovativa", "Creazione moderna",
+    "Gamechanger", "Opera artistica", "Concetto d'arte", "Innovazione", "Mostra d'arte",
+    "Creazione", "Modello", "Fotografia", "Opera d'arte tessile", "Installazione artistica"
   ];
-
-
+  [29,35,56].forEach( (n) => {
+    allPossibleRandomItemShortDescriptionTmp.push(`Ricamo su tela cm ${n} X ${n}`);
+  });
+  [20,60].forEach( (n) => {
+    allPossibleRandomItemShortDescriptionTmp.push(`Ricamo su tela cm ${n} X ${n/2}`);
+  });
+  [30,50,90].forEach( (n) => {
+    allPossibleRandomItemShortDescriptionTmp.push(`Quadro cm ${n} X ${n}`);
+  });
+  const allPossibleRandomItemShortDescription = allPossibleRandomItemShortDescriptionTmp;
 
 
 
@@ -78,10 +83,6 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
   function makeRandomItemId():String{
     return Helpers.getRandomString(3)+"-item-"+Helpers.getRandomString(3);
   }
-
-
-
-
 
 
   const allPossiblePeopleEntityLabels = [
@@ -114,6 +115,8 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     ,'Nadia	Guglielmo'  ,'Tamara	Pierbattisti'  ,'Antonino	Ferro'
     ,'Nanda	Rago'  ,'Anna	Di Pasquale'  ,'Alessandro	Golfi'  ,'Vincenzo	Valenziano'  ,'Michele	Galletta'
   ];
+
+
   const allPossiblePlacesEntityLabels = [
       'Torino', 'Milano', 'Bari', 'Napoli', 'Roma', 'Arezzo', 'Toscana',
       'Pisa', 'Uffizi', 'Bologna', 'Lazio', 'Grosseto', 'Arezzo', 'Massa',
@@ -124,7 +127,6 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
       'Pescara','Bergamo','Forlì','Trento','Vicenza','Terni','Bolzano','Novara',
       'Piacenza','Ancona','Andria','Arezzo','Udine','Cesena','Lecce'
   ];
-
 
 
   const allPossibleConceptsEntityLabels = [
@@ -204,7 +206,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
   const allRandomBasicItems = [];
   const allRandomItemDetails = {};
   
-  for(var i=0;i<numOfAllItems;i++){
+  for(let i=0;i<numOfAllItems;i++){
     let basicItem = {
       id: makeRandomItemId(),
       label: Helpers.randomPick(allPossibleRandomItemLabels),
@@ -223,11 +225,10 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     var width = Helpers.getRandomIntInclusive(900,1800);
     var height = Helpers.getRandomIntInclusive(500,800);
   
-    const allToes = getAllTypesOfEntity();
     let connectedEntities = [];
     const nBubbles = Helpers.getRandomIntInclusive(20,50);
     const entitiesPick = pickNDistinctPositiveIntegers(allRandomBasicEntities.length,nBubbles)
-    for(var j=0;j<nBubbles;j++){
+    for(let j=0;j<nBubbles;j++){
       let eCdta = {
           entity: allRandomBasicEntities[entitiesPick[i]],
           count: Helpers.getRandomIntInclusive(1000,5000)
