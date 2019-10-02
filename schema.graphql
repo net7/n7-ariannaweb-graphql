@@ -220,7 +220,8 @@ type Query {
                itemsPagination: PaginationInput ) : GlobalFilterData
 
  """ Returns the details specific to a single item """
- getItemDetails( itemId:ID! ): ItemDetails
+ getItemDetails( itemId:ID!
+                 maxSimilarItems: Int ): ItemDetails
 
  """ Returns the details specific to a single entity """
  getEntityDetails( entityId:ID! ): EntityDetails

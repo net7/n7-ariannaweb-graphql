@@ -243,7 +243,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
       text: Helpers.randomPick(allPossibleRandomItemTexts),
       fields: makeRandomFieldGroups(),
       connectedEntities,
-      similarItems: null, // add random pick
+      similarItems: null,
       breadcrumbs: [ // TODO: improve the mock!
         { label: "Collezione d'arte" },
         { label: "Collezione 1" },

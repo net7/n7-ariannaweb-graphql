@@ -22,7 +22,7 @@ export const mocks = {
   Query:() => ({
     getAllTypesOfEntity: Mock_TypesOfEntity.getAllTypesOfEntity ,
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// only for testing the mocks!
-    getItemDetails: (_,args) => Mock_Items.getItemDetails(args.itemId),
+    getItemDetails: (_,args) => Mock_Items.getItemDetails(args),
     getEntityDetails: (_,args) => Mock_Entities.getEntityDetails(args.entityId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
     globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),

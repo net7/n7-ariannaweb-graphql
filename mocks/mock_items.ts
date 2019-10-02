@@ -18,9 +18,22 @@ export function getAllBasicItems(){
 }
 
 
-export function getItemDetails(itemId: String){
+
+let allPossibleThumbnails = [];
+for(var i=30;i<150;i++) allPossibleThumbnails.push(`https://placeimg.com/${i}/${i}/any`);
+
+
+export function getItemDetails(args : any){
+  const itemId = args.itemId;
+  const maxSimilarItems = args.maxSimilarItems;
+  if(!itemId) return null;
   let itemDetails = allRandomItemDetails[itemId+''];
-  return ( itemDetails ? itemDetails : null );
+  if(!itemDetails) return null;
+  if(args.maxSimilarItems)
+    itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails,args.maxSimilarItems);
+  else
+    itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails);
+  return itemDetails;
 }
 
 
