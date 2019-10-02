@@ -199,6 +199,43 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
 
 
 
+  const allPossibleBreadcrumbs = [
+    [
+      { label: "Collezione d'arte" },
+      { label: "Collezione 1" },
+      { label: "..." },
+    ],
+    [
+      { label: "Collezione d'arte" },
+      { label: "Collezione 2" },
+      { label: "..." },
+    ],
+    [
+      { label: "Collezione d'arte" },
+      { label: "Collezione Primaria" },
+      { label: "..." },
+    ],
+    [
+      { label: "Collezione d'arte" },
+      { label: "NERVI Pier Luigi" },
+    ],
+    [
+      { label: "Centro archivi" },
+      { label: "Archivio Principale" },
+      { label: "..." },
+    ],
+    [
+      { label: "Centro archivi" },
+      { label: "Archivio Secondario" },
+      { label: "..." },
+      { label: "..." },
+    ],
+    [
+      { label: "Centro archivi" },
+      { label: "Archivio Remoto" },
+      { label: "..." },
+    ],
+  ];
 
 
   const numOfAllItems = 500;
@@ -236,6 +273,8 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
       connectedEntities.push(eCdta);
     }
 
+    let breadcrumbs = [ ...Helpers.randomPick(allPossibleBreadcrumbs) , {label: basicItem.label} ];
+
     allRandomItemDetails[basicItem.id+''] = {
       item: basicItem,
       title: basicItem.label,
@@ -244,12 +283,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
       fields: makeRandomFieldGroups(),
       connectedEntities,
       similarItems: null,
-      breadcrumbs: [ // TODO: improve the mock!
-        { label: "Collezione d'arte" },
-        { label: "Collezione 1" },
-        { label: "..." },
-        { label: basicItem.label }
-      ]
+      breadcrumbs
     };
 
   }

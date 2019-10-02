@@ -68,7 +68,7 @@ export function generateRandomBunchOfItemListings(allPossibleThumbnails:string[]
           item:allRandomBasicItems[bIdx],
           thumbnail: Helpers.randomPick(allPossibleThumbnails),
           relatedTOEData: makeRandomTOEData(),
-          breadcrumbs: [ // TODO: improve the mock (if needed)
+          breadcrumbs: [ // TODO: improve the mock (if needed) with links
             { label: Helpers.randomPick(["Raccolte speciali","Raccolte standard","Archivio"]),
               link: null },
             { label: Helpers.randomPick([ "Ministero dell'interno",
