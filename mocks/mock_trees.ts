@@ -1,8 +1,5 @@
 import * as Helpers from './helpers';
-
-
 import { generateRandomBunchOfItemListings } from './mock_items';
-
 
 
 export function makeRandomTreeId():String{
@@ -44,7 +41,6 @@ function makeBunchOfTreeLeaves(){
 }
 
 
-
 export function getTreeOfItems(treeId:String){
     let centroArchiviBranches = [];
 
@@ -61,7 +57,9 @@ export function getTreeOfItems(treeId:String){
     'PETRESCHI Marco', 'PIANO Renzo', 'PIERLUISI Franco', 'RIVA Umberto', 'ROTA Italo',
     'SIZA Alvaro', 'SUPERSTUDIO' ].forEach( (lbl) => centroArchiviBranches.push( new treeBranch(lbl) ) );
 
-    if(treeId==='patrimonioId')
+    // add in this switch statement new cases for eventual new trees
+    switch(treeId){
+      case 'patrimonioId':
         return {
           id: "patri_tree",
           icon: "n7-icon-archive",
@@ -81,6 +79,8 @@ export function getTreeOfItems(treeId:String){
               },
           ]
         };
-    return null;
+      default:
+        return null;
+    }
 }
 

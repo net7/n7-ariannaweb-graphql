@@ -28,7 +28,7 @@
     for(var i=0;i<nOfGroups;i++){
       let group = {};
       group['id']=makeRandomFieldGroupId();
-      group['label']=Helpers.randomPick(['Gruppo A','Gruppo 1']);// add random pick
+      group['label']=Helpers.randomPick(['Gruppo A','Gruppo 1','Gruppo Info','Gruppo Valori',"Gruppo Delta","Gruppo Arte","Gruppo xyz"]);
       group['fields']=[];
       let nOfFields = Helpers.getRandomIntInclusive(1,5);
       for(var j=0;j<nOfFields;j++){

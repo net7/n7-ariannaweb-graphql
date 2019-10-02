@@ -25,7 +25,6 @@ export function getGlobalFilterResult( args:any ){
 
     const reductionFactor = ( args.selectedEntitiesIds ? (args.selectedEntitiesIds.length+1) : 1 );
 
-
     let selectedBubblesMinCount = -1;
     let selectedBubblesMaxCount = 0;
 

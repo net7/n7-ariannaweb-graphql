@@ -25,14 +25,14 @@ for(var i=30;i<150;i++) allPossibleThumbnails.push(`https://placeimg.com/${i}/${
 
 export function getItemDetails(args : any){
   const itemId = args.itemId;
-  const maxSimilarItems = args.maxSimilarItems;
   if(!itemId) return null;
   let itemDetails = allRandomItemDetails[itemId+''];
   if(!itemDetails) return null;
-  if(args.maxSimilarItems)
+  if(args.maxSimilarItems>0){
     itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails,args.maxSimilarItems);
-  else
-    itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails);
+  } else if(args.maxSimilarItems==0){
+    itemDetails.similarItems = [];
+  } else itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails);
   return itemDetails;
 }
 
