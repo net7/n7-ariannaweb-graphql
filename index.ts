@@ -7,7 +7,7 @@ var path = require ( 'path' );
 
 const typeDefs = fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
 
-import { mocks } from './mocks/mocks';
+const { mocks } =  require('./mocks/mocks');
 
 const server = new ApolloServer({
   typeDefs,
