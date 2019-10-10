@@ -138,6 +138,7 @@ type Tree {
     id: ID!
     label: String!
     icon: String
+    img: String
     branches: [Tree!]
 }
 

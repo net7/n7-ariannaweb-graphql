@@ -11,6 +11,7 @@ function treeBranch(label:string){
     this.id=makeRandomTreeId();
     this.label=label;
     this.icon=null;
+    this.img=null;
     this.branches=makeBunchOfTreeLeaves();
 }
 
@@ -32,6 +33,7 @@ function makeBunchOfTreeLeaves(){
     treeBranches.push({
       id: it.item.id,
       icon: it.thumbnail,
+      img: it.img,
       label: it.item.label,
       branches: null
     });
@@ -63,18 +65,21 @@ export function getTreeOfItems(treeId:String){
         return {
           id: "patri_tree",
           icon: "n7-icon-archive",
+          img: null,
           label: "Albero di navigazione",
           branches: [
               {
                 id: "coll_art",
                 label: "Collezione D'arte",
                 icon: null,
+                img: null,
                 branches: makeBunchOfTreeLeaves()
               },
               {
                 id: "cntr_arch",
                 label: "Centro Archivi",
                 icon: null,
+                img: null,
                 branches: centroArchiviBranches
               },
           ]

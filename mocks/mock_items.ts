@@ -64,9 +64,17 @@ export function generateRandomBunchOfItemListings(allPossibleThumbnails:string[]
   let randomDay = Helpers.getRandomIntInclusive(1,28);
   const dateBlabel = `${randNum}(${randYear} ${randMonth}.${randomDay})`;
   basicItemsIdx.forEach(bIdx => {
+      var icon: String = null
+      var img: String = null
+      if (Math.random() > 0.5){
+        icon = Helpers.randomPick(allPossibleThumbnails);
+      } else {
+        img = "http://placeimg.com/25/25/arch/grayscale"
+      }
       let itemL = {
           item:allRandomBasicItems[bIdx],
-          thumbnail: Helpers.randomPick(allPossibleThumbnails),
+          thumbnail: icon,
+          img: img,
           relatedTOEData: makeRandomTOEData(),
           breadcrumbs: [ // TODO: improve the mock (if needed) with links
             { label: Helpers.randomPick(["Raccolte speciali","Raccolte standard","Archivio"]),
