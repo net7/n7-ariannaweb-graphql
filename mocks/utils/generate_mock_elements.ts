@@ -276,7 +276,10 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     let breadcrumbs = [ ...Helpers.randomPick(allPossibleBreadcrumbs) , {label: basicItem.label} ];
 
     allRandomItemDetails[basicItem.id+''] = {
-      item: basicItem,
+      id: basicItem.id,
+      label: basicItem.label,
+      info: basicItem.info,
+      icon: basicItem.icon,
       title: basicItem.label,
       image: `https://placeimg.com/${width}/${height}/any`,
       text: Helpers.randomPick(allPossibleRandomItemTexts),
