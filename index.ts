@@ -1,19 +1,17 @@
-const { ApolloServer} = require('apollo-server');
-const resolvers = require('./resolvers');
+const { ApolloServer } = require('apollo-server');
+const { importSchema } = require('graphql-import');
+import  { resolvers } from './resolvers/mainResolvers';
 const ParametersAPI = require('./datasources/parameters');
 
-var fs = require ( 'fs' );
-var path = require ( 'path' );
+const typeDefs = importSchema('./schema.graphql');
 
-const typeDefs = fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
-
-const { mocks } =  require('./mocks/mocks');
+import { mocks } from './mocks/mocks';
 
 const server = new ApolloServer({
-  typeDefs,
-  mocks,
-  mockEntireSchema: true,
+  typeDefs: typeDefs,
   resolvers,
+  mockEntireSchema: false,
+  mocks: mocks,
   playground: true, // playgound set to true allows the playground to work on zeit.co should anyway be removed before production
   dataSources: () => ({
     ParametersAPI: new ParametersAPI()
