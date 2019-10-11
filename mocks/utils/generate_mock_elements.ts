@@ -267,7 +267,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     const entitiesPick = pickNDistinctPositiveIntegers(allRandomBasicEntities.length,nBubbles)
     for(let j=0;j<nBubbles;j++){
       let eCdta = {
-          entity: allRandomBasicEntities[entitiesPick[i]],
+          entity: allRandomBasicEntities[entitiesPick[j]],
           count: Helpers.getRandomIntInclusive(1000,5000)
       };
       connectedEntities.push(eCdta);
