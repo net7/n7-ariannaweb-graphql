@@ -100,10 +100,15 @@ type EntityDetails {
     fieldsTab: [KeyValueFieldGroup!]
     items: [ItemListing!]
     entities: [EntityCountData!]
-    extraTabUrl: String
-    wikiTabUrl: String
+    extraTab: String
+    wikiTab: WikiTab
 }
 
+""" WikiTab Entity """
+type WikiTab {
+    text: String
+    url: String
+}
 
 """ Used to associate a typeOfEntity with a count/number (as: "People, 6" or "Organizzazioni, 12") 
 optionally can be enabled or disabled """

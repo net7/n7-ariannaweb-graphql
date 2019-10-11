@@ -61,22 +61,13 @@ export function getEntityDetails(entityId:string){
     fieldsTab: makeRandomFieldGroups(),
     items: generateRandomBunchOfItemListings(allPossibleThumbnails),
     entities,
-    extraTabUrl: Helpers.randomPick(allPossibleExtraUrls),
-    wikiTabUrl: Helpers.randomPick(allPossibleWikiUrls)
+    extraTab: Helpers.randomPick(allPossibleOverviewTabs),
+    wikiTab: {
+      text: Helpers.randomPick(allPossibleExtraText),
+      url: Helpers.randomPick(allPossibleWikiUrls)
+    }
   };
 }
-
-
-const allPossibleExtraUrls = [
-  'http://example.com/',
-  'http://www.example.com/',
-  'http://bead.example.com/',
-  'https://agreement.example.com/',
-  'http://www.example.edu/border.php#afterthought',
-  'https://www.example.com/board?action=bone',
-  null
-];
-
 
 const allPossibleWikiUrls = [
   'https://it.wikipedia.org/wiki/Lorem_ipsum',
@@ -85,6 +76,21 @@ const allPossibleWikiUrls = [
   'https://it.wikipedia.org/wiki/Concetto',
   null
 ];
+
+const allPossibleExtraText = [
+ `Il museo delle belle arti di Nantes fu creato in seguito all'arrêté Chaptal, un decreto 
+ consolare del 14 fruttidoro dell'anno IX (1º settembre 1801) che istituiva quattordici 
+ musei provinciali in Francia. `,
+ `Inizialmente il museo era costituito soprattutto dalla 
+ ricca collezione privata raccolta da François Cacault e conservata nel museo-scuola 
+ di Clisson.`,
+ `Dal 1980 è uno dei cinque principali musei regionali, insieme ai musei di Lione, Bordeaux, Tolosa e Lilla.
+ Il museo fu aperto al pubblico nel 1830; la vecchia sede era in rue du Calvaire, nei pressi dell'antico 
+ Marché de Feltre`,
+ `Dal 1893 il museo è ospitato in rue Clemenceau in un edificio della fine del XIX secolo, dichiarato nel 1975 
+ «monumento storico»[4]. Dal 18 dicembre 2011 la sede di rue Clemenceau resterà chiusa per un periodo tempo 
+ stimato in 18-24 mesi.`
+]
 
 
 const allPossibleOverviewTabs = [
