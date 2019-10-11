@@ -12,8 +12,8 @@ export const mocks = {
   Query:() => ({
     getAllTypesOfEntity: Mock_TypesOfEntity.getAllTypesOfEntity ,
     getAllBasicItems: (_,args) => Mock_Items.getAllBasicItems(),// used only for testing the mocks, not to be included in resolvers
-    getItemDetails: (_,args) => Mock_Items.getItemDetails(args),
-    getEntityDetails: (_,args) => Mock_Entities.getEntityDetails(args.entityId),
+    getItem: (_,args) => Mock_Items.getItem(args.itemId, args.maxSimilarItems),
+    getEntity: (_,args) => Mock_Entities.getEntity(args.entityId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
     globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),
     autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args )
