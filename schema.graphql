@@ -161,7 +161,7 @@ input datesRangeInput {
 }
 
 
-"""Input type used to request items in a pagination manner"""
+""" Input type used to request items in a pagination manner """
 input PaginationInput {
   """Offset for the pagination ("starting point" for the request)"""
   offset: Int!
@@ -186,6 +186,9 @@ type Query {
  """ Restuns all the basic items present in the systems (those items are never
  used in this way in the application, this is a simple query used to testing the mocks)"""
  getItems: [Item!]
+
+  """ return the number of cultural Objects per Entities """
+ entitiesCountData: [EntityCountData!]
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
@@ -216,27 +219,6 @@ type Query {
  ): ItemListingPaginationResult!
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #======================================================================================
