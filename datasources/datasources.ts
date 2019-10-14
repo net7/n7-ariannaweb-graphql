@@ -1,5 +1,4 @@
 import { search } from "./elasticsearch"
-import { json } from "body-parser"
 
 export async function getEntity(entityId: string) {
 	if (entityId == null || entityId === '')
@@ -19,7 +18,7 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
-export async function getEntitiesCountData() {
+export async function getEntitiesCountData(entitiesId: [string] = null) {
 	var query = {
 		index: 'cultural_objects',
 		body: {
@@ -42,8 +41,32 @@ export async function getEntitiesCountData() {
 			"size": 0
 		}
 	}
+
+	if (entitiesId != null && entitiesId.length > 0) {
+		var matchQuery = {
+			"bool": {
+				"must": []
+			}
+		}
+		for (const entityId of entitiesId) {
+			const filter = {
+				"nested": {
+					"path": "connectedEntities",
+					"query": {
+						"term": {
+							"connectedEntities.id": entityId
+						}
+					}
+				}
+			}
+			matchQuery.bool.must.push(filter)
+		}
+		query.body['query'] = matchQuery
+	}
+
 	const body = await search(query)
-	const res = body.aggregations.entities.doc_per_entities.buckets.map((x: any) => {
+	var res = body.aggregations.entities.doc_per_entities.buckets
+	res = res.map((x: any) => {
 		x.entity = JSON.parse(x.key)
 		x.count = x.doc_count
 		delete x.key
