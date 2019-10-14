@@ -1,7 +1,6 @@
 const { ApolloServer } = require('apollo-server');
 const { importSchema } = require('graphql-import');
 import  { resolvers } from './resolvers/mainResolvers';
-const ParametersAPI = require('./datasources/parameters');
 
 const typeDefs = importSchema('./schema.graphql');
 
@@ -12,10 +11,7 @@ const server = new ApolloServer({
   resolvers,
   mockEntireSchema: false,
   mocks: mocks,
-  playground: true, // playgound set to true allows the playground to work on zeit.co should anyway be removed before production
-  dataSources: () => ({
-    ParametersAPI: new ParametersAPI()
-})
+  playground: true, // playgound to work on zeit.co should anyway be removed before production
 });
 
 server.listen().then(({ url }) => {
