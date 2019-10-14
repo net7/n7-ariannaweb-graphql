@@ -195,7 +195,7 @@ type Query {
  globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!],
                selectedEntitiesIds: [ID!],
                dateFilter: datesRangeInput,
-               itemsPagination: PaginationInput) : GlobalFilterData
+               itemsPagination: PaginationInput) : [EntityCountData!]# GlobalFilterData
 
  """ Returns the details specific to a single item """
  getItem(itemId: ID!, maxSimilarItems: Int): Item
