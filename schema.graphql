@@ -148,7 +148,7 @@ type Tree {
 }
 
 """ Element containing a label and an optional link for the element
-(Note: the link doesn't have to be an url, it just has to bee an indication)"""
+(Note: the link doesn't have to be an url, it just has to be an indication)"""
 type LinkElement {
     label: String!
     link: String
@@ -160,7 +160,7 @@ type LinkElement {
 type ItemListingPaginationResult {
    """ the total count of the itemListings that matched the query request
    if no pagination was requested """
-   totalCount: Int!
+   totalCount: Int  !
    """ subset of the totalCount itemListings which have been requested
    by the query's pagination section """
    items: [ItemListing!]
@@ -220,23 +220,23 @@ type Query {
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
- globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!],
+ globalFilter(typeOfEntityFiler: [TypeOfEntityFilterInput!],
                selectedEntitiesIds: [ID!],
                dateFilter: datesRangeInput,
-               itemsPagination: PaginationInput ) : GlobalFilterData
+               itemsPagination: PaginationInput): GlobalFilterData
 
  """ Returns the details specific to a single item """
- getItemDetails( itemId:ID!
+ getItemDetails(itemId: ID!
                  maxSimilarItems: Int ): ItemDetails
 
  """ Returns the details specific to a single entity """
- getEntityDetails( entityId:ID! ): EntityDetails
+ getEntityDetails(entityId: ID!): EntityDetails
 
  """ Returns a tree (there are two notable points in this query, 1. the maximum depth of the
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
  tree represents the tree's root, therefore any branch of a grater tree can be fetched by specifing
  the branch root's id as the treeId)"""
- getTreeOfItems( treeId: ID! ): Tree
+ getTreeOfItems(treeId: ID!): Tree
 
  """ Given a string it returns an array of item listings which match the input string based on
  a certain logic (currently an itemListing is returned if its item's label or at least one of its
@@ -245,6 +245,7 @@ type Query {
     input: String!
     ### , autoCompleteOptions (<--- to add?)
     itemsPagination: PaginationInput
+    typeOfConfigKey:  String
  ): ItemListingPaginationResult!
 
 }
