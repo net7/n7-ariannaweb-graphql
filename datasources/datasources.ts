@@ -101,8 +101,11 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 	}
 
 	const body = await search(query)
-
-	var items = body.hits.hits.map(x => {
+	const buckets = body.aggregations.entities.doc_per_entities.buckets
+	const tOEDict = {}
+	
+	const results = await Promise.all([
+	body.hits.hits.map(x => {
 		var list = []
 		const object = x.fields.typeOfEntitiesCount[0]
 		for (const prop in object) {
@@ -115,22 +118,18 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 			relatedTOEData: list
 		}
 		return res
-	})
-
-	const buckets = body.aggregations.entities.doc_per_entities.buckets
-	const tOEList = {}
-
+	}),
 	buckets.forEach(x => {
 		const obj = {
 		entity: JSON.parse(x.key),
 		count: x.doc_count
 		}
 		const tOEId = obj.entity.typeOfEntity.id
-		if (tOEList[tOEId]){
-			tOEList[tOEId].countData.count += obj.count
-			tOEList[tOEId].entitiesCountData.push(obj)
+		if (tOEDict[tOEId]){
+			tOEDict[tOEId].countData.count += obj.count
+			tOEDict[tOEId].entitiesCountData.push(obj)
 		} else {
-			tOEList[tOEId] = {
+			tOEDict[tOEId] = {
 				countData: {
 					count: obj.count,
 					type: obj.entity.typeOfEntity
@@ -138,15 +137,16 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 				entitiesCountData: [obj]
 			}
 		}
-	});
+	}),
+])
 
-	const entitiesData = []
+const entitiesData = []
 
-	for (const prop in tOEList) {
-		if (tOEList.hasOwnProperty(prop)) {
-			entitiesData.push(tOEList[prop])
-		}
+for (const prop in tOEDict) {
+	if (tOEDict.hasOwnProperty(prop)) {
+		entitiesData.push(tOEDict[prop])
 	}
+}
 
-	return { itemsPagination: { items: items, totalCount: body.hits.count }, entitiesData: entitiesData };
+	return { itemsPagination: { items: results[0], totalCount: body.hits.count }, entitiesData: entitiesData };
 }
