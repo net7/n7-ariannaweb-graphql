@@ -164,9 +164,9 @@ input datesRangeInput {
 """ Input type used to request items in a pagination manner """
 input PaginationInput {
   """Offset for the pagination ("starting point" for the request)"""
-  offset: Int!
+  offset: Int! # from
   """Limit for the pagination ("length" for the request)"""
-  limit: Int!
+  limit: Int!  # size
 }
 
 
@@ -192,10 +192,10 @@ type Query {
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
- globalFilter( typeOfEntityFiler:[TypeOfEntityFilterInput!],
+ globalFilter( typeOfEntityFilter:[TypeOfEntityFilterInput!],
                selectedEntitiesIds: [ID!],
                dateFilter: datesRangeInput,
-               itemsPagination: PaginationInput) : [EntityCountData!]# GlobalFilterData
+               itemsPagination: PaginationInput) : GlobalFilterData
 
  """ Returns the details specific to a single item """
  getItem(itemId: ID!, maxSimilarItems: Int): Item
@@ -216,6 +216,7 @@ type Query {
     input: String!
     ### , autoCompleteOptions (<--- to add?)
     itemsPagination: PaginationInput
+    typeOfConfigKey:  String
  ): ItemListingPaginationResult!
 
 }
