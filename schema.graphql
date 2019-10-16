@@ -187,9 +187,6 @@ type Query {
  used in this way in the application, this is a simple query used to testing the mocks)"""
  getItems: [Item!]
 
-  """ return the number of cultural Objects per Entities """
- entitiesCountData: [EntityCountData!]
-
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
  globalFilter( typeOfEntityFilter:[TypeOfEntityFilterInput!],
