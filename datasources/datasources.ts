@@ -18,8 +18,8 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
-export async function getEntitiesCountData(entitiesId: [string] = null) {
-	var query = {
+export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: [string] = null, itemsPagination: any = null) {
+	const query = {
 		index: 'cultural_objects',
 		body: {
 			"aggs": {
@@ -31,24 +31,52 @@ export async function getEntitiesCountData(entitiesId: [string] = null) {
 						"doc_per_entities": {
 							"terms": {
 								"min_doc_count": 1,
-								"script": " '{\"id\":\"' + doc['connectedEntities.id'].value + '\", \"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":{\"configKey\":\"' +  doc['connectedEntities.typeOfEntity.configKey'].value + '\", \"label\":\"' + doc['connectedEntities.typeOfEntity.label'].value + '\", \"id\":\"' + doc['connectedEntities.typeOfEntity.id'].value + '\"}}'",
+								"script": "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":{\"configKey\":\"' + doc['connectedEntities.typeOfEntity.configKey'].value + '\", \"label\":\"' + doc['connectedEntities.typeOfEntity.label'].value + '\", \"id\":\"' + doc['connectedEntities.typeOfEntity.id'].value + '\"}}'",
 								"size": 10000
 							}
 						}
 					}
 				}
 			},
-			"size": 0
+			"script_fields": {
+				"typeOfEntitiesCount": {
+					"script": {
+						"source": "def list = new HashMap(); for (type in params['_source'].connectedEntities) { def key = type.typeOfEntity.configKey; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = new HashMap(); list[key]['type']['configKey'] = type.typeOfEntity.configKey; list[key]['type']['id'] = type.typeOfEntity.id; list[key]['type']['label'] = type.typeOfEntity.label}} return list;"
+					}
+				}
+			},
+			"stored_fields": [
+				"_source"
+			]
 		}
 	}
 
-	if (entitiesId != null && entitiesId.length > 0) {
-		var matchQuery = {
-			"bool": {
-				"must": []
+	const matchQuery = {
+		"bool": {
+			"must": []
+		}
+	}
+
+	if (typeOfEntityList != null && typeOfEntityList.length > 0) {
+		for (const type of typeOfEntityList) {
+			if (type.enabled) {
+				const filter = {
+					"nested": {
+						"path": "connectedEntities",
+						"query": {
+							"term": {
+								"connectedEntities.typeOfEntity.id": type.typeOfEntityId
+							}
+						}
+					}
+				}
+				matchQuery.bool.must.push(filter)
 			}
 		}
-		for (const entityId of entitiesId) {
+	}
+
+	if (entityIds != null && entityIds.length > 0) {
+		for (const entityId of entityIds) {
 			const filter = {
 				"nested": {
 					"path": "connectedEntities",
@@ -61,17 +89,64 @@ export async function getEntitiesCountData(entitiesId: [string] = null) {
 			}
 			matchQuery.bool.must.push(filter)
 		}
+	}
+
+	if (itemsPagination) {
+		query.body['size'] = itemsPagination.limit
+		query.body['from'] = itemsPagination.offset
+	}
+
+	if (matchQuery.bool.must.length > 0) {
 		query.body['query'] = matchQuery
 	}
 
 	const body = await search(query)
-	var res = body.aggregations.entities.doc_per_entities.buckets
-	res = res.map((x: any) => {
-		x.entity = JSON.parse(x.key)
-		x.count = x.doc_count
-		delete x.key
-		delete x.doc_count
-		return x
+
+	var items = body.hits.hits.map(x => {
+		var list = []
+		const object = x.fields.typeOfEntitiesCount[0]
+		for (const prop in object) {
+			if (object.hasOwnProperty(prop)) {
+				list.push(object[prop])
+			}
+		}
+		const res = {
+			item: x._source,
+			relatedTOEData: list
+		}
+		return res
 	})
-	return res;
+
+	const buckets = body.aggregations.entities.doc_per_entities.buckets
+	const tOEList = {}
+
+	buckets.forEach(x => {
+		const obj = {
+		entity: JSON.parse(x.key),
+		count: x.doc_count
+		}
+		const tOEId = obj.entity.typeOfEntity.id
+		if (tOEList[tOEId]){
+			tOEList[tOEId].countData.count += obj.count
+			tOEList[tOEId].entitiesCountData.push(obj)
+		} else {
+			tOEList[tOEId] = {
+				countData: {
+					count: obj.count,
+					type: obj.entity.typeOfEntity
+				},
+				entitiesCountData: [obj]
+			}
+		}
+	});
+
+	const entitiesData = []
+
+	for (const prop in tOEList) {
+		if (tOEList.hasOwnProperty(prop)) {
+			entitiesData.push(tOEList[prop])
+		}
+	}
+
+	return { itemsPagination: { items: items, totalCount: body.hits.count }, entitiesData: entitiesData };
 }
