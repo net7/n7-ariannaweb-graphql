@@ -28,7 +28,7 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 						"path": "connectedEntities"
 					},
 					"aggs": {
-						"doc_per_entities": {
+						"docsPerEntity": {
 							"terms": {
 								"min_doc_count": 1,
 								"script": "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":{\"configKey\":\"' + doc['connectedEntities.typeOfEntity.configKey'].value + '\", \"label\":\"' + doc['connectedEntities.typeOfEntity.label'].value + '\", \"id\":\"' + doc['connectedEntities.typeOfEntity.id'].value + '\"}}'",
@@ -101,7 +101,7 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 	}
 
 	const body = await search(query)
-	const buckets = body.aggregations.entities.doc_per_entities.buckets
+	const buckets = body.aggregations.entities.docsPerEntity.buckets
 	const tOEDict = {}
 	
 	const results = await Promise.all([
@@ -125,9 +125,11 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 		count: x.doc_count
 		}
 		const tOEId = obj.entity.typeOfEntity.id
-		if (tOEDict[tOEId]){
-			tOEDict[tOEId].countData.count += obj.count
-			tOEDict[tOEId].entitiesCountData.push(obj)
+		const tOE = tOEDict[tOEId]
+		if (tOE){
+			if (tOE.countData.count < obj.count)
+				tOE.countData.count += obj.count
+			tOE.entitiesCountData.push(obj)
 		} else {
 			tOEDict[tOEId] = {
 				countData: {
