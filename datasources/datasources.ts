@@ -128,7 +128,7 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 		const tOE = tOEDict[tOEId]
 		if (tOE){
 			if (tOE.countData.count < obj.count)
-				tOE.countData.count += obj.count
+				tOE.countData.count = obj.count
 			tOE.entitiesCountData.push(obj)
 		} else {
 			tOEDict[tOEId] = {
