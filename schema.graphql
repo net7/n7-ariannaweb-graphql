@@ -36,7 +36,6 @@ type BasicInfo {
     value: String!
 }
 
-
 """ An basic item (such as: "Genova, la sopraelevata", etc...)"""
 type Item {
     id: ID!
@@ -52,8 +51,6 @@ type Item {
     similarItems: [ItemListing!]
     breadcrumbs: [LinkElement!]
 }
-
-
 
 """ Data about an Item necessary to present in a concise listing"""
 type ItemListing {
@@ -96,17 +93,17 @@ type EntityCountData {
     count: Int!
 }
 
-""" Data about the typeOfEntity filter, cointains counting data about the type of entity
-    alongise some entities' count data 
-    (Note: the number of these entities has jet to be decided)"""
-type TypeOfEntityFilterData {
-    countData: TypeOfEntityCountData!
-    entitiesCountData: [EntityCountData!]
-}
+# """ Data about the typeOfEntity filter, cointains counting data about the type of entity
+#     alongise some entities' count data 
+#     (Note: the number of these entities has jet to be decided)"""
+# type TypeOfEntityFilterData {
+#     countData: TypeOfEntityCountData!
+#     entitiesCountData: [EntityCountData!]
+# }
 
 """ Filter data used as the result of a global filer query """
 type GlobalFilterData {
-    entitiesData: [TypeOfEntityFilterData!]
+    entitiesData: [EntityCountData!]
     itemsPagination: ItemListingPaginationResult
 }
 
@@ -137,12 +134,9 @@ type ItemListingPaginationResult {
    items: [ItemListing!]
 }
 
-
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
-
-
 
 """ Input type used to perform filtering operations based on specified typeOfEntities """
 input TypeOfEntityFilterInput {
@@ -152,14 +146,11 @@ input TypeOfEntityFilterInput {
     enabled: Boolean!
 }
 
-
-
 """ Range of dates used for filtering results """
 input datesRangeInput {
     startDate: String!
     endDate: String!
 }
-
 
 """ Input type used to request items in a pagination manner """
 input PaginationInput {
@@ -169,13 +160,9 @@ input PaginationInput {
   limit: Int!  # size
 }
 
-
-
 #======================================================================================
 #                                QUERY DEFINITIONS
 #======================================================================================
-
-
 
 """Standard GraphQL Query type used to define the possible queries"""
 type Query {
@@ -189,10 +176,9 @@ type Query {
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
- globalFilter( typeOfEntityFilter:[TypeOfEntityFilterInput!],
-               selectedEntitiesIds: [ID!],
-               dateFilter: datesRangeInput,
-               itemsPagination: PaginationInput) : GlobalFilterData
+ globalFilter(selectedEntitiesIds: [ID!],
+            dateFilter: datesRangeInput,
+            itemsPagination: PaginationInput) : GlobalFilterData
 
  """ Returns the details specific to a single item """
  getItem(itemId: ID!, maxSimilarItems: Int): Item
