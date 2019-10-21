@@ -18,7 +18,7 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
-export async function getItemsFiltered(entityIds: [string] = null, itemsPagination: any = null) {
+export async function getItemsFiltered(entityIds: [string] = null, itemsPagination: any = null, entitiesListSize: number = null) {
 	const query = {
 		index: 'cultural_objects',
 		body: {
@@ -76,6 +76,10 @@ export async function getItemsFiltered(entityIds: [string] = null, itemsPaginati
 	if (itemsPagination) {
 		query.body['size'] = itemsPagination.limit
 		query.body['from'] = itemsPagination.offset
+	}
+
+	if (entitiesListSize) {
+		query.body.aggs.entities.aggs.docsPerEntity.terms.size = entitiesListSize
 	}
 
 	if (matchQuery.bool.must.length > 0) {
