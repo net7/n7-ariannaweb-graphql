@@ -18,6 +18,97 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
+export async function autocomplete(input: string, itemsPagination: any = null, typeOfConfigKey: string) {
+	const query = {
+		index: 'entities',
+		body: {
+			"query": {
+				"bool": {
+					"must": [
+						{
+							"term": {
+								"typeOfEntity.configKey": typeOfConfigKey
+							}
+						},
+						{
+							"query_string": {
+								"query": "*" + input.trim() + "*",
+								"default_field": "label"
+							}
+						}
+					]
+				}
+			}
+		}
+	}
+
+	const query2 = {
+		index: 'cultural_objects',
+		body: {
+			"query": {
+				"nested": {
+					"path": "connectedEntities",
+					"query": {
+						"bool": {
+							"must": [
+								{
+									"term": {
+										"connectedEntities.typeOfEntity.configKey": typeOfConfigKey
+									}
+								},
+								{
+									"query_string": {
+										"query": "*" + input.trim() + "*",
+										"default_field": "connectedEntities.label"
+									}
+								}
+							]
+						}
+					}
+				}
+			},
+			"aggs": {
+				"entities": {
+					"nested": {
+						"path": "connectedEntities"
+					},
+					"aggs": {
+						"docsPerEntity": {
+							"terms": {
+								"min_doc_count": 1,
+								"field": "connectedEntities.id",
+								"size": 10000
+							}
+						}
+					}
+				}
+			},
+			"size": 0
+		}
+	}
+
+	if (itemsPagination) {
+		query2.body['size'] = itemsPagination.limit
+		query2.body['from'] = itemsPagination.offset
+	}
+
+	const entityHashMap = {}
+
+	const body = await Promise.all(
+		[search(query), search(query2).then(res => res.aggregations.
+			entities.docsPerEntity.buckets.forEach(x => {
+				entityHashMap[x.key] = x.doc_count
+			}))])
+	const total = body[0].hits.total
+	const results = body[0].hits.hits.map(x => {
+		return {
+			entity: x._source,
+			count: entityHashMap[x._source.id]
+		}
+	});
+	return { totalCount: total, entities: results }
+}
+
 export async function getItemsFiltered(entityIds: [string] = null, itemsPagination: any = null, entitiesListSize: number = null) {
 	const query = {
 		index: 'cultural_objects',
