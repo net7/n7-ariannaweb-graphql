@@ -178,7 +178,8 @@ type Query {
  typeofentity-facets, bubblechart and items)"""
  globalFilter(selectedEntitiesIds: [ID!],
             dateFilter: datesRangeInput,
-            itemsPagination: PaginationInput) : GlobalFilterData
+            itemsPagination: PaginationInput
+            entitiesListSize: Int) : GlobalFilterData
 
  """ Returns the details specific to a single item """
  getItem(itemId: ID!, maxSimilarItems: Int): Item
