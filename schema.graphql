@@ -93,13 +93,6 @@ type EntityCountData {
     count: Int!
 }
 
-# """ Data about the typeOfEntity filter, cointains counting data about the type of entity
-#     alongise some entities' count data 
-#     (Note: the number of these entities has jet to be decided)"""
-# type TypeOfEntityFilterData {
-#     countData: TypeOfEntityCountData!
-#     entitiesCountData: [EntityCountData!]
-# }
 
 """ Filter data used as the result of a global filer query """
 type GlobalFilterData {
@@ -132,6 +125,11 @@ type ItemListingPaginationResult {
    """ subset of the totalCount itemListings which have been requested
    by the query's pagination section """
    items: [ItemListing!]
+}
+
+type EntityListingPaginationResult {
+    totalCount: Int!
+    entities: [EntityCountData!]
 }
 
 #======================================================================================
@@ -200,8 +198,8 @@ type Query {
     input: String!
     ### , autoCompleteOptions (<--- to add?)
     itemsPagination: PaginationInput
-    typeOfConfigKey:  String
- ): ItemListingPaginationResult!
+    typeOfConfigKey:  String!
+ ): EntityListingPaginationResult!
 
 }
 
