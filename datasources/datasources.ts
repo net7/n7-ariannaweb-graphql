@@ -18,7 +18,7 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
-export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: [string] = null, itemsPagination: any = null) {
+export async function getItemsFiltered(entityIds: [string] = null, itemsPagination: any = null) {
 	const query = {
 		index: 'cultural_objects',
 		body: {
@@ -57,24 +57,6 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 		}
 	}
 
-	if (typeOfEntityList != null && typeOfEntityList.length > 0) {
-		for (const type of typeOfEntityList) {
-			if (type.enabled) {
-				const filter = {
-					"nested": {
-						"path": "connectedEntities",
-						"query": {
-							"term": {
-								"connectedEntities.typeOfEntity.id": type.typeOfEntityId
-							}
-						}
-					}
-				}
-				matchQuery.bool.must.push(filter)
-			}
-		}
-	}
-
 	if (entityIds != null && entityIds.length > 0) {
 		for (const entityId of entityIds) {
 			const filter = {
@@ -102,53 +84,29 @@ export async function getItemsFiltered(typeOfEntityList: any = null, entityIds: 
 
 	const body = await search(query)
 	const buckets = body.aggregations.entities.docsPerEntity.buckets
-	const tOEDict = {}
-	
+
 	const results = await Promise.all([
-	body.hits.hits.map(x => {
-		var list = []
-		const object = x.fields.typeOfEntitiesCount[0]
-		for (const prop in object) {
-			if (object.hasOwnProperty(prop)) {
-				list.push(object[prop])
+		body.hits.hits.map(x => {
+			var list = []
+			const object = x.fields.typeOfEntitiesCount[0]
+			for (const prop in object) {
+				if (object.hasOwnProperty(prop)) {
+					list.push(object[prop])
+				}
 			}
-		}
-		const res = {
-			item: x._source,
-			relatedTOEData: list
-		}
-		return res
-	}),
-	buckets.forEach(x => {
-		const obj = {
-		entity: JSON.parse(x.key),
-		count: x.doc_count
-		}
-		const tOEId = obj.entity.typeOfEntity.id
-		const tOE = tOEDict[tOEId]
-		if (tOE){
-			if (tOE.countData.count < obj.count)
-				tOE.countData.count = obj.count
-			tOE.entitiesCountData.push(obj)
-		} else {
-			tOEDict[tOEId] = {
-				countData: {
-					count: obj.count,
-					type: obj.entity.typeOfEntity
-				},
-				entitiesCountData: [obj]
+			const res = {
+				item: x._source,
+				relatedTOEData: list
 			}
-		}
-	}),
-])
+			return res
+		}),
+		buckets.map(x => {
+			return {
+				entity: JSON.parse(x.key),
+				count: x.doc_count
+			}
+		}),
+	])
 
-const entitiesData = []
-
-for (const prop in tOEDict) {
-	if (tOEDict.hasOwnProperty(prop)) {
-		entitiesData.push(tOEDict[prop])
-	}
-}
-
-	return { itemsPagination: { items: results[0], totalCount: body.hits.count }, entitiesData: entitiesData };
+	return { itemsPagination: { items: results[0], totalCount: body.hits.count }, entitiesData: results[1] };
 }
