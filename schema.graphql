@@ -35,7 +35,7 @@ type BasicEntity {
 its value both represented as strings
 (such as : key:'Autore',value:'Mimmo Jodice') """
 type BasicInfo {
-    key: String!
+    key: String
     value: String!
 }
 
