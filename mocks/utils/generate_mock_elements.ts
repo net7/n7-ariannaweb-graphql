@@ -252,6 +252,7 @@ for (let i = 0; i < numOfAllItems; i++) {
   let infos = []
   if (metadataNumber > 0) {
     let info = {
+      key: null,
       value: Helpers.randomPick(allPossibleRandomItemAuthors)
     }
     if (Math.random() >= 0.33)
@@ -259,6 +260,7 @@ for (let i = 0; i < numOfAllItems; i++) {
     infos.push(info)
     for (let j = 1; j < metadataNumber; j++) {
       let info = {
+        key: null,
         value: Helpers.randomPick(allPossibleRandomItemShortDescription)
       }
       if (Math.random() >= 0.33)
