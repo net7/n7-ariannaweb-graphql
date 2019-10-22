@@ -88,8 +88,8 @@ export async function autocomplete(input: string, itemsPagination: any = null, t
 	}
 
 	if (itemsPagination) {
-		query2.body['size'] = itemsPagination.limit
-		query2.body['from'] = itemsPagination.offset
+		query.body['size'] = itemsPagination.limit
+		query.body['from'] = itemsPagination.offset
 	}
 
 	const entityHashMap = {}
