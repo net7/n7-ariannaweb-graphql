@@ -18,7 +18,7 @@ export async function getEntity(entityId: string) {
 	return res;
 }
 
-export async function autocomplete(input: string, itemsPagination: any = null, typeOfConfigKey: string) {
+export async function getEntitiesFiltered(input: string, itemsPagination: any = null, typeOfConfigKey: string) {
 	const query = {
 		index: 'entities',
 		body: {
