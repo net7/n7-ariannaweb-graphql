@@ -168,10 +168,6 @@ type Query {
  """ Returns all the types of entity present in the system """
  getAllTypesOfEntity: [TypeOfEntity!]!
 
- """ Restuns all the basic items present in the systems (those items are never
- used in this way in the application, this is a simple query used to testing the mocks)"""
- getItems: [Item!]
-
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
  globalFilter(selectedEntitiesIds: [ID!],
