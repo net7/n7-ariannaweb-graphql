@@ -72,7 +72,7 @@ const aggsNested = (buckets: string, path: string, aggs: any) => {
  * @param buckets buckets name
  * @param field field to aggregate
  * @param script script to aggregate field in a custom way 
- * @param size 
+ * @param size max number of buckets returned
  */
 const aggsTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000) => {
 	const x = {
