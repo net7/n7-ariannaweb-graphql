@@ -6,6 +6,7 @@ const externalResolvers = [entity].map(x => x.resolvers)
 
 export const resolvers = merge({
 	Query: {
+		getItem: async (parent, args, context, info) => await datasources.getItem(args.itemId),
 		autoComplete: async (parent, args, context, info) => await datasources.getEntitiesFiltered(args.input, args.itemsPagination, args.typeOfConfigKey),
 		globalFilter: async (parent, args, context, info) => await datasources.getItemsFiltered(args.selectedEntitiesIds, args.itemsPagination, args.entitiesListSize),
 		getEntity: async (parent, args, context, info) => await datasources.getEntity(args.entityId)

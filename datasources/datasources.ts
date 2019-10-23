@@ -15,7 +15,29 @@ export async function getEntity(entityId: string) {
 	}
 	const body = await search(query)
 	const res = body['hit']['hit'].map(x => x['_source'])
-	return res;
+	if (res.length > 0)
+		return res[0];
+	else
+		return null;
+}
+
+export async function getItem(itemId: string) {
+	const query = {
+		index: 'cultural_objects',
+		body: {
+			query: {
+				match: {
+					id: itemId
+				}
+			}
+		}
+	}
+	const body = await search(query)
+	const res = body['hit']['hit'].map(x => x['_source'])
+	if (res.length > 0)
+		return res[0];
+	else
+		return null;
 }
 
 export async function getEntitiesFiltered(input: string, itemsPagination: any = null, typeOfConfigKey: string) {
