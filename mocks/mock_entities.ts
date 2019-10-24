@@ -12,7 +12,7 @@ export function makeRandomBasicEntityId():string{
 
 export function getBasicEntityById(id:string){
   for(var i=0;i<allRandomBasicEntities.length;i++){
-    if(allRandomBasicEntities[i].id===id)
+    if(allRandomBasicEntities[i].id === id)
       return allRandomBasicEntities[i];
   }
   return null;
@@ -27,7 +27,7 @@ export function getRandomBasicEntity(){
 export function getRandomBasicEntityFromType(toe:any){
   let possibleResults = [];
   for(var i=0;i<allRandomBasicEntities.length;i++){
-    if(allRandomBasicEntities[i].typeOfEntity.id===toe.id)
+    if(allRandomBasicEntities[i].typeOfEntity === toe.id)
       possibleResults.push(allRandomBasicEntities[i]);
   }
   if(possibleResults) return randomPick(possibleResults);
@@ -39,13 +39,14 @@ export function getRandomBasicEntityFromType(toe:any){
 let allPossibleThumbnails = [];
 for(var i=30;i<150;i++) allPossibleThumbnails.push(`https://placeimg.com/${i}/${i}/any`);
 
+export const getAllEntities = () => allRandomBasicEntities.map(x => getEntity(x.id))
 
 export function getEntity(entityId:string){
-  let basicEntity = getBasicEntityById(entityId);
+  let basicEntity = getBasicEntityById(entityId)
   if(!basicEntity) return null;
 
   let entities = [];
-  const nBubbles = getRandomIntInclusive(30,70);
+  const nBubbles = getRandomIntInclusive(30,70)
   for(var i=0;i<nBubbles;i++){
     let eCdta = {
         entity: getRandomBasicEntity(),

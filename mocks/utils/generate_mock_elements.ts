@@ -2,7 +2,6 @@ import * as Helpers from '../helpers';
 
 import { makeRandomFieldGroups } from '../mock_fields';
 import { makeRandomBasicEntityId } from '../mock_entities';
-import { getAllTypesOfEntity, getTypesOfEntity } from '../mock_typesOfEntity';
 import { pickNDistinctPositiveIntegers } from '../helpers';
 
 
@@ -162,11 +161,11 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
 
 
 
-  function makeBasicEntity(typeOfEntity:any,label:string){
+  function makeBasicEntity(typeOfEntity: string, label: string){
     return {
         id: makeRandomBasicEntityId(),
-        label,
-        typeOfEntity
+        label: label,
+        typeOfEntity: typeOfEntity
     };
   }
 
@@ -176,25 +175,25 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
 
   let allRandomBasicEntities = [];
 
-  const peopleToe = getTypesOfEntity('toe-people');
+  const peopleToe = 'Persone';
   allPossiblePeopleEntityLabels.forEach( (label) => {
     allRandomBasicEntities.push(makeBasicEntity(peopleToe,label));
   });
 
 
-  const placesToe = getTypesOfEntity('toe-places');
+  const placesToe = 'Luoghi'
   allPossiblePlacesEntityLabels.forEach( (label) => {
     allRandomBasicEntities.push(makeBasicEntity(placesToe,label));
   });
 
-  const conceptsToe = getTypesOfEntity('toe-concepts');
+  const conceptsToe = 'Concetti';
   allPossibleConceptsEntityLabels.forEach( (label) => {
     allRandomBasicEntities.push(makeBasicEntity(conceptsToe,label));
   });
 
-  const oranizToe = getTypesOfEntity('toe-organizations');
+  const organizToe = 'Organizzazioni'
   allPossibleOrganizationsEntityLabels.forEach( (label) => {
-    allRandomBasicEntities.push(makeBasicEntity(oranizToe,label));
+    allRandomBasicEntities.push(makeBasicEntity(organizToe,label));
   });
 
 

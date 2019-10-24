@@ -16,7 +16,8 @@ export const mocks = {
     getEntity: (_,args) => Mock_Entities.getEntity(args.entityId),
     getTreeOfItems: (_,args) => Mock_Trees.getTreeOfItems(args.treeId),
     globalFilter: (_,args) => Mock_Filters.getGlobalFilterResult( args ),
-    autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args )
+    autoComplete: (_,args) => Mock_Autocomplete.autocomplete( args ),
+    getAllEntities: () => Mock_Entities.getAllEntities()
   }),
   Mutation: () => ({
   })
