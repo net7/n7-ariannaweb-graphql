@@ -8,8 +8,8 @@ export async function getEntity(entityId: string) {
 	if (entityId == null || entityId === '')
 		return null
 
-	const query = el.queryBuilder('entities', el.queryTerm({ id: entityId }))
-	const body = await el.search(query)
+	const request = el.requestBuilder('entities', el.queryTerm({ id: entityId }))
+	const body = await el.search(request)
 	const res = body.hits.hits
 	if (res.length > 0)
 		return res[0]._source;
@@ -22,8 +22,8 @@ export async function getEntity(entityId: string) {
  * @param itemId item Id to recall corresponding item
  */
 export async function getItem(itemId: string) {
-	const query = el.queryBuilder('cultural_objects', el.queryTerm({ id: itemId }))
-	const body = await el.search(query)
+	const request = el.requestBuilder('cultural_objects', el.queryTerm({ id: itemId }))
+	const body = await el.search(request)
 	const res = body.hits.hits
 	if (res.length > 0)
 		return res[0]._source;
@@ -42,7 +42,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
 	const q1 = el.queryTerm({ "typeOfEntity.configKey": typeOfConfigKey })
 	const q2 = el.queryString({ field: 'label', value: input })
 	const bools = el.queryBool([q1.query, q2])
-	const query = el.queryBuilder('entities', {
+	const request = el.requestBuilder('entities', {
 		query: bools.query,
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
@@ -55,7 +55,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
 	const agg = el.aggsTerms('docsPerEntity', "connectedEntities.id")
 	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
 
-	const query2 = el.queryBuilder('cultural_objects', {
+	const request2 = el.requestBuilder('cultural_objects', {
 		query: quNes.query,
 		aggs: agNes.aggs,
 		size: 0
@@ -64,7 +64,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
 	const entityHashMap = {}
 
 	const res = await Promise.all(
-		[el.search(query), el.search(query2).then(res => res.aggregations.
+		[el.search(request), el.search(request2).then(res => res.aggregations.
 			entities.docsPerEntity.buckets.forEach(x => {
 				entityHashMap[x.key] = x.doc_count
 			}))])
@@ -104,12 +104,12 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: { l
 		for (const entityId of entityIds) {
 			entities.push(el.queryNested("connectedEntities", el.queryTerm({ "connectedEntities.id": entityId })).query)
 		}
-		body['query'] = el.queryBool(entities)
+		body['query'] = el.queryBool(entities).query
 	}
 
-	const query = el.queryBuilder('cultural_objects', body)
+	const request = el.requestBuilder('cultural_objects', body)
 
-	const res = await el.search(query)
+	const res = await el.search(request)
 	const buckets = res.aggregations.entities.docsPerEntity.buckets
 
 	const results = await Promise.all([
@@ -135,5 +135,5 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: { l
 		}),
 	])
 
-	return { itemsPagination: { items: results[0], totalCount: res.hits.count }, entitiesData: results[1] };
+	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, entitiesData: results[1] };
 }
