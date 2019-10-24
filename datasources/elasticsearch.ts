@@ -5,10 +5,10 @@ const client = new Client({ node: addr, auth: auth, ssl: { rejectUnauthorized: f
 
 /**
  * 
- * @param body http body request for elasticsearch query
+ * @param request http body request for elasticsearch query
  */
-export async function search(body: any) {
-	const { body: res } = await client.search(body)
+export async function search(request: {index: string, body: any}) {
+	const { body: res } = await client.search(request)
 	return res;
 }
 
@@ -17,7 +17,7 @@ export async function search(body: any) {
  * @param index index name
  * @param body http body for a query request
  */
-export const queryBuilder = (index: string, body: any) => {
+export const requestBuilder = (index: string, body: any) => {
 	const x = {
 		index: index,
 		body: body
