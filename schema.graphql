@@ -2,13 +2,6 @@
 #                                DATA TYPES
 #======================================================================================
 
-""" A generic type of entity (such as: 'persone', 'luoghi', etc...) """
-type TypeOfEntity {
-    id: ID!
-    label: String!
-    configKey: String
-}
-
 """ WikiTab Entity """
 type WikiTab {
     text: String
@@ -19,13 +12,13 @@ type WikiTab {
 type Entity {
     id: ID!
     label: String!
-    typeOfEntity: TypeOfEntity!
+    typeOfEntity: String!
     overviewTab: String
+    extraTab: String
+    wikiTab: WikiTab
     fieldsTab: [KeyValueFieldGroup!]
     items: [ItemListing!]
     entities: [EntityCountData!]
-    extraTab: String
-    wikiTab: WikiTab
 }
 
 """ A pair of strings, of which the first is a key and the second is
@@ -59,7 +52,6 @@ type ItemListing {
     relatedTOEData: [TypeOfEntityCountData!]
     """ optionally an Item listing could need to be cathegorized in
     a specific typeOfEntity """
-    typeOfEntity: TypeOfEntity
     breadcrumbs: [LinkElement!]
 }
 
@@ -83,7 +75,7 @@ type KeyValueFieldGroup {
 """ Used to associate a typeOfEntity with a count/number (as: "People, 6" or "Organizzazioni, 12") 
 optionally can be enabled or disabled """
 type TypeOfEntityCountData {
-    type: TypeOfEntity!
+    type: String!
     count: Int!
 }
 
@@ -136,14 +128,6 @@ type EntityListingPaginationResult {
 #                                INPUT TYPES
 #======================================================================================
 
-""" Input type used to perform filtering operations based on specified typeOfEntities """
-input TypeOfEntityFilterInput {
-    typeOfEntityId: ID!
-    """ the type of entity can be present but not enabled, for example for updating a global
-    count but not presenting its sepcific items"""
-    enabled: Boolean!
-}
-
 """ Range of dates used for filtering results """
 input datesRangeInput {
     startDate: String!
@@ -166,7 +150,7 @@ input PaginationInput {
 type Query {
 
  """ Returns all the types of entity present in the system """
- getAllTypesOfEntity: [TypeOfEntity!]!
+ getAllTypesOfEntity: [String!]!
 
  """ Returns all the values needed to represent the main section of the homepage (meaning the
  typeofentity-facets, bubblechart and items)"""
@@ -177,6 +161,9 @@ type Query {
 
  """ Returns the details specific to a single item """
  getItem(itemId: ID!, maxSimilarItems: Int): Item
+
+ """ Returns all Entities (Only for Debug) """
+ getAllEntities: [Entity]!
 
  """ Returns the details specific to a single entity """
  getEntity(entityId: ID!): Entity
@@ -194,7 +181,7 @@ type Query {
     input: String!
     ### , autoCompleteOptions (<--- to add?)
     itemsPagination: PaginationInput
-    typeOfConfigKey:  String!
+    typeOfEntity:  String!
  ): EntityListingPaginationResult!
 
 }
