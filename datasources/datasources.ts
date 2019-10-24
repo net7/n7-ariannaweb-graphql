@@ -37,9 +37,9 @@ export async function getItem(itemId: string) {
  * @param itemsPagination object containing pagination parameter
  * @param typeOfConfigKey category where to searh entities with names similar to input
  */
-export async function getEntitiesFiltered(input: string, itemsPagination: { limit: number, offset: number } = { limit: 100000, offset: 0 }, typeOfConfigKey: string) {
+export async function getEntitiesFiltered(input: string, itemsPagination: { limit: number, offset: number } = { limit: 100000, offset: 0 }, typeOfEntity: string) {
 
-	const q1 = el.queryTerm({ "typeOfEntity.configKey": typeOfConfigKey })
+	const q1 = el.queryTerm({ "typeOfEntity": typeOfEntity })
 	const q2 = el.queryString({ field: 'label', value: input })
 	const bools = el.queryBool([q1.query, q2])
 	const request = el.requestBuilder('entities', {
@@ -48,7 +48,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
 		from: itemsPagination.offset
 	})
 
-	const q3 = el.queryTerm({ "connectedEntities.typeOfEntity.configKey": typeOfConfigKey })
+	const q3 = el.queryTerm({ "connectedEntities.typeOfEntity": typeOfEntity })
 	const q4 = el.queryString({ field: 'connectedEntities.label', value: input })
 	const bools2 = el.queryBool([q3.query, q4])
 	const quNes = el.queryNested('connectedEntities', bools2)
@@ -86,10 +86,10 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
  */
 export async function getItemsFiltered(entityIds: [string], itemsPagination: { limit: number, offset: number } = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000) {
 
-	const script = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":{\"configKey\":\"' + doc['connectedEntities.typeOfEntity.configKey'].value + '\", \"label\":\"' + doc['connectedEntities.typeOfEntity.label'].value + '\", \"id\":\"' + doc['connectedEntities.typeOfEntity.id'].value + '\"}}'"
+	const script = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":\"' + doc['connectedEntities.typeOfEntity'].value + '\"}'"
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
 	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
-	const source = "def list = new HashMap(); for (type in params['_source'].connectedEntities) { def key = type.typeOfEntity.configKey; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = new HashMap(); list[key]['type']['configKey'] = type.typeOfEntity.configKey; list[key]['type']['id'] = type.typeOfEntity.id; list[key]['type']['label'] = type.typeOfEntity.label}} return list;"
+	const source = "def list = new HashMap(); for (type in params['_source'].connectedEntities) { def key = type.typeOfEntity; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type.typeOfEntity; }} return list;"
 	const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
