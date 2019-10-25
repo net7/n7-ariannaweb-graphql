@@ -5,11 +5,15 @@ class Pagination {
 	limit: number
 }
 
+const scriptEntityFields = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":\"' + doc['connectedEntities.typeOfEntity'].value + '\"}'"
+
 /**
  * 
- * @param entityId entity Id to recall corresponding entity
+ * @param entityId entity Id to recall corresponding entity, items connected and entities related
+ * @param itemsPagination object containing items pagination parameter
+ * @param entitiesListSize entityList size to return 
  */
-export async function getEntity(entityId: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }) {
+export async function getEntity(entityId: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000) {
 	if (entityId == null || entityId === '')
 		return null
 
@@ -19,15 +23,29 @@ export async function getEntity(entityId: string, itemsPagination: Pagination = 
 	//get items connected to the Entity
 	const q1 = el.queryTerm({ 'connectedEntities.id': entityId })
 	const quNes = el.queryNested('connectedEntities', q1)
+	const script = scriptEntityFields
+	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
+	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
+
 	const req2 = el.requestBuilder('cultural_objects', {
 		query: quNes.query,
-		from: itemsPagination.offset,
-		size: itemsPagination.limit
+		aggs: agNes.aggs,
+		size: itemsPagination.limit,
+		from: itemsPagination.offset
 	})
-
+	var entities = []
 	const results = await Promise.all(
-		[el.search(req1).then(x => x.hits.hits.length > 0 ? x.hits.hits[0]._source : null), el.search(req2).then(x => x.hits.hits.map(y => { return { item: y._source } }))])
+		[el.search(req1).then(x => x.hits.hits.length > 0 ? x.hits.hits[0]._source : null), el.search(req2).then(x => {
+			entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
+				return {
+					entity: JSON.parse(x.key),
+					count: x.doc_count
+				}
+			})
+			return x.hits.hits.map(y => { return { item: y._source } })
+		})])
 	results[0]['items'] = results[1]
+	results[0]['entities'] = entities
 	return results[0]
 }
 
@@ -100,7 +118,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Pagina
  */
 export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000) {
 
-	const script = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":\"' + doc['connectedEntities.typeOfEntity'].value + '\"}'"
+	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
 	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
 	const source = "def list = new HashMap(); for (type in params['_source'].connectedEntities) { def key = type.typeOfEntity; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type.typeOfEntity; }} return list;"
