@@ -163,7 +163,7 @@ type Query {
  getAllEntities: [Entity]!
 
  """ Returns the details specific to a single entity """
- getEntity(entityId: ID!, itemsPagination: PaginationInput, entityListSize: Int): Entity
+ getEntity(entityId: ID!, itemsPagination: PaginationInput, entitiesListSize: Int): Entity
 
  """ Returns a tree (there are two notable points in this query, 1. the maximum depth of the
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
