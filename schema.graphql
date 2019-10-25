@@ -49,10 +49,8 @@ type Item {
 type ItemListing {
     item: Item!
     thumbnail: String
-    relatedTOEData: [TypeOfEntityCountData!]
-    """ optionally an Item listing could need to be cathegorized in
-    a specific typeOfEntity """
-    breadcrumbs: [LinkElement!]
+    relatedTypesOfEntity: [TypeOfEntityCountData!]
+    # breadcrumbs: [LinkElement!]
 }
 
 """ Data containing an id, as a reference and a key-value pair, to be used
@@ -84,7 +82,6 @@ type EntityCountData {
     entity: Entity!
     count: Int!
 }
-
 
 """ Filter data used as the result of a global filer query """
 type GlobalFilterData {
@@ -166,7 +163,7 @@ type Query {
  getAllEntities: [Entity]!
 
  """ Returns the details specific to a single entity """
- getEntity(entityId: ID!): Entity
+ getEntity(entityId: ID!, itemsPagination: PaginationInput): Entity
 
  """ Returns a tree (there are two notable points in this query, 1. the maximum depth of the
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
