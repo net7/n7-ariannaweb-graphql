@@ -1,20 +1,34 @@
 import * as el from "./elasticsearch"
 
+class Pagination {
+	offset: number
+	limit: number
+}
+
 /**
  * 
  * @param entityId entity Id to recall corresponding entity
  */
-export async function getEntity(entityId: string) {
+export async function getEntity(entityId: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }) {
 	if (entityId == null || entityId === '')
 		return null
 
-	const request = el.requestBuilder('entities', el.queryTerm({ id: entityId }))
-	const body = await el.search(request)
-	const res = body.hits.hits
-	if (res.length > 0)
-		return res[0]._source;
-	else
-		return null;
+	//get entity by entityId
+	const req1 = el.requestBuilder('entities', el.queryTerm({ id: entityId }))
+
+	//get items connected to the Entity
+	const q1 = el.queryTerm({ 'connectedEntities.id': entityId })
+	const quNes = el.queryNested('connectedEntities', q1)
+	const req2 = el.requestBuilder('cultural_objects', {
+		query: quNes.query,
+		from: itemsPagination.offset,
+		size: itemsPagination.limit
+	})
+
+	const results = await Promise.all(
+		[el.search(req1).then(x => x.hits.hits.length > 0 ? x.hits.hits[0]._source : null), el.search(req2).then(x => x.hits.hits.map(y => { return { item: y._source } }))])
+	results[0]['items'] = results[1]
+	return results[0]
 }
 
 /**
@@ -37,7 +51,7 @@ export async function getItem(itemId: string) {
  * @param itemsPagination object containing pagination parameter
  * @param typeOfConfigKey category where to searh entities with names similar to input
  */
-export async function getEntitiesFiltered(input: string, itemsPagination: { limit: number, offset: number } = { limit: 100000, offset: 0 }, typeOfEntity: string) {
+export async function getEntitiesFiltered(input: string, itemsPagination: Pagination = { limit: 100000, offset: 0 }, typeOfEntity: string) {
 
 	const q1 = el.queryTerm({ "typeOfEntity": typeOfEntity })
 	const q2 = el.queryString({ field: 'label', value: input })
@@ -84,7 +98,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: { limi
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: { limit: number, offset: number } = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000) {
 
 	const script = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":\"' + doc['connectedEntities.typeOfEntity'].value + '\"}'"
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
@@ -123,7 +137,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: { l
 			}
 			const res = {
 				item: x._source,
-				relatedTOEData: list
+				relatedTypesOfEntity: list
 			}
 			return res
 		}),
