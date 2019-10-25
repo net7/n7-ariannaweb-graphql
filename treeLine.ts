@@ -10,7 +10,6 @@ const treeLine = [{ label: 'ciao', level: 0, position: 0 }, { label: 'sono', lev
 
 const root = treeLine.shift()
 
-var index = 1
 function buildTree(node: any, nodeList: any[]): any {
 	node['children'] = []
 	while (nodeList.length > 0 && nodeList[0].level > node.level) {
@@ -30,10 +29,12 @@ function serializeTree(node: any, nodeList: any[], level: number): any {
 	return nodeList
 }
 
+const util = require('util'
+)
 const tree = buildTree(root, treeLine)
-const nodeList = serializeTree(tree, [], 0)
-
-const util = require('util')
 
 console.log(util.inspect(tree, false, null, true /* enable colors */))
+
+const nodeList = serializeTree(tree, [], 0)
+
 console.log(util.inspect(nodeList, false, null, true /* enable colors */))
