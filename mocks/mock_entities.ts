@@ -24,10 +24,10 @@ export function getRandomBasicEntity(){
 }
 
 
-export function getRandomBasicEntityFromType(toe:any){
+export function getRandomBasicEntityFromType(toe: string){
   let possibleResults = [];
   for(var i=0;i<allRandomBasicEntities.length;i++){
-    if(allRandomBasicEntities[i].typeOfEntity === toe.id)
+    if(allRandomBasicEntities[i].typeOfEntity === toe)
       possibleResults.push(allRandomBasicEntities[i]);
   }
   if(possibleResults) return randomPick(possibleResults);
