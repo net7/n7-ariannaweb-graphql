@@ -4,7 +4,7 @@ import  { resolvers } from './resolvers/mainResolvers';
 
 const typeDefs = importSchema('./schema.graphql');
 
-import { mocks } from './mocks/mocks';
+//import { mocks } from './mocks/mocks';
 
 const server = new ApolloServer({
   typeDefs: typeDefs,
