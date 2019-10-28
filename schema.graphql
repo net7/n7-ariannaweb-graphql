@@ -157,7 +157,7 @@ type Query {
             entitiesListSize: Int) : GlobalFilterData
 
  """ Returns the details specific to a single item """
- getItem(itemId: ID!, maxSimilarItems: Int): Item
+ getItem(itemId: ID!, maxSimilarItems: Int, entitiesListSize: Int): Item
 
  """ Returns all Entities (Only for Debug) """
  getAllEntities: [Entity]!

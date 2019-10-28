@@ -52,22 +52,38 @@ export async function getEntity(entityId: string, itemsPagination: Pagination = 
 /**
  * 
  * @param itemId item Id to recall corresponding item
+ * @param maxSimilarItems object containing items pagination parameter
+ * @param entitiesListSize entityList size to return 
  */
-export async function getItem(itemId: string) {
+export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesListSize: number = 10000) {
+	if (itemId == null || itemId === '')
+		return null
+
 	const request = el.requestBuilder('cultural_objects', el.queryTerm({ id: itemId }))
-	const body = await el.search(request)
-	const res = body.hits.hits
-	if (res.length > 0)
-		return res[0]._source;
-	else
-		return null;
+	const hashMap = {}
+	const body = await el.search(request).then(x => x.hits.hits)
+
+	if (body.length > 0) {
+		let item = body[0]._source
+		const results = await Promise.all([
+			item.connectedEntities.forEach(x => hashMap[x.id] = x),
+			getItemsFiltered(null, { limit: 0, offset: 0 }, 10000).then(x => x.entitiesData)
+		])
+		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
+		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
+		 { limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
+		item['connectedEntities'] = results[1]
+		item['similarItems'] = result
+		return item
+	}
+	return null;
 }
 
 /**
  * 
  * @param input string to search in a label field of an entity
  * @param itemsPagination object containing pagination parameter
- * @param typeOfConfigKey category where to searh entities with names similar to input
+ * @param typeOfEntity category where to searh entities with names similar to input
  */
 export async function getEntitiesFiltered(input: string, itemsPagination: Pagination = { limit: 100000, offset: 0 }, typeOfEntity: string) {
 
@@ -116,7 +132,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Pagina
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
 	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
@@ -145,7 +161,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const buckets = res.aggregations.entities.docsPerEntity.buckets
 
 	const results = await Promise.all([
-		res.hits.hits.map(x => {
+		res.hits.hits.filter(x => x._source.id === itemIdToDiscard ? false : true).map(x => {
 			var list = []
 			const object = x.fields.typeOfEntitiesCount[0]
 			for (const prop in object) {
