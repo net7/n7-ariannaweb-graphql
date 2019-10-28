@@ -71,7 +71,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 		])
 		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
-		 { limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
+			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
 		item['connectedEntities'] = results[1]
 		item['similarItems'] = result
 		return item
