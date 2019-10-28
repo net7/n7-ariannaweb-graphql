@@ -29,8 +29,7 @@ function serializeTree(node: any, nodeList: any[], level: number): any {
 	return nodeList
 }
 
-const util = require('util'
-)
+const util = require('util')
 const tree = buildTree(root, treeLine)
 
 console.log(util.inspect(tree, false, null, true /* enable colors */))
