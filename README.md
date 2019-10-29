@@ -38,6 +38,6 @@ In this mode the Apollo server will be restarted each time one of the aformentio
 This (github) repository has been set with Zeit.co integration system, meaning that pushing (or merging) onto the repository updates the Zeit project deployment (which can be used as temporary deploy during development).
 
 Pushing (or merging) to the *master* branch updates the project present at: 
- https://n7-ariannaweb-graphql.net7.now.sh whilst pushing (or merging) to the *develop* branch updates the one present at: https://n7-ariannaweb-graphql-git-develop.net7.now.sh/. Branch resolver-elasticsearch-homepage: https://n7-ariannaweb-graphql-cwzx2ejfn.now.sh/.
+ https://n7-ariannaweb-graphql.net7.now.sh
 
  *(Note: to change the Zeit project's settings and integration access Zeit.co using the official **Net7** github account)*
