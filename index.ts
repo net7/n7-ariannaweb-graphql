@@ -2,7 +2,9 @@ const { ApolloServer } = require('apollo-server');
 const { importSchema } = require('graphql-import');
 import  { resolvers } from './resolvers/mainResolvers';
 
-const typeDefs = importSchema('./schema.graphql');
+var path = require ( 'path' );
+
+const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
 
 //import { mocks } from './mocks/mocks';
 
