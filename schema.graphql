@@ -17,7 +17,7 @@ type Entity {
     extraTab: String
     wikiTab: WikiTab
     fieldsTab: [KeyValueFieldGroup!]
-    items: [ItemListing!]
+    items: [ItemListing!] # related items
     entities: [EntityCountData!]
 }
 
@@ -41,7 +41,7 @@ type Item {
     text: String
     fields: [KeyValueFieldGroup!]
     connectedEntities: [EntityCountData!]
-    similarItems: [ItemListing!]
+    items: [ItemListing!] # items
     breadcrumbs: [LinkElement!]
 }
 

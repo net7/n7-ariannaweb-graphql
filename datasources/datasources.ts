@@ -60,10 +60,10 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 		return null
 
 	const request = el.requestBuilder('cultural_objects', el.queryTerm({ id: itemId }))
-	const hashMap = {}
 	const body = await el.search(request).then(x => x.hits.hits)
-
+	
 	if (body.length > 0) {
+		const hashMap = {}
 		let item = body[0]._source
 		const results = await Promise.all([
 			item.connectedEntities.forEach(x => hashMap[x.id] = x),
@@ -73,7 +73,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
 			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
 		item['connectedEntities'] = results[1]
-		item['similarItems'] = result
+		item['items'] = result
 		return item
 	}
 	return null;
