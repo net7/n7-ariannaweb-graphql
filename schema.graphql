@@ -210,7 +210,7 @@ input SearchResults {
 
 input SearchParameters {
     totalCount: Int!
-    facets: [Facet!]
+    facets: [SearchFacet!]
     fields: [SearchField!]!
     results: SearchResults!
     page: Page 
