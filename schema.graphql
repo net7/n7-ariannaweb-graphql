@@ -132,11 +132,88 @@ input datesRangeInput {
 }
 
 """ Input type used to request items in a pagination manner """
-input PaginationInput {
+input Page {
   """Offset for the pagination ("starting point" for the request)"""
   offset: Int! # from
   """Limit for the pagination ("length" for the request)"""
   limit: Int!  # size
+}
+
+
+input Tuple {
+    label: String!
+    value: String!
+}
+
+input SearchFacet {
+    id: String!
+    type: String!
+    data: [Tuple!]
+    operator: String
+    limit: Int
+    order: String # field name for ordering
+    metadata: [String]
+}
+
+input FieldHeader {
+    label: String!
+    classes: String!
+}
+
+input FilterConfigSearchIn {
+    key: String
+    operator: String
+}
+
+input InputFilterConfig {
+    searchIn: [FilterConfigSearchIn!]
+    delay: Int
+    minChars: Int
+    isArray: Boolean
+    limit: Int
+    context: String
+    target: String
+}
+
+input FieldInput {
+    type: String!
+    facetId: String!
+    placeholder: String
+    filterConfig: InputFilterConfig
+}
+
+input SearchField {
+    header: FieldHeader
+    inputs: [FieldInput!]
+}
+
+input ResultsOrder {
+    type: String!
+    key: String!
+    direction: String
+}
+
+input FieldsTitle {
+    highlight: Boolean
+    limit: Int
+}
+
+input ResultsFields {
+    title: FieldsTitle
+}
+
+input SearchResults {
+    order: ResultsOrder
+    fields: ResultsFields
+    items: [String]
+}
+
+input SearchParameters {
+    totalCount: Int!
+    facets: [Facet!]
+    fields: [SearchField!]!
+    results: SearchResults!
+    page: Page 
 }
 
 #======================================================================================
@@ -153,7 +230,7 @@ type Query {
  typeofentity-facets, bubblechart and items)"""
  globalFilter(selectedEntitiesIds: [ID!],
             dateFilter: datesRangeInput,
-            itemsPagination: PaginationInput
+            itemsPagination: Page
             entitiesListSize: Int) : GlobalFilterData
 
  """ Returns the details specific to a single item """
@@ -163,7 +240,7 @@ type Query {
  getAllEntities: [Entity]!
 
  """ Returns the details specific to a single entity """
- getEntity(entityId: ID!, itemsPagination: PaginationInput, entitiesListSize: Int): Entity
+ getEntity(entityId: ID!, itemsPagination: Page, entitiesListSize: Int): Entity
 
  """ Returns a tree (there are two notable points in this query, 1. the maximum depth of the
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
@@ -177,7 +254,7 @@ type Query {
  autoComplete(
     input: String!
     ### , autoCompleteOptions (<--- to add?)
-    itemsPagination: PaginationInput
+    itemsPagination: Page
     typeOfEntity:  String!
  ): EntityListingPaginationResult!
 
