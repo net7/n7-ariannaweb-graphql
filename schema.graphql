@@ -88,7 +88,7 @@ type ItemDetails {
     text: String
     fields: [KeyValueFieldGroup!]
     connectedEntities: [EntityCountData!]
-    similarItems: [ItemListing!]
+    items: [ItemListing!] #related items
     breadcrumbs: [LinkElement!]
 }
 

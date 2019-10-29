@@ -299,7 +299,7 @@ for (let i = 0; i < numOfAllItems; i++) {
     text: Helpers.randomPick(allPossibleRandomItemTexts),
     fields: makeRandomFieldGroups(),
     connectedEntities,
-    similarItems: null,
+    items: null,
     breadcrumbs
   };
 

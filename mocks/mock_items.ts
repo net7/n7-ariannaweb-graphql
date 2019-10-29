@@ -29,10 +29,10 @@ export function getItemDetails(args : any){
   let itemDetails = allRandomItemDetails[itemId+''];
   if(!itemDetails) return null;
   if(args.maxSimilarItems>0){
-    itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails,args.maxSimilarItems);
+    itemDetails['items'] = generateRandomBunchOfItemListings(allPossibleThumbnails,args.maxSimilarItems);
   } else if(args.maxSimilarItems==0){
-    itemDetails.similarItems = [];
-  } else itemDetails.similarItems = generateRandomBunchOfItemListings(allPossibleThumbnails);
+    itemDetails['items'] = [];
+  } else itemDetails['items'] = generateRandomBunchOfItemListings(allPossibleThumbnails);
   return itemDetails;
 }
 
