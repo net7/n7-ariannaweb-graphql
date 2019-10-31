@@ -61,7 +61,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 
 	const request = el.requestBuilder('cultural_objects', el.queryTerm({ id: itemId }))
 	const body = await el.search(request).then(x => x.hits.hits)
-	
+
 	if (body.length > 0) {
 		const hashMap = {}
 		let item = body[0]._source
@@ -159,6 +159,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 
 	const res = await el.search(request)
 	const buckets = res.aggregations.entities.docsPerEntity.buckets
+	const typesOfEntity = {}
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => x._source.id === itemIdToDiscard ? false : true).map(x => {
@@ -176,12 +177,23 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 			return res
 		}),
 		buckets.map(x => {
+			let entity = JSON.parse(x.key)
+			if (typesOfEntity[entity.typeOfEntity] == null)
+				typesOfEntity[entity.typeOfEntity] = { type: entity.typeOfEntity, count: 0 }
+			typesOfEntity[entity.typeOfEntity].count++
 			return {
-				entity: JSON.parse(x.key),
+				entity: entity,
 				count: x.doc_count
 			}
 		}),
 	])
 
-	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, entitiesData: results[1] };
+	var typeOfEntityData = []
+	for (const prop in typesOfEntity) {
+		if (typesOfEntity.hasOwnProperty(prop)) {
+			typeOfEntityData.push(typesOfEntity[prop])
+		}
+	}
+
+	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, typeOfEntityData: typeOfEntityData, entitiesData: results[1] };
 }
