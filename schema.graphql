@@ -86,6 +86,7 @@ type EntityCountData {
 """ Filter data used as the result of a global filer query """
 type GlobalFilterData {
     entitiesData: [EntityCountData!]
+    typeOfEntityData: [TypeOfEntityCountData!]
     itemsPagination: ItemListingPaginationResult
 }
 
@@ -139,7 +140,6 @@ input Page {
   limit: Int!  # size
 }
 
-
 input Tuple {
     label: String!
     value: String!
@@ -155,36 +155,15 @@ input SearchFacet {
     metadata: [String]
 }
 
-input FieldHeader {
-    label: String!
-    classes: String!
-}
-
-input FilterConfigSearchIn {
+input FilterSearchIn {
     key: String
     operator: String
 }
 
-input InputFilterConfig {
-    searchIn: [FilterConfigSearchIn!]
-    delay: Int
-    minChars: Int
-    isArray: Boolean
-    limit: Int
-    context: String
-    target: String
-}
-
-input FieldInput {
-    type: String!
-    facetId: String!
-    placeholder: String
-    filterConfig: InputFilterConfig
-}
-
-input SearchField {
-    header: FieldHeader
-    inputs: [FieldInput!]
+input SearchFilter {
+    facetId: String
+    value: String
+    searchIn: [FilterSearchIn!]
 }
 
 input ResultsOrder {
@@ -211,7 +190,7 @@ input SearchResults {
 input SearchParameters {
     totalCount: Int!
     facets: [SearchFacet!]
-    fields: [SearchField!]!
+    filters: [SearchFilter]
     results: SearchResults!
     page: Page 
 }
@@ -258,6 +237,7 @@ type Query {
     typeOfEntity:  String!
  ): EntityListingPaginationResult!
 
+# search(searchParameters: SearchParameters!): SearchParameters
 }
 
 
