@@ -85,7 +85,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
  * @param itemsPagination object containing pagination parameter
  * @param typeOfEntity category where to searh entities with names similar to input
  */
-export async function getEntitiesFiltered(input: string, itemsPagination: Pagination = { limit: 100000, offset: 0 }, typeOfEntity: string) {
+export async function getEntitiesFiltered(input: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }, typeOfEntity: string) {
 
 	const q1 = el.queryTerm({ "typeOfEntity": typeOfEntity })
 	const q2 = el.queryString({ field: 'label', value: input })
@@ -132,7 +132,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Pagina
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 100000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
 	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
