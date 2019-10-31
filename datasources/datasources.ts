@@ -1,6 +1,6 @@
 import * as el from "./elasticsearch"
 
-class Pagination {
+class Page {
 	offset: number
 	limit: number
 }
@@ -13,7 +13,7 @@ const scriptEntityFields = "'{\"id\":\"' + doc['connectedEntities.id'].value + '
  * @param itemsPagination object containing items pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getEntity(entityId: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000) {
+export async function getEntity(entityId: string, itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000) {
 	if (entityId == null || entityId === '')
 		return null
 
@@ -85,7 +85,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
  * @param itemsPagination object containing pagination parameter
  * @param typeOfEntity category where to searh entities with names similar to input
  */
-export async function getEntitiesFiltered(input: string, itemsPagination: Pagination = { limit: 10000, offset: 0 }, typeOfEntity: string) {
+export async function getEntitiesFiltered(input: string, itemsPagination: Page = { limit: 10000, offset: 0 }, typeOfEntity: string) {
 
 	const q1 = el.queryTerm({ "typeOfEntity": typeOfEntity })
 	const q2 = el.queryString({ field: 'label', value: input })
@@ -132,7 +132,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Pagina
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Pagination = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
 	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
