@@ -3,4 +3,4 @@ export const elasticAuth = {
 	password: 'ricercaElastica'
 }
 
-export const elasticNodeAddress = 'https://95.216.97.241:9200'
+export const elasticNodeAddress = 'http://95.216.97.241:10200' // 'https://95.216.97.241:9200' //
