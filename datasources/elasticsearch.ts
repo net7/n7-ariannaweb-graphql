@@ -108,11 +108,14 @@ export const aggsTerms = (buckets: string, field: string = null, script: string 
  * 
  * @param mustList list of query blocks to insert in multi-conditions block
  */
-export const queryBool = (mustList: any[]) => {
+export const queryBool = (mustList = [], shouldList = [], filterList = [], notList = []) => {
 	const x = {
 		query: {
 			bool: {
-				must: mustList
+				must: mustList,
+				should: shouldList,
+				filter: filterList,
+				must_not: notList
 			}
 		}
 	}
@@ -123,11 +126,11 @@ export const queryBool = (mustList: any[]) => {
  * 
  * @param queryField object containing the field name and the value to search on it
  */
-export const queryString = (queryField: { field: string, value: string }) => {
+export const queryString = (queryField: { fields: string[], value: string }) => {
 	const x = {
 		query_string: {
-			query: "*" + queryField.value.trim() + "*",
-			default_field: queryField.field
+			query: queryField.value,
+			fields: queryField.fields
 		}
 	}
 	return x
