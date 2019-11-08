@@ -15,12 +15,13 @@ type Entity {
     id: ID!
     label: String!
     typeOfEntity: String!
+    relation: String
     overviewTab: String
     extraTab: String
     wikiTab: WikiTab
-    fieldsTab: [Field!]
-    items: [ItemListing!] # related items
-    entities: [EntityCountData!]
+    fields: [Field!]
+    relatedItems: [ItemListing!] # related items
+    relatedEntities: [EntityCountData!]
 }
 
 """ A pair of strings, of which the first is a key and the second is
@@ -41,9 +42,9 @@ type Item {
     subTitle: String
     image: String
     text: String
-    fields: [KeyValueFieldGroup!]
-    connectedEntities: [EntityCountData!]
-    items: [ItemListing!] # items
+    fields: [Field!]
+    relatedEntities: [EntityCountData!]
+    relatedItems: [ItemListing!] # related items
     breadcrumbs: [LinkElement!]
 }
 
@@ -59,7 +60,6 @@ type ItemListing {
 for generic data files (as for example: key:"authod", value:"Giulio Andreini")
 (FIXME: maybe id is not necessary) """
 type KeyValueField {
-    # id: ID!
     key: String!
     value: String!
 }
@@ -67,7 +67,6 @@ type KeyValueField {
 """ Group of generic key-value pairs, the gourp has also unique identifier and
 an optional label assigned to it """
 type KeyValueFieldGroup {
-    # id: ID!
     label: String
     fields: [Field!]
 }

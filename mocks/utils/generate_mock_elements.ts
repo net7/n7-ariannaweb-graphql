@@ -261,7 +261,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
     var width = Helpers.getRandomIntInclusive(900,1800);
     var height = Helpers.getRandomIntInclusive(500,800);
   
-    let connectedEntities = [];
+    let relatedEntities = [];
     const nBubbles = Helpers.getRandomIntInclusive(20,50);
     const entitiesPick = pickNDistinctPositiveIntegers(allRandomBasicEntities.length,nBubbles)
     for(let j=0;j<nBubbles;j++){
@@ -269,7 +269,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
           entity: allRandomBasicEntities[entitiesPick[j]],
           count: Helpers.getRandomIntInclusive(1000,5000)
       };
-      connectedEntities.push(eCdta);
+      relatedEntities.push(eCdta);
     }
 
     let breadcrumbs = [ ...Helpers.randomPick(allPossibleBreadcrumbs) , {label: basicItem.label} ];
@@ -283,7 +283,7 @@ import { pickNDistinctPositiveIntegers } from '../helpers';
       image: `https://placeimg.com/${width}/${height}/any`,
       text: Helpers.randomPick(allPossibleRandomItemTexts),
       fields: makeRandomFieldGroups(),
-      connectedEntities,
+      relatedEntities,
       similarItems: null,
       breadcrumbs
     };

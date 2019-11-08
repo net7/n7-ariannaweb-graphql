@@ -7,10 +7,10 @@ with open('source.json') as f:
 		for key in array0:
 			elem = array0[key]
 			header = { "index" : { "_type" : "_doc", "_id" : elem['id'] } }
-			connectedEntities = []
-			for e1 in elem['connectedEntities']:
+			relatedEntites = []
+			for e1 in elem['relatedEntities']:
 				if 'entity' in e1.keys():
-					connectedEntities += [e1['entity']]
-			elem['connectedEntities'] = connectedEntities
+					relatedEntites += [e1['entity']]
+			elem['relatedEntities'] = relatedEntites
 			dest.write(js.dumps(header) + '\n' + js.dumps(elem) + '\n')
 print('terminato')

@@ -6,7 +6,20 @@ class Page {
 	limit: number
 }
 
-const scriptEntityFields = "'{\"id\":\"' + doc['connectedEntities.id'].value + '\",\"label\":\"' + doc['connectedEntities.label'].value + '\", \"typeOfEntity\":\"' + doc['connectedEntities.typeOfEntity'].value + '\"}'"
+const ENTITIES_INDEX = "entities"
+const OC_INDEX = "cultural_objects"
+const ENTITIES = "entities"
+const RELATED_ENTITIES = "relatedEntities"
+const RELATED_ITEMS = "relatedItems"
+const FIELDS = "fields"
+const TYPE_OF_ENTITY = "typeOfEntity"
+const LABEL = "label"
+const ID = "id"
+
+const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES + 
+			"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES + 
+			"." + LABEL + "'].value + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES + 
+			"."+ TYPE_OF_ENTITY +"'].value + '\"}'"
 
 function createFields(object: any): any {
 	let array = []
@@ -17,10 +30,10 @@ function createFields(object: any): any {
 			else if (Array.isArray(object[prop])){
 				let obj = {label: prop, fields: []}
 				object[prop].forEach(el => {
-					if (typeof el === 'string')
+					if (typeof el === 'string')	
 						obj.fields.push(createFields(el))
 					else 
-					obj.fields.push({label: null, fields: createFields(el)})
+						obj.fields.push({label: null, fields: createFields(el)})
 				});
 				array.push(obj)
 			}
@@ -41,16 +54,20 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 		return null
 
 	//get entity by entityId
-	const req1 = el.requestBuilder('entities', el.queryTerm({ id: entityId }))
+	var termObject = {}
+	termObject[ID] = entityId
+	const req1 = el.requestBuilder(ENTITIES_INDEX, el.queryTerm(termObject))
 
 	//get items connected to the Entity
-	const q1 = el.queryTerm({ 'connectedEntities.id': entityId })
-	const quNes = el.queryNested('connectedEntities', q1)
+	termObject = {}
+	termObject[RELATED_ENTITIES + "." + ID] = entityId
+	const q1 = el.queryTerm(termObject)
+	const quNes = el.queryNested(RELATED_ENTITIES, q1)
 	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
-	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
+	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
-	const req2 = el.requestBuilder('cultural_objects', {
+	const req2 = el.requestBuilder(OC_INDEX, {
 		query: quNes.query,
 		aggs: agNes.aggs,
 		size: itemsPagination.limit,
@@ -61,7 +78,7 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 		[el.search(req1).then(x => {
 			let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
 			if(entity != null){
-				entity['fieldsTab'] = createFields(entity.fields)
+				entity[FIELDS] = createFields(entity.fields)
 			}
 			return entity
 		}
@@ -74,11 +91,11 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 			})
 			return x.hits.hits.map(y => { return { item: y._source } })
 		})])
-	if (results == null) {
+	if (results[0] == null) {
 		return null
 	}
-	results[0]['items'] = results[1]
-	results[0]['entities'] = entities
+	results[0][RELATED_ITEMS] = results[1]
+	results[0][RELATED_ENTITIES] = entities
 	return results[0]
 }
 
@@ -92,21 +109,21 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 	if (itemId == null || itemId === '')
 		return null
 
-	const request = el.requestBuilder('cultural_objects', el.queryTerm({ id: itemId }))
+	const request = el.requestBuilder(OC_INDEX, el.queryTerm({ id: itemId }))
 	const body = await el.search(request).then(x => x.hits.hits)
 
 	if (body.length > 0) {
 		const hashMap = {}
 		let item = body[0]._source
 		const results = await Promise.all([
-			item.connectedEntities.forEach(x => hashMap[x.id] = x),
+			item.relatedEntities.forEach(x => hashMap[x.id] = x),
 			getItemsFiltered(null, { limit: 0, offset: 0 }, 10000).then(x => x.entitiesData)
 		])
 		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
 			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
-		item['connectedEntities'] = results[1]
-		item['items'] = result
+		item[RELATED_ENTITIES] = results[1]
+		item[RELATED_ITEMS] = result
 		return item
 	}
 	return null;
@@ -123,29 +140,33 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	const boolsArray = []
 	const boolsArray2 = []
 	if (typeOfEntity != null && typeOfEntity !== ""){
-		const q1 = el.queryTerm({ "typeOfEntity": typeOfEntity })
-		const q3 = el.queryTerm({ "connectedEntities.typeOfEntity": typeOfEntity })
+		var termObject = {}
+		termObject[TYPE_OF_ENTITY] = typeOfEntity
+		const q1 = el.queryTerm(termObject)
+		termObject = {}
+		termObject[RELATED_ENTITIES + "." + TYPE_OF_ENTITY] = typeOfEntity
+		const q3 = el.queryTerm(termObject)
 		boolsArray.push(q1.query)
 		boolsArray2.push(q3.query)
 	}
 
-	const q2 = el.queryString({ fields: ['label'], value: input.trim() + "*" })
+	const q2 = el.queryString({ fields: [LABEL], value: input.trim() + "*" })
 	boolsArray.push(q2)
 	const bools = el.queryBool(boolsArray)
-	const request = el.requestBuilder('entities', {
+	const request = el.requestBuilder(ENTITIES_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
 	})
 	
-	const q4 = el.queryString({ fields: ['connectedEntities.label'], value: input.trim() + "*" })
+	const q4 = el.queryString({ fields: [RELATED_ENTITIES + "." + LABEL], value: input.trim() + "*" })
 	boolsArray2.push(q4)
 	const bools2 = el.queryBool(boolsArray2)
-	const quNes = el.queryNested('connectedEntities', bools2)
-	const agg = el.aggsTerms('docsPerEntity', "connectedEntities.id")
-	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
+	const quNes = el.queryNested(RELATED_ENTITIES, bools2)
+	const agg = el.aggsTerms('docsPerEntity', RELATED_ENTITIES + "." + ID)
+	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
-	const request2 = el.requestBuilder('cultural_objects', {
+	const request2 = el.requestBuilder(OC_INDEX, {
 		query: quNes.query,
 		aggs: agNes.aggs,
 		size: 0
@@ -185,8 +206,8 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 
 	const script = scriptEntityFields
 	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
-	const agNes = el.aggsNested('entities', 'connectedEntities', agg)
-	const source = "def list = new HashMap(); for (type in params['_source'].connectedEntities) { def key = type.typeOfEntity; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type.typeOfEntity; }} return list;"
+	const agNes = el.aggsNested('entities', RELATED_ENTITIES, agg)
+	const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
 	const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
@@ -199,12 +220,13 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const entities = []
 	if (entityIds != null && entityIds.length > 0) {
 		for (const entityId of entityIds) {
-			entities.push(el.queryNested("connectedEntities", el.queryTerm({ "connectedEntities.id": entityId })).query)
+			const termQuery = RELATED_ENTITIES + "." + ID
+			entities.push(el.queryNested(RELATED_ENTITIES, el.queryTerm({ termQuery: entityId })).query)
 		}
 		body['query'] = el.queryBool(entities).query
 	}
 
-	const request = el.requestBuilder('cultural_objects', body)
+	const request = el.requestBuilder(OC_INDEX, body)
 
 	const res = await el.search(request)
 	const buckets = res.aggregations.entities.docsPerEntity.buckets
@@ -268,8 +290,8 @@ export function search(searchParameters: any) {
 				case "query-all":
 					searchIn = filter.searchIn[0]
 					term = filter.value // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					request["query"] = el.queryBool([el.queryNested("connectedEntites", 
-					el.queryString({fields: ["connectedEntities.*"], value: term})).query,
+					request["query"] = el.queryBool([el.queryNested(RELATED_ENTITIES, 
+					el.queryString({fields: ["relatedEntities.*"], value: term})).query,
 					el.queryString({fields: ["*"], value: term})]).query
 					break
 				case "query-links":
