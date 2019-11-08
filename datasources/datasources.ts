@@ -220,8 +220,9 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const entities = []
 	if (entityIds != null && entityIds.length > 0) {
 		for (const entityId of entityIds) {
-			const termQuery = RELATED_ENTITIES + "." + ID
-			entities.push(el.queryNested(RELATED_ENTITIES, el.queryTerm({ termQuery: entityId })).query)
+			const termObject = {}
+			termObject[RELATED_ENTITIES + "." + ID] = entityId
+			entities.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(termObject)).query)
 		}
 		body['query'] = el.queryBool(entities).query
 	}
