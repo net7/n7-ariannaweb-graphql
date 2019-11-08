@@ -202,10 +202,9 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 25, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
-	const script = scriptEntityFields
-	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
+	const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
 	const agNes = el.aggsNested('entities', RELATED_ENTITIES, agg)
 	const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
 	const scFi = el.scriptFields('typeOfEntitiesCount', source)
