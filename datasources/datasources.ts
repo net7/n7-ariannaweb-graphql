@@ -202,7 +202,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 25, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
+export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
 	const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
 	const agNes = el.aggsNested('entities', RELATED_ENTITIES, agg)
@@ -211,7 +211,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 
 	const body = {
 		aggs: agNes.aggs, script_fields: scFi.script_fields,
-		stored_fields: ["_source"],
+		"_source": [],
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
 	}
