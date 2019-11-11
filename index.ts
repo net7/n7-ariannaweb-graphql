@@ -11,8 +11,8 @@ import { mocks } from './mocks/mocks';
 const server = new ApolloServer({
   typeDefs: typeDefs,
   resolvers,
-  mockEntireSchema: false,
-  mocks: mocks,
+  //mockEntireSchema: false,
+  mocks: false,
   playground: true, // playgound to work on zeit.co should anyway be removed before production
 });
 
