@@ -10,6 +10,7 @@ export const resolvers = merge({
 		autoComplete: async (parent, args, context, info) => await datasources.getEntitiesFiltered(args.input, args.itemsPagination, args.typeOfEntity),
 		globalFilter: async (parent, args, context, info) => await datasources.getItemsFiltered(args.selectedEntitiesIds, args.itemsPagination, args.entitiesListSize),
 		getEntity: async (parent, args, context, info) => await datasources.getEntity(args.entityId, args.itemsPagination, args.entitiesListSize),
+		getTreeOfItems: async (parent, args, context, info) => await datasources.getTree(),
 		search: async (parent, args, context, info) => await datasources.search(args.searchParameters)
 	},
 }, ...externalResolvers)
