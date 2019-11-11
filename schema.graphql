@@ -24,19 +24,11 @@ type Entity {
     relatedEntities: [EntityCountData!]
 }
 
-""" A pair of strings, of which the first is a key and the second is
-its value both represented as strings
-(such as : key:'Autore',value:'Mimmo Jodice') """
-type BasicInfo {
-    key: String!
-    value: String!
-}
 
 """ An basic item (such as: "Genova, la sopraelevata", etc...)"""
 type Item {
     id: ID!
     label: String!
-    info: [BasicInfo!]
     icon: String
     title: String!
     subTitle: String
@@ -233,7 +225,7 @@ type Query {
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
  tree represents the tree's root, therefore any branch of a grater tree can be fetched by specifing
  the branch root's id as the treeId)"""
- getTreeOfItems(treeId: ID!): Tree
+ getTreeOfItems: Tree
 
  """ Given a string it returns an array of item listings which match the input string based on
  a certain logic (currently an itemListing is returned if its item's label or at least one of its
