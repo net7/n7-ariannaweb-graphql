@@ -5,7 +5,7 @@ class Page {
 	offset: number
 	limit: number
 }
-
+const TREE_INDEX = "tree"
 const ENTITIES_INDEX = "entities"
 const OC_INDEX = "cultural_objects"
 const ENTITIES = "entities"
@@ -15,25 +15,28 @@ const FIELDS = "fields"
 const TYPE_OF_ENTITY = "typeOfEntity"
 const LABEL = "label"
 const ID = "id"
+const CHILDREN = "branches"
+const LEVEL = "level"
+const POSITION = "position"
 
-const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES + 
-			"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES + 
-			"." + LABEL + "'].value + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES + 
-			"."+ TYPE_OF_ENTITY +"'].value + '\"}'"
+const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
+	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
+	"." + LABEL + ".keyword'].value + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
+	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
 function createFields(object: any): any {
 	let array = []
 	for (const prop in object) {
 		if (object.hasOwnProperty(prop)) {
 			if (typeof object[prop] === 'string')
-				array.push({key: prop, value: object[prop]})
-			else if (Array.isArray(object[prop])){
-				let obj = {label: prop, fields: []}
+				array.push({ key: prop, value: object[prop] })
+			else if (Array.isArray(object[prop])) {
+				let obj = { label: prop, fields: [] }
 				object[prop].forEach(el => {
-					if (typeof el === 'string')	
+					if (typeof el === 'string')
 						obj.fields.push(createFields(el))
-					else 
-						obj.fields.push({label: null, fields: createFields(el)})
+					else
+						obj.fields.push({ label: null, fields: createFields(el) })
 				});
 				array.push(obj)
 			}
@@ -77,7 +80,7 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 	const results = await Promise.all(
 		[el.search(req1).then(x => {
 			let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
-			if(entity != null){
+			if (entity != null) {
 				entity[FIELDS] = createFields(entity.fields)
 			}
 			return entity
@@ -88,7 +91,7 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 					entity: JSON.parse(x.key),
 					count: x.doc_count
 				}
-			})
+			}).filter(x => x.entity.id !== entityId)
 			return x.hits.hits.map(y => { return { item: y._source } })
 		})])
 	if (results[0] == null) {
@@ -139,7 +142,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
 	const boolsArray = []
 	const boolsArray2 = []
-	if (typeOfEntity != null && typeOfEntity !== ""){
+	if (typeOfEntity != null && typeOfEntity !== "") {
 		var termObject = {}
 		termObject[TYPE_OF_ENTITY] = typeOfEntity
 		const q1 = el.queryTerm(termObject)
@@ -158,7 +161,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
 	})
-	
+
 	const q4 = el.queryString({ fields: [RELATED_ENTITIES + "." + LABEL], value: input.trim() + "*" })
 	boolsArray2.push(q4)
 	const bools2 = el.queryBool(boolsArray2)
@@ -183,9 +186,9 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 		}), el.search(request2).then(res => res.aggregations.
 			entities.docsPerEntity.buckets)])
 	const total = res[0]
-	const results = [] 
+	const results = []
 	res[1].forEach(el => {
-		if(entityHashMap[el.key]){
+		if (entityHashMap[el.key]) {
 			results.push({
 				entity: entityHashMap[el.key],
 				count: el.doc_count
@@ -269,6 +272,32 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, typeOfEntityData: typeOfEntityData, entitiesData: results[1] };
 }
 
+function buildTree(node: any, nodeList: any[]): any {
+	node[CHILDREN] = []
+	while (nodeList.length > 0 && nodeList[0][LEVEL] > node[LEVEL]) {
+		node[CHILDREN].push(buildTree(nodeList.shift(), nodeList))
+	}
+	return node
+}
+
+export async function getTree() {
+	const query = {
+		query: {
+			match_all: {}
+		},
+		sort: {
+		},
+		size: 10000
+	}
+	query.sort[POSITION] = {"order": "asc"}
+	const request = el.requestBuilder(TREE_INDEX, query)
+
+	const res = await el.search(request).then(x => x.hits.hits.map(x => x._source))
+	const root = res.shift()
+	const tree = buildTree(root, res)
+	return tree
+}
+
 export function search(searchParameters: any) {
 
 	const facets = {}
@@ -277,30 +306,30 @@ export function search(searchParameters: any) {
 		facets[facet.id] = facet
 	})
 	filters.forEach(filter => {
-		if (filter.value != null || filter.facetId === "query-all"){
+		if (filter.value != null || filter.facetId === "query-all") {
 			const facet = facets[filter.facetId]
 
 			let request = {}
-			switch(filter.facetId) {
+			switch (filter.facetId) {
 				case "query":
 					let searchIn = filter.searchIn[0]
 					let term = filter.value // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					request['query'] = el.queryTerm({"${searchIn.key}": term})
+					request['query'] = el.queryTerm({ "${searchIn.key}": term })
 					break
 				case "query-all":
 					searchIn = filter.searchIn[0]
 					term = filter.value // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					request["query"] = el.queryBool([el.queryNested(RELATED_ENTITIES, 
-					el.queryString({fields: ["relatedEntities.*"], value: term})).query,
-					el.queryString({fields: ["*"], value: term})]).query
+					request["query"] = el.queryBool([el.queryNested(RELATED_ENTITIES,
+						el.queryString({ fields: ["relatedEntities.*"], value: term })).query,
+					el.queryString({ fields: ["*"], value: term })]).query
 					break
 				case "query-links":
-					
+
 					break
 				case "entity-links":
 					break
 			}
 		}
-		
+
 	})
 }
