@@ -1,5 +1,4 @@
 import * as el from "./elasticsearch"
-import { parse } from "url"
 
 class Page {
 	offset: number
@@ -21,29 +20,9 @@ const POSITION = "position"
 
 const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
-	"." + LABEL + ".keyword'].value + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
+	"." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
-function createFields(object: any): any {
-	let array = []
-	for (const prop in object) {
-		if (object.hasOwnProperty(prop)) {
-			if (typeof object[prop] === 'string')
-				array.push({ key: prop, value: object[prop] })
-			else if (Array.isArray(object[prop])) {
-				let obj = { label: prop, fields: [] }
-				object[prop].forEach(el => {
-					if (typeof el === 'string')
-						obj.fields.push(createFields(el))
-					else
-						obj.fields.push({ label: null, fields: createFields(el) })
-				});
-				array.push(obj)
-			}
-		}
-	}
-	return array
-}
 
 /**
  *
@@ -80,9 +59,6 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 	const results = await Promise.all(
 		[el.search(req1).then(x => {
 			let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
-			if (entity != null) {
-				entity[FIELDS] = createFields(entity.fields)
-			}
 			return entity
 		}
 		), el.search(req2).then(x => {
@@ -120,7 +96,7 @@ export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesLi
 		let item = body[0]._source
 		const results = await Promise.all([
 			item.relatedEntities.forEach(x => hashMap[x.id] = x),
-			getItemsFiltered(null, { limit: 0, offset: 0 }, 10000).then(x => x.entitiesData)
+			getItemsFiltered(null, { limit: 1, offset: 0 }, 10000).then(x => x.entitiesData)
 		])
 		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
