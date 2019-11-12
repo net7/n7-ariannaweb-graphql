@@ -10,7 +10,6 @@ const OC_INDEX = "cultural_objects"
 const ENTITIES = "entities"
 const RELATED_ENTITIES = "relatedEntities"
 const RELATED_ITEMS = "relatedItems"
-const FIELDS = "fields"
 const TYPE_OF_ENTITY = "typeOfEntity"
 const LABEL = "label"
 const ID = "id"
@@ -24,6 +23,35 @@ const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
 
+export async function getRelations(entityId: string, itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number) {
+	//get items connected to the Entity
+	const termObject = {}
+	termObject[RELATED_ENTITIES + "." + ID] = entityId
+	const q1 = el.queryTerm(termObject)
+	const quNes = el.queryNested(RELATED_ENTITIES, q1)
+	const script = scriptEntityFields
+	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
+	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+
+	const req = el.requestBuilder(OC_INDEX, {
+		query: quNes.query,
+		aggs: agNes.aggs,
+		size: itemsPagination.limit,
+		from: itemsPagination.offset
+	})
+	var entities = []
+	const items = await el.search(req).then(x => {
+		entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
+			return {
+				entity: JSON.parse(x.key),
+				count: x.doc_count
+			}
+		}).filter(x => x.entity.id !== entityId)
+		return x.hits.hits.map(y => { return { item: y._source } })
+	})
+	return { relatedEntities: entities, relatedItems: items }
+}
+
 /**
  *
  * @param entityId entity Id to recall corresponding entity, items connected and entities related
@@ -36,45 +64,23 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 		return null
 
 	//get entity by entityId
-	var termObject = {}
+	const termObject = {}
 	termObject[ID] = entityId
 	const req1 = el.requestBuilder(ENTITIES_INDEX, el.queryTerm(termObject))
 
-	//get items connected to the Entity
-	termObject = {}
-	termObject[RELATED_ENTITIES + "." + ID] = entityId
-	const q1 = el.queryTerm(termObject)
-	const quNes = el.queryNested(RELATED_ENTITIES, q1)
-	const script = scriptEntityFields
-	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
-	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+	const results = await Promise.all([el.search(req1).then(x => {
+		let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
+		return entity
+	}),
+	getRelations(entityId, itemsPagination, entitiesListSize)
+	])
 
-	const req2 = el.requestBuilder(OC_INDEX, {
-		query: quNes.query,
-		aggs: agNes.aggs,
-		size: itemsPagination.limit,
-		from: itemsPagination.offset
-	})
-	var entities = []
-	const results = await Promise.all(
-		[el.search(req1).then(x => {
-			let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
-			return entity
-		}
-		), el.search(req2).then(x => {
-			entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
-				return {
-					entity: JSON.parse(x.key),
-					count: x.doc_count
-				}
-			}).filter(x => x.entity.id !== entityId)
-			return x.hits.hits.map(y => { return { item: y._source } })
-		})])
-	if (results[0] == null) {
+	if (results == null) {
 		return null
 	}
-	results[0][RELATED_ITEMS] = results[1]
-	results[0][RELATED_ENTITIES] = entities
+
+	results[0][RELATED_ITEMS] = results[1][RELATED_ITEMS]
+	results[0][RELATED_ENTITIES] = results[1][RELATED_ENTITIES]
 	return results[0]
 }
 
@@ -265,7 +271,7 @@ export async function getTree() {
 		},
 		size: 10000
 	}
-	query.sort[POSITION] = {"order": "asc"}
+	query.sort[POSITION] = { "order": "asc" }
 	const request = el.requestBuilder(TREE_INDEX, query)
 
 	const res = await el.search(request).then(x => x.hits.hits.map(x => x._source))
