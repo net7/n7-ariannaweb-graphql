@@ -1,8 +1,11 @@
 import { merge } from 'lodash'
 import * as datasources from '../datasources/datasources'
 import * as field from './Field'
+import * as item from './Item'
+import * as entity from './Entity'
+import * as node from './Node'
 
-const externalResolvers = [field].map(x => x.resolvers)
+const externalResolvers = [field, item, entity, node].map(x => x.resolvers)
 
 export const resolvers = merge({
 	Query: {
