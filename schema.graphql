@@ -29,11 +29,11 @@ type Entity {
 type Item {
     id: ID!
     label: String!
-    icon: String
     title: String!
+    text: String
+    icon: String
     subTitle: String
     image: String
-    text: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
     relatedItems: [ItemListing!] # related items
@@ -83,14 +83,15 @@ type GlobalFilterData {
     itemsPagination: ItemListingPaginationResult
 }
 
-""" Tree structure containing an id,label and icon for each element
+""" Node structure containing an id,label and icon for each element
 (used for navigation, as: Patrimonio)"""
-type Tree {
+type Node {
     id: ID!
     label: String!
     icon: String
     img: String
-    branches: [Tree!]
+    fields: [Field!]
+    branches: [Node!]
 }
 
 """ Element containing a label and an optional link for the element
@@ -225,7 +226,7 @@ type Query {
  result has to be specified by the query using graphql's syntaxis, 2. the id used to obtain the
  tree represents the tree's root, therefore any branch of a grater tree can be fetched by specifing
  the branch root's id as the treeId)"""
- getTreeOfItems: Tree
+ getTreeOfItems: Node
 
  """ Given a string it returns an array of item listings which match the input string based on
  a certain logic (currently an itemListing is returned if its item's label or at least one of its
