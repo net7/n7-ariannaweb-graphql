@@ -75,7 +75,7 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 	getRelations(entityId, itemsPagination, entitiesListSize)
 	])
 
-	if (results == null) {
+	if (results[0] == null) {
 		return null
 	}
 
@@ -280,35 +280,90 @@ export async function getTree() {
 	return tree
 }
 
+
+/**
+ * Search section: constants and functions
+ */
+
+const ALL_FIELDS_QUERY = "query-all"
+const QUERY = "query"
+const QUERY_LINKS = "query-links"
+const ENTITY_LINKS = "entity-links"
+const ENTITY_TYPES = "entity-types"
+const ENTITY_SEARCH = "entity-search"
+
+const AGGS = "aggs"
+const AGGS_NESTED_FIELD = "entities"
+const AGG_FIELD = "docsPerEntity"
+const NESTED_FIELD = "relatedEntities"
+const QUERY_LINKS_TYPE = "typeOfEntity"
+const ALL_FIELDS = "*"
+const BOOL = 'bool'
+const FILTER = 'filter'
+const SHOULD = 'should'
+
 export function search(searchParameters: any) {
 
-	const facets = {}
-	const filters = searchParameters.filters
-	searchParameters.facets.forEach(facet => {
-		facets[facet.id] = facet
+	const facets = searchParameters.facets
+	const filters = {}
+	searchParameters.filters.forEach(filter => {
+		filters[filter.facetId] = filter
 	})
-	filters.forEach(filter => {
-		if (filter.value != null || filter.facetId === "query-all") {
-			const facet = facets[filter.facetId]
 
-			let request = {}
+	// request for global index
+	let request = {}
+	facets.forEach(facet => {
+		const filter = filters[facet.id]
+		//let internalRequest = {}
+			if (filter && filter.value) {
 			switch (filter.facetId) {
-				case "query":
+				case QUERY:
 					let searchIn = filter.searchIn[0]
 					let term = filter.value // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					request['query'] = el.queryTerm({ "${searchIn.key}": term })
+					let termObject = {}
+					termObject[searchIn.key] = filter.value
+					request[QUERY] = el.queryTerm(termObject)
 					break
-				case "query-all":
-					searchIn = filter.searchIn[0]
+				case ALL_FIELDS_QUERY:
+					//searchIn = filter.searchIn[0]
 					term = filter.value // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					request["query"] = el.queryBool([el.queryNested(RELATED_ENTITIES,
-						el.queryString({ fields: ["relatedEntities.*"], value: term })).query,
-					el.queryString({ fields: ["*"], value: term })]).query
+					// query string in all fields and nested fields of the items index 
+					request[QUERY] = el.queryBool([], [el.queryNested(NESTED_FIELD,
+						el.queryString({ fields: [ALL_FIELDS], value: term })).query,
+					el.queryString({ fields: [ALL_FIELDS], value: term })]).query
+					// query string in all fields of the entities index
+					let bools = el.queryBool([], [el.queryString({ fields: [ALL_FIELDS], value: term })]).query
+					if (request[QUERY] == null)
+						request[QUERY] = bools
+					else if (request[QUERY][BOOL] == null)
+						request[QUERY][BOOL] = bools.bool
+					else
+						request[QUERY][BOOL][SHOULD] = bools.bool.should
 					break
-				case "query-links":
-
+				case QUERY_LINKS:
+					let terms = filter.value.map(element => {
+						termObject = {}
+						termObject[TYPE_OF_ENTITY] = element
+						return el.queryTerm(termObject).query
+					});
+					if (terms.length > 0) {
+						terms.push(el.queryBool([], [], [], [{ exists: { field: "typeOfEntity.keyword" } }]))
+					}
+					bools = el.queryBool([], [], terms).query
+					if (request[QUERY] == null)
+						request[QUERY] = bools
+					else if (request[QUERY][BOOL] == null)
+						request[QUERY][BOOL] = bools.bool
+					else
+						request[QUERY][BOOL][FILTER] = bools.bool.filter
 					break
-				case "entity-links":
+				case ENTITY_TYPES:
+					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità  
+					break
+				case ENTITY_LINKS:
+					//searchIn = filter.searchIn[0]
+					request[AGGS] = el.aggsNested(AGGS_NESTED_FIELD, NESTED_FIELD,
+						el.aggsTerms(AGG_FIELD, null, scriptEntityFields, 10000)).aggs
 					break
 			}
 		}
