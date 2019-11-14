@@ -190,12 +190,13 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
 	const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
-	const agNes = el.aggsNested('entities', RELATED_ENTITIES, agg)
-	const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
-	const scFi = el.scriptFields('typeOfEntitiesCount', source)
+	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+	//const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
+	//const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
-		aggs: agNes.aggs, script_fields: scFi.script_fields,
+		aggs: agNes.aggs,
+		//		script_fields: scFi.script_fields,
 		"_source": [],
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
@@ -208,19 +209,30 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 			termObject[RELATED_ENTITIES + "." + ID] = entityId
 			entities.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(termObject)).query)
 		}
-		body['query'] = el.queryBool(entities).query
+		body[QUERY] = el.queryBool(entities).query
 	}
 
 	const request = el.requestBuilder(OC_INDEX, body)
 
 	const res = await el.search(request)
-	const buckets = res.aggregations.entities.docsPerEntity.buckets
+	const buckets = res.aggregations[ENTITIES].docsPerEntity.buckets
 	const typesOfEntity = {}
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => x._source.id === itemIdToDiscard ? false : true).map(x => {
+			const object = {}
+			let entities = x._source[RELATED_ENTITIES]
+			if (entities != null)
+				//count number of types of Entity
+				entities.forEach(entity => {
+					if (!object[entity[TYPE_OF_ENTITY]]) { }
+					object[entity[TYPE_OF_ENTITY]] = {
+						count: 0,
+						type: entity[TYPE_OF_ENTITY]
+					}
+					object[entity[TYPE_OF_ENTITY]].count += 1
+				})
 			var list = []
-			const object = x.fields.typeOfEntitiesCount[0]
 			for (const prop in object) {
 				if (object.hasOwnProperty(prop)) {
 					list.push(object[prop])
@@ -315,7 +327,7 @@ export function search(searchParameters: any) {
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
 		//let internalRequest = {}
-			if (filter && filter.value) {
+		if (filter && filter.value) {
 			switch (filter.facetId) {
 				case QUERY:
 					let searchIn = filter.searchIn[0]
