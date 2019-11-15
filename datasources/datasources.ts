@@ -1,5 +1,4 @@
 import * as el from "./elasticsearch"
-import { request } from "http"
 
 class Page {
 	offset: number
@@ -92,7 +91,7 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
  * @param maxSimilarItems object containing items pagination parameter
  * @param entitiesListSize entityList size to return 
  */
-export async function getItem(itemId: string, maxSimilarItems: 10000, entitiesListSize: number = 10000) {
+export async function getItem(itemId: string, maxSimilarItems: number = 10000, entitiesListSize: number = 10000) {
 	if (itemId == null || itemId === '')
 		return null
 
@@ -288,12 +287,28 @@ export async function getTree() {
 	query.sort[POSITION] = { "order": "asc" }
 	const request = el.requestBuilder(TREE_INDEX, query)
 
-	const res = await el.search(request).then(x => x.hits.hits.map(x => x._source))
+	var res = await el.search(request, "1m")
+	var scrollId = res._scroll_id
+	res = res.hits.hits.map(x => x._source)
+	var res2
+	do {
+		res2 = await el.scroll(scrollId, "1m")
+	}
+	while(res2.hits.hits > 0){
+		scrollId = res2._scroll_id
+		res.push(res2.hits.hits)	
+	}
 	const root = res.shift()
 	const tree = buildTree(root, res)
 	return tree
 }
 
+export async function getNode(id: string, maxSimilarItems: number, entitiesListSize: number) {
+	const results = await Promise.all([el.search(el.requestBuilder("tree", el.queryTerm({ id: id }))),
+	getItem(id, maxSimilarItems, entitiesListSize)])
+	
+	return results[1] != null ? results[1] : results[0].hits.hits[0]
+}
 
 /**
  * Search section: constants and functions
@@ -335,6 +350,8 @@ export async function search(searchParameters: any) {
 				case QUERY:
 					let searchIn = filter.searchIn[0]
 					let term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+					if (filters[facet.id].value == true)
+						searchIn.key = "*"
 					let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
 					if (body[QUERY] == null)
 						body[QUERY] = bools
@@ -343,26 +360,10 @@ export async function search(searchParameters: any) {
 					else
 						body[QUERY][BOOL][MUST] = bools.bool.must
 					break
-				case ALL_FIELDS_QUERY:
-					//searchIn = filter.searchIn[0]
-					term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					// query string in all fields and nested fields of the items index 
-					bools = el.queryBool([], [el.queryNested(NESTED_FIELD,
-						el.queryString({ fields: [ALL_FIELDS], value: term })).query,
-					el.queryString({ fields: [ALL_FIELDS], value: term })]).query
-					// query string in all fields of the entities index
-					//let bools = el.queryBool([], [el.queryString({ fields: [ALL_FIELDS], value: term })]).query
-					if (body[QUERY] == null)
-						body[QUERY] = bools
-					else if (body[QUERY][BOOL] == null)
-						body[QUERY][BOOL] = bools.bool
-					else
-						body[QUERY][BOOL][SHOULD] = bools.bool.should
-					break
 				case QUERY_LINKS:
 					let terms = filter.value.map(element => {
 						let termObject = {}
-						termObject[TYPE_OF_ENTITY+ '.' + KEYWORD] = element
+						termObject[TYPE_OF_ENTITY + '.' + KEYWORD] = element
 						return el.queryTerm(termObject).query
 					});
 					let bool = {}
@@ -370,7 +371,7 @@ export async function search(searchParameters: any) {
 						terms.push(el.queryBool([], [], [], [{ exists: { field: TYPE_OF_ENTITY + '.' + KEYWORD } }]).query)
 						bools = el.queryBool([], terms).query
 					}
-					
+
 					if (body[QUERY] == null)
 						body[QUERY] = bools
 					else if (body[QUERY][BOOL] == null)
@@ -389,7 +390,7 @@ export async function search(searchParameters: any) {
 			}
 		}
 	})
-	
+
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
 	console.log(JSON.stringify(body))
 	let result = await el.search(request)
@@ -398,273 +399,273 @@ export async function search(searchParameters: any) {
 
 search({
 	"facets": [
-	  {
-		 "id": "query",
-		 "type": "value"
-	  },
-	  {
-		 "id": "query-all",
-		 "type": "value",
-		 "data": [
-			{
-			  "value": "1",
-			  "label": "Cerca in tutti campi delle schede"
-			}
-		 ]
-	  },
-	  {
-		 "id": "query-links",
-		 "type": "value",
-		 "data": [
-			{
-			  "value": "people",
-			  "label": "Persone",
-			  "counter": 80,
-			  "options": {
-				 "icon": "n7-icon-biography",
-				 "classes": "color-people"
-			  }
-			},
-			{
-			  "value": "places",
-			  "label": "Luoghi",
-			  "counter": 90,
-			  "options": {
-				 "icon": "n7-icon-map1",
-				 "classes": "color-places"
-			  }
-			},
-			{
-			  "value": "concepts",
-			  "label": "Concetti",
-			  "counter": 62,
-			  "options": {
-				 "icon": "n7-icon-lightbulb",
-				 "classes": "color-concepts"
-			  }
-			},
-			{
-			  "value": "organizations",
-			  "label": "Organizzazioni",
-			  "counter": 75,
-			  "options": {
-				 "icon": "n7-icon-building",
-				 "classes": "color-organizations"
-			  }
-			}
-		 ]
-	  },
-	  {
-		 "id": "entity-types",
-		 "type": "value",
-		 "operator": "OR",
-		 "limit": 10,
-		 "order": "count",
-		 "data": [
-			{
-			  "value": "people",
-			  "label": "Persone"
-			},
-			{
-			  "value": "places",
-			  "label": "Luoghi"
-			},
-			{
-			  "value": "concepts",
-			  "label": "Concetti"
-			},
-			{
-			  "value": "organizations",
-			  "label": "Organizzazioni"
-			}
-		 ]
-	  },
-	  {
-		 "id": "entity-search",
-		 "type": "value"
-	  },
-	  {
-		 "id": "entity-links",
-		 "type": "value",
-		 "metadata": [
-			"title",
-			"entity-type"
-		 ],
-		 "data": [
-			{
-			  "value": "milano",
-			  "label": "milano",
-			  "counter": 69,
-			  "metadata": {
-				 "title": "milano",
-				 "entity-type": "places"
-			  }
-			},
-			{
-			  "value": "roma",
-			  "label": "roma",
-			  "counter": 80,
-			  "metadata": {
-				 "title": "roma",
-				 "entity-type": "places"
-			  }
-			},
-			{
-			  "value": "spazio",
-			  "label": "spazio",
-			  "counter": 71,
-			  "metadata": {
-				 "title": "spazio",
-				 "entity-type": "concepts"
-			  }
-			},
-			{
-			  "value": "rodolfo-marna",
-			  "label": "rodolfo marna",
-			  "counter": 22,
-			  "metadata": {
-				 "title": "rodolfo marna",
-				 "entity-type": "people"
-			  }
-			},
-			{
-			  "value": "alighiero-boetti",
-			  "label": "alighiero boetti",
-			  "counter": 94,
-			  "metadata": {
-				 "title": "alighiero boetti",
-				 "entity-type": "people"
-			  }
-			}
-		 ]
-	  },
-	  {
-		 "id": "date-from",
-		 "type": "value",
-		 "data": [
-			{
-			  "value": "1990",
-			  "label": "1990"
-			},
-			{
-			  "value": "1991",
-			  "label": "1991"
-			},
-			{
-			  "value": "1992",
-			  "label": "1992"
-			},
-			{
-			  "value": "1993",
-			  "label": "1993"
-			}
-		 ]
-	  },
-	  {
-		 "id": "date-to",
-		 "type": "value",
-		 "data": [
-			{
-			  "value": "2000",
-			  "label": "2000"
-			},
-			{
-			  "value": "2001",
-			  "label": "2001"
-			},
-			{
-			  "value": "2002",
-			  "label": "2002"
-			},
-			{
-			  "value": "2003",
-			  "label": "2003"
-			}
-		 ]
-	  }
+		{
+			"id": "query",
+			"type": "value"
+		},
+		{
+			"id": "query-all",
+			"type": "value",
+			"data": [
+				{
+					"value": "1",
+					"label": "Cerca in tutti campi delle schede"
+				}
+			]
+		},
+		{
+			"id": "query-links",
+			"type": "value",
+			"data": [
+				{
+					"value": "people",
+					"label": "Persone",
+					"counter": 80,
+					"options": {
+						"icon": "n7-icon-biography",
+						"classes": "color-people"
+					}
+				},
+				{
+					"value": "places",
+					"label": "Luoghi",
+					"counter": 90,
+					"options": {
+						"icon": "n7-icon-map1",
+						"classes": "color-places"
+					}
+				},
+				{
+					"value": "concepts",
+					"label": "Concetti",
+					"counter": 62,
+					"options": {
+						"icon": "n7-icon-lightbulb",
+						"classes": "color-concepts"
+					}
+				},
+				{
+					"value": "organizations",
+					"label": "Organizzazioni",
+					"counter": 75,
+					"options": {
+						"icon": "n7-icon-building",
+						"classes": "color-organizations"
+					}
+				}
+			]
+		},
+		{
+			"id": "entity-types",
+			"type": "value",
+			"operator": "OR",
+			"limit": 10,
+			"order": "count",
+			"data": [
+				{
+					"value": "people",
+					"label": "Persone"
+				},
+				{
+					"value": "places",
+					"label": "Luoghi"
+				},
+				{
+					"value": "concepts",
+					"label": "Concetti"
+				},
+				{
+					"value": "organizations",
+					"label": "Organizzazioni"
+				}
+			]
+		},
+		{
+			"id": "entity-search",
+			"type": "value"
+		},
+		{
+			"id": "entity-links",
+			"type": "value",
+			"metadata": [
+				"title",
+				"entity-type"
+			],
+			"data": [
+				{
+					"value": "milano",
+					"label": "milano",
+					"counter": 69,
+					"metadata": {
+						"title": "milano",
+						"entity-type": "places"
+					}
+				},
+				{
+					"value": "roma",
+					"label": "roma",
+					"counter": 80,
+					"metadata": {
+						"title": "roma",
+						"entity-type": "places"
+					}
+				},
+				{
+					"value": "spazio",
+					"label": "spazio",
+					"counter": 71,
+					"metadata": {
+						"title": "spazio",
+						"entity-type": "concepts"
+					}
+				},
+				{
+					"value": "rodolfo-marna",
+					"label": "rodolfo marna",
+					"counter": 22,
+					"metadata": {
+						"title": "rodolfo marna",
+						"entity-type": "people"
+					}
+				},
+				{
+					"value": "alighiero-boetti",
+					"label": "alighiero boetti",
+					"counter": 94,
+					"metadata": {
+						"title": "alighiero boetti",
+						"entity-type": "people"
+					}
+				}
+			]
+		},
+		{
+			"id": "date-from",
+			"type": "value",
+			"data": [
+				{
+					"value": "1990",
+					"label": "1990"
+				},
+				{
+					"value": "1991",
+					"label": "1991"
+				},
+				{
+					"value": "1992",
+					"label": "1992"
+				},
+				{
+					"value": "1993",
+					"label": "1993"
+				}
+			]
+		},
+		{
+			"id": "date-to",
+			"type": "value",
+			"data": [
+				{
+					"value": "2000",
+					"label": "2000"
+				},
+				{
+					"value": "2001",
+					"label": "2001"
+				},
+				{
+					"value": "2002",
+					"label": "2002"
+				},
+				{
+					"value": "2003",
+					"label": "2003"
+				}
+			]
+		}
 	],
 	"page": {
-	  "offset": 0,
-	  "limit": 10
+		"offset": 0,
+		"limit": 10
 	},
 	"results": {
-	  "order": {
-		 "type": "score",
-		 "key": "author",
-		 "direction": "DESC"
-	  },
-	  "fields": {
-		 "title": {
-			"highlight": true,
-			"limit": 50
-		 }
-	  },
-	  "items": []
+		"order": {
+			"type": "score",
+			"key": "author",
+			"direction": "DESC"
+		},
+		"fields": {
+			"title": {
+				"highlight": true,
+				"limit": 50
+			}
+		},
+		"items": []
 	},
 	"filters": [
-	  {
-		 "facetId": "query",
-		 "value": "sil",
-		 "searchIn": [
-			{
-			  "key": "label",
-			  "operator": "LIKE"
-			}
-		 ]
-	  },
-	  {
-		 "facetId": "query-all",
-		 "value": null,
-		 "searchIn": [
-			{
-			  "key": "query-all",
-			  "operator": "="
-			}
-		 ]
-	  },
-	  {
-		 "facetId": "query-links",
-		 "value": [
-			"organizzazioni",
-			"persona"
-		 ],
-		 "searchIn": [
-			{
-			  "key": "relatedEntities.typeOfEntity",
-			  "operator": "="
-			}
-		 ]
-	  },
-	  {
-		 "facetId": "entity-links",
-		 "value": "rodolfo-marna",
-		 "searchIn": [
-			{
-			  "key": "source.id",
-			  "operator": "="
-			}
-		 ]
-	  },
-	  {
-		 "facetId": "date-from",
-		 "value": null,
-		 "searchIn": [
-			{
-			  "key": "source.dateStart",
-			  "operator": ">="
-			}
-		 ]
-	  },
-	  {
-		 "facetId": "date-to",
-		 "value": null,
-		 "searchIn": [
-			{
-			  "key": "source.dateEnd",
-			  "operator": "<="
-			}
-		 ]
-	  }
+		{
+			"facetId": "query",
+			"value": "sil",
+			"searchIn": [
+				{
+					"key": "label",
+					"operator": "LIKE"
+				}
+			]
+		},
+		{
+			"facetId": "query-all",
+			"value": null,
+			"searchIn": [
+				{
+					"key": "query-all",
+					"operator": "="
+				}
+			]
+		},
+		{
+			"facetId": "query-links",
+			"value": [
+				"organizzazioni",
+				"persona"
+			],
+			"searchIn": [
+				{
+					"key": "relatedEntities.typeOfEntity",
+					"operator": "="
+				}
+			]
+		},
+		{
+			"facetId": "entity-links",
+			"value": "rodolfo-marna",
+			"searchIn": [
+				{
+					"key": "source.id",
+					"operator": "="
+				}
+			]
+		},
+		{
+			"facetId": "date-from",
+			"value": null,
+			"searchIn": [
+				{
+					"key": "source.dateStart",
+					"operator": ">="
+				}
+			]
+		},
+		{
+			"facetId": "date-to",
+			"value": null,
+			"searchIn": [
+				{
+					"key": "source.dateEnd",
+					"operator": "<="
+				}
+			]
+		}
 	],
 	"totalCount": 557
- })
+})
