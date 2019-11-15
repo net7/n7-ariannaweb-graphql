@@ -116,6 +116,8 @@ type EntityListingPaginationResult {
     entities: [EntityCountData!]
 }
 
+union GenericNode = Node | Item
+
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
@@ -227,6 +229,9 @@ type Query {
  tree represents the tree's root, therefore any branch of a grater tree can be fetched by specifing
  the branch root's id as the treeId)"""
  getTreeOfItems: Node
+
+
+ getNode(id: ID!, maxSimilarItems: Int, entitiesListSize: Int): GenericNode
 
  """ Given a string it returns an array of item listings which match the input string based on
  a certain logic (currently an itemListing is returned if its item's label or at least one of its
