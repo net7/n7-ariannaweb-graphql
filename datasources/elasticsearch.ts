@@ -7,10 +7,22 @@ const client = new Client({ node: addr, auth: auth, ssl: { rejectUnauthorized: f
  * 
  * @param request http body request for elasticsearch query
  */
-export async function search(request: {index: string, body: any}) {
+export async function search(request: {index: string, body: any}, scrollKeepAlive: string = null) {
+	if (scrollKeepAlive)
+		request['scroll'] = scrollKeepAlive
 	const { body: res } = await client.search(request)
 	return res;
 }
+
+/**
+ * 
+ * @param scrollId id to recall next window
+ */
+export async function scroll(scrollId: string, scrollKeepAlive: string){
+	const {body: res} = await client.scroll({scroll_id: scrollId, "scroll": scrollKeepAlive})
+	return res
+}
+
 
 /**
  * 
@@ -147,3 +159,4 @@ export const queryTerm = (termField: any) => {
 		}
 	}
 }
+
