@@ -1,4 +1,6 @@
 import * as el from "./elasticsearch"
+import { response } from "express"
+import { mapValues } from "apollo-env"
 
 class Page {
 	offset: number
@@ -24,6 +26,32 @@ const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
 
+function makeItemListing(item: any) {
+	let object = {}
+	let entities = item._source[RELATED_ENTITIES]
+	if (entities != null)
+		//count number of types of Entity
+		entities.forEach(entity => {
+			if (!object[entity[TYPE_OF_ENTITY]]) { }
+			object[entity[TYPE_OF_ENTITY]] = {
+				count: 0,
+				type: entity[TYPE_OF_ENTITY]
+			}
+			object[entity[TYPE_OF_ENTITY]].count += 1
+		})
+	var list = []
+	for (const prop in object) {
+		if (object.hasOwnProperty(prop)) {
+			list.push(object[prop])
+		}
+	}
+	const res = {
+		item: item._source,
+		relatedTypesOfEntity: list
+	}
+	return res
+}
+
 export async function getRelations(entityId: string, itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number) {
 	//get items connected to the Entity
 	const termObject = {}
@@ -48,7 +76,8 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 				count: x.doc_count
 			}
 		}).filter(x => x.entity.id !== entityId)
-		return x.hits.hits.map(y => { return { item: y._source } })
+
+		return x.hits.hits.map(y => { return makeItemListing(y) })
 	})
 	return { relatedEntities: entities, relatedItems: items }
 }
@@ -105,7 +134,8 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 			item.relatedEntities != null ? item.relatedEntities.forEach(x => hashMap[x.id] = x) : null,
 			getItemsFiltered(null, { limit: 1, offset: 0 }, 10000).then(x => x.entitiesData)
 		])
-		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
+		results[1] = results[1].filter(x => hashMap[x.entity.id] != null).slice(0, entitiesListSize)
+		//return items related with first three related entities of the object
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
 			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
 		item[RELATED_ENTITIES] = results[1]
@@ -220,31 +250,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const typesOfEntity = {}
 
 	const results = await Promise.all([
-		res.hits.hits.filter(x => x._source.id === itemIdToDiscard ? false : true).map(x => {
-			const object = {}
-			let entities = x._source[RELATED_ENTITIES]
-			if (entities != null)
-				//count number of types of Entity
-				entities.forEach(entity => {
-					if (!object[entity[TYPE_OF_ENTITY]]) { }
-					object[entity[TYPE_OF_ENTITY]] = {
-						count: 0,
-						type: entity[TYPE_OF_ENTITY]
-					}
-					object[entity[TYPE_OF_ENTITY]].count += 1
-				})
-			var list = []
-			for (const prop in object) {
-				if (object.hasOwnProperty(prop)) {
-					list.push(object[prop])
-				}
-			}
-			const res = {
-				item: x._source,
-				relatedTypesOfEntity: list
-			}
-			return res
-		}),
+		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x)),
 		buckets.map(x => {
 			let entity = JSON.parse(x.key)
 			if (typesOfEntity[entity.typeOfEntity] == null)
@@ -294,9 +300,9 @@ export async function getTree() {
 	do {
 		res2 = await el.scroll(scrollId, "1m")
 	}
-	while(res2.hits.hits > 0){
+	while (res2.hits.hits > 0) {
 		scrollId = res2._scroll_id
-		res.push(res2.hits.hits)	
+		res.push(res2.hits.hits)
 	}
 	const root = res.shift()
 	const tree = buildTree(root, res)
@@ -306,7 +312,7 @@ export async function getTree() {
 export async function getNode(id: string, maxSimilarItems: number, entitiesListSize: number) {
 	const results = await Promise.all([el.search(el.requestBuilder("tree", el.queryTerm({ id: id }))),
 	getItem(id, maxSimilarItems, entitiesListSize)])
-	
+
 	return results[1] != null ? results[1] : results[0].hits.hits.length > 0 ? results[0].hits.hits[0]._source : null
 }
 
@@ -314,7 +320,6 @@ export async function getNode(id: string, maxSimilarItems: number, entitiesListS
  * Search section: constants and functions
  */
 
-const ALL_FIELDS_QUERY = "query-all"
 const QUERY = "query"
 const QUERY_LINKS = "query-links"
 const ENTITY_LINKS = "entity-links"
@@ -331,6 +336,10 @@ const BOOL = 'bool'
 const FILTER = 'filter'
 const SHOULD = 'should'
 const MUST = "must"
+
+export async function makeElement(element) {
+	
+}
 
 export async function search(searchParameters: any) {
 
@@ -394,7 +403,7 @@ export async function search(searchParameters: any) {
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
 	console.log(JSON.stringify(body))
 	let result = await el.search(request)
-	let x = 5
+	let response = Promise.all([])
 }
 
 search({
