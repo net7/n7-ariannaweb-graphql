@@ -102,7 +102,7 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 		const hashMap = {}
 		let item = body[0]._source
 		const results = await Promise.all([
-			item.relatedEntities.forEach(x => hashMap[x.id] = x),
+			item.relatedEntities != null ? item.relatedEntities.forEach(x => hashMap[x.id] = x) : null,
 			getItemsFiltered(null, { limit: 1, offset: 0 }, 10000).then(x => x.entitiesData)
 		])
 		results[1] = results[1].filter(x => hashMap[x.entity.id] != null ? true : false).slice(0, entitiesListSize)
