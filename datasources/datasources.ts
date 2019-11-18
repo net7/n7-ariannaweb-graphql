@@ -307,7 +307,7 @@ export async function getNode(id: string, maxSimilarItems: number, entitiesListS
 	const results = await Promise.all([el.search(el.requestBuilder("tree", el.queryTerm({ id: id }))),
 	getItem(id, maxSimilarItems, entitiesListSize)])
 	
-	return results[1] != null ? results[1] : results[0].hits.hits[0]
+	return results[1] != null ? results[1] : results[0].hits.hits[0]._source
 }
 
 /**
