@@ -5,8 +5,9 @@ import * as item from './Item'
 import * as entity from './Entity'
 import * as node from './Node'
 import * as genericNode from './GenericNode'
+import * as result from './Result'
 
-const externalResolvers = [field, item, entity, node, genericNode].map(x => x.resolvers)
+const externalResolvers = [field, item, entity, node, genericNode, result].map(x => x.resolvers)
 
 export const resolvers = merge({
 	Query: {
