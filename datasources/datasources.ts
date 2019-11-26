@@ -328,6 +328,7 @@ export async function getNode(id: string, maxSimilarItems: number, entitiesListS
  */
 
 const QUERY = "query"
+const QUERY_ALL = "query-all"
 const QUERY_LINKS = "query-links"
 const ENTITY_LINKS = "entity-links"
 const ENTITY_TYPES = "entity-types"
@@ -335,7 +336,7 @@ const ENTITY_SEARCH = "entity-search"
 
 const AGGS = "aggs"
 const AGGS_NESTED_FIELD = "entities"
-const AGG_FIELD = "docsPerEntity"
+const AGG_FIELD = "docs_per_doctype"
 const NESTED_FIELD = "relatedEntities"
 const KEYWORD = "keyword"
 const ALL_FIELDS = "*"
@@ -371,9 +372,10 @@ export async function search(searchParameters: any) {
 		if (filter && filter.value) {
 			switch (filter.facetId) {
 				case QUERY:
+					// query full text
 					let searchIn = filter.searchIn[0]
 					let term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					if (filters[facet.id].value == true)
+					if (filters[QUERY_ALL].value == true)
 						searchIn.key = "*"
 					let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
 					if (body[QUERY] == null)
@@ -384,14 +386,14 @@ export async function search(searchParameters: any) {
 						body[QUERY][BOOL][MUST] = bools.bool.must
 					break
 				case QUERY_LINKS:
+					// facets for filtering item results
 					let terms = filter.value.map(element => {
 						let termObject = {}
-						termObject[TYPE_OF_ENTITY + '.' + KEYWORD] = element
+						termObject[DOCUMENT_TYPE + '.' + KEYWORD] = element
 						return el.queryTerm(termObject).query
 					})
 
 					if (terms.length > 0) {
-						terms.push(el.queryBool([], [], [], [{ exists: { field: TYPE_OF_ENTITY + '.' + KEYWORD } }]).query)
 						bools = el.queryBool([], terms).query
 					}
 
@@ -406,16 +408,33 @@ export async function search(searchParameters: any) {
 					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità
 					break
 				case ENTITY_LINKS:
-					//searchIn = filter.searchIn[0]
-					body[AGGS] = el.aggsNested(AGGS_NESTED_FIELD, NESTED_FIELD,
-						el.aggsTerms(AGG_FIELD, null, scriptEntityFields, 10000)).aggs
+					// add query entity list
+					let list = []
+					filter.value.forEach(value => {
+							let term = {}
+							term[RELATED_ENTITIES + "." + ID] = value
+							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
+						}
+					)
+					bools = el.queryBool(list).query
+					if (body[QUERY] == null)
+						body[QUERY] = bools
+					else if (body[QUERY][BOOL] == null)
+						body[QUERY][BOOL] = bools.bool
+					else if (body[QUERY][BOOL][MUST] == null)
+						body[QUERY][BOOL][MUST] = bools.bool.must
+					else 
+						bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
 					break
 			}
 		}
 	})
 
+	// returns facets on document Type
+	body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
+
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
-	// console.log(JSON.stringify(body))
+	//console.log(JSON.stringify(body))
 	let result = await el.search(request)
 	let elements = result.hits.hits
 	elements = await Promise.all([elements.map(x => makeElement(x._source))])
@@ -662,7 +681,7 @@ search({
 		},
 		{
 			"facetId": "entity-links",
-			"value": "rodolfo-marna",
+			"value": ["0263a407-d0dd-4647-98e2-109b0b0c05f3"],
 			"searchIn": [
 				{
 					"key": "source.id",
