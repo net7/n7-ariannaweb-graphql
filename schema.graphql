@@ -46,6 +46,7 @@ type Item {
 type ItemListing {
     item: Item!
     thumbnail: String
+    relation: String
     relatedTypesOfEntity: [TypeOfEntityCountData!]
     # breadcrumbs: [LinkElement!]
 }

@@ -27,9 +27,10 @@ const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
 
-function makeItemListing(item: any) {
+function makeItemListing(item: any, entityId: string = "") {
 	let object = {}
-	let entities = item._source[RELATED_ENTITIES]
+  let entities = item._source[RELATED_ENTITIES]
+  var relation = "";
 	if (entities != null)
 		//count number of types of Entity
 		entities.forEach(entity => {
@@ -38,7 +39,8 @@ function makeItemListing(item: any) {
 				count: 0,
 				type: entity[TYPE_OF_ENTITY]
 			}
-			object[entity[TYPE_OF_ENTITY]].count += 1
+      object[entity[TYPE_OF_ENTITY]].count += 1
+      relation = entityId === entity.id ? entity.relation : relation;
 		})
 	var list = []
 	for (const prop in object) {
@@ -48,7 +50,8 @@ function makeItemListing(item: any) {
 	}
 	const res = {
 		item: item._source,
-		relatedTypesOfEntity: list
+    relatedTypesOfEntity: list,
+    relation: relation
 	}
 	return res
 }
@@ -78,7 +81,7 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 			}
 		}).filter(x => x.entity.id !== entityId)
 
-		return x.hits.hits.map(y => { return makeItemListing(y) })
+		return x.hits.hits.map(y => { return makeItemListing(y, entityId) })
 	})
 	return { relatedEntities: entities, relatedItems: items }
 }
