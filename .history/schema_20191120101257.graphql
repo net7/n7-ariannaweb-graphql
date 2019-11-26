@@ -46,7 +46,6 @@ type Item {
 type ItemListing {
     item: Item!
     thumbnail: String
-    relation: String
     relatedTypesOfEntity: [TypeOfEntityCountData!]
     # breadcrumbs: [LinkElement!]
 }
@@ -66,7 +65,7 @@ type KeyValueFieldGroup {
     fields: [Field!]
 }
 
-""" Used to associate a typeOfEntity with a count/number (as: "People, 6" or "Organizzazioni, 12")
+""" Used to associate a typeOfEntity with a count/number (as: "People, 6" or "Organizzazioni, 12") 
 optionally can be enabled or disabled """
 type TypeOfEntityCountData {
     type: String!
@@ -77,7 +76,6 @@ type TypeOfEntityCountData {
 type EntityCountData {
     entity: Entity!
     count: Int!
-    relation: String
 }
 
 """ Filter data used as the result of a global filer query """
@@ -115,11 +113,10 @@ type ItemListingPaginationResult {
    items: [ItemListing!]
 }
 
-type PaginationResult {
+type EntityListingPaginationResult {
     totalCount: Int!
-    results: [Result!]
+    entities: [EntityCountData!]
 }
-union Result = Item | EntityCountData
 
 union GenericNode = Node | Item
 
@@ -200,7 +197,7 @@ input SearchParameters {
     facets: [SearchFacet!]
     filters: [SearchFilter]
     results: SearchResults!
-    page: Page
+    page: Page 
 }
 
 #======================================================================================
@@ -246,7 +243,7 @@ type Query {
     ### , autoCompleteOptions (<--- to add?)
     itemsPagination: Page
     typeOfEntity:  String
- ): PaginationResult!
+ ): EntityListingPaginationResult!
 
 search(searchParameters: SearchParameters!): String
 }

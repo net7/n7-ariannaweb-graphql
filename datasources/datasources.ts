@@ -19,6 +19,7 @@ const ID = "id"
 const CHILDREN = "branches"
 const LEVEL = "level"
 const POSITION = "position"
+const RELATION = "relation"
 
 const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
@@ -26,9 +27,10 @@ const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
 
-function makeItemListing(item: any) {
+function makeItemListing(item: any, entityId: string = "") {
 	let object = {}
 	let entities = item[RELATED_ENTITIES]
+  	var relation = "";
 	if (entities != null)
 		//count number of types of Entity
 		entities.forEach(entity => {
@@ -37,7 +39,8 @@ function makeItemListing(item: any) {
 				count: 0,
 				type: entity[TYPE_OF_ENTITY]
 			}
-			object[entity[TYPE_OF_ENTITY]].count += 1
+      object[entity[TYPE_OF_ENTITY]].count += 1
+      relation = entityId === entity.id ? entity.relation : relation;
 		})
 	var list = []
 	for (const prop in object) {
@@ -47,7 +50,8 @@ function makeItemListing(item: any) {
 	}
 	const res = {
 		item: item,
-		relatedTypesOfEntity: list
+    relatedTypesOfEntity: list,
+    relation: relation
 	}
 	return res
 }
@@ -77,7 +81,7 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 			}
 		}).filter(x => x.entity.id !== entityId)
 
-		return x.hits.hits.map(y => { return makeItemListing(y._source) })
+		return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
 	})
 	return { relatedEntities: entities, relatedItems: items }
 }
@@ -86,8 +90,8 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
  *
  * @param entityId entity Id to recall corresponding entity, items connected and entities related
  * @param itemsPagination object containing items pagination parameter
- * @param entitiesListSize entityList size to return 
- * @returns entity details together with the items and entities related 
+ * @param entitiesListSize entityList size to return
+ * @returns entity details together with the items and entities related
  */
 export async function getEntity(entityId: string, itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number = 10000) {
 	if (entityId == null || entityId === '')
@@ -115,10 +119,10 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 }
 
 /**
- * 
+ *
  * @param itemId item Id to recall corresponding item
  * @param maxSimilarItems object containing items pagination parameter
- * @param entitiesListSize entityList size to return 
+ * @param entitiesListSize entityList size to return
  */
 export async function getItem(itemId: string, maxSimilarItems: number = 10000, entitiesListSize: number = 10000) {
 	if (itemId == null || itemId === '')
@@ -134,7 +138,7 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 			item.relatedEntities != null ? item.relatedEntities.forEach(x => hashMap[x.id] = x) : null,
 			getItemsFiltered(null, { limit: 1, offset: 0 }, 10000).then(x => x.entitiesData)
 		])
-		results[1] = results[1].filter(x => hashMap[x.entity.id] != null).slice(0, entitiesListSize)
+		results[1] = results[1].filter(x => hashMap[x.entity.id] != null).map(x => { x[RELATION] = hashMap[x.entity.id][RELATION]; return x; } ).slice(0, entitiesListSize)
 		//return items related with first three related entities of the object
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
 			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
@@ -146,7 +150,7 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 }
 
 /**
- * 
+ * Resolver for Autocomplete Apollo query
  * @param input string to search in a label field of an entity
  * @param itemsPagination object containing pagination parameter
  * @param typeOfEntity category where to searh entities with names similar to input
@@ -169,7 +173,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	const q2 = el.queryString({ fields: [LABEL], value: input.trim() + "*" })
 	boolsArray.push(q2)
 	const bools = el.queryBool(boolsArray)
-	const request = el.requestBuilder(ENTITIES_INDEX, {
+	const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
@@ -189,34 +193,37 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	})
 
 	const entityHashMap = {}
-
+  var total = 0;
 	const res = await Promise.all(
 		[el.search(request).then(x => {
-			x.hits.hits.forEach(x => {
-				entityHashMap[x._source.id] = x._source
-			});
-			return x.hits.total
-		}), el.search(request2).then(res => res.aggregations.
-			entities.docsPerEntity.buckets)])
-	const total = res[0]
+  total = x.hits.total
+      return x.hits.hits.map( x => x._source )
+    }), el.search(request2).then(res => {res.aggregations.
+        entities.docsPerEntity.buckets.forEach( el => {
+          entityHashMap[el.key] = el.doc_count;
+        })
+      }
+      )])
 	const results = []
-	res[1].forEach(el => {
-		if (entityHashMap[el.key]) {
+	res[0].forEach(el => {
+		if (entityHashMap[el.id]) {
 			results.push({
-				entity: entityHashMap[el.key],
-				count: el.doc_count
+				entity: el,
+				count: entityHashMap[el.id]
 			})
-		}
+		} else {
+      results.push(el)
+    }
 	});
 
-	return { totalCount: total, entities: results }
+	return { totalCount: total, results: results }
 }
 
 /**
- * 
+ *
  * @param entityIds entities to filter the items connected to them
  * @param itemsPagination object containing pagination parameter
- * @param entitiesListSize entityList size to return 
+ * @param entitiesListSize entityList size to return
  */
 export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
@@ -258,7 +265,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 			typesOfEntity[entity.typeOfEntity].count++
 			return {
 				entity: entity,
-				count: x.doc_count
+        count: x.doc_count
 			}
 		}),
 	])
@@ -340,11 +347,6 @@ const MUST = "must"
 const DOCUMENT_TYPE = "document_type"
 const OC = "oggetto-culturale"
 
-
-async function makeEntitityListing(){
-	
-}
-
 async function makeElement(element: any) {
 	if (element[DOCUMENT_TYPE] === OC){
 		return makeItemListing(element)
@@ -401,7 +403,7 @@ export async function search(searchParameters: any) {
 						body[QUERY][BOOL][FILTER] = bools.bool.filter
 					break
 				case ENTITY_TYPES:
-					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità  
+					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità
 					break
 				case ENTITY_LINKS:
 					//searchIn = filter.searchIn[0]
