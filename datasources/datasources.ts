@@ -28,7 +28,7 @@ const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 
 function makeItemListing(item: any) {
 	let object = {}
-	let entities = item._source[RELATED_ENTITIES]
+	let entities = item[RELATED_ENTITIES]
 	if (entities != null)
 		//count number of types of Entity
 		entities.forEach(entity => {
@@ -46,7 +46,7 @@ function makeItemListing(item: any) {
 		}
 	}
 	const res = {
-		item: item._source,
+		item: item,
 		relatedTypesOfEntity: list
 	}
 	return res
@@ -77,7 +77,7 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 			}
 		}).filter(x => x.entity.id !== entityId)
 
-		return x.hits.hits.map(y => { return makeItemListing(y) })
+		return x.hits.hits.map(y => { return makeItemListing(y._source) })
 	})
 	return { relatedEntities: entities, relatedItems: items }
 }
@@ -250,7 +250,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const typesOfEntity = {}
 
 	const results = await Promise.all([
-		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x)),
+		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
 		buckets.map(x => {
 			let entity = JSON.parse(x.key)
 			if (typesOfEntity[entity.typeOfEntity] == null)
@@ -337,8 +337,20 @@ const FILTER = 'filter'
 const SHOULD = 'should'
 const MUST = "must"
 
-export async function makeElement(element) {
+const DOCUMENT_TYPE = "document_type"
+const OC = "oggetto-culturale"
+
+
+async function makeEntitityListing(){
 	
+}
+
+async function makeElement(element: any) {
+	if (element[DOCUMENT_TYPE] === OC){
+		return makeItemListing(element)
+	} else {
+		return element
+	}
 }
 
 export async function search(searchParameters: any) {
@@ -374,8 +386,8 @@ export async function search(searchParameters: any) {
 						let termObject = {}
 						termObject[TYPE_OF_ENTITY + '.' + KEYWORD] = element
 						return el.queryTerm(termObject).query
-					});
-					let bool = {}
+					})
+
 					if (terms.length > 0) {
 						terms.push(el.queryBool([], [], [], [{ exists: { field: TYPE_OF_ENTITY + '.' + KEYWORD } }]).query)
 						bools = el.queryBool([], terms).query
@@ -401,9 +413,10 @@ export async function search(searchParameters: any) {
 	})
 
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
-	console.log(JSON.stringify(body))
+	// console.log(JSON.stringify(body))
 	let result = await el.search(request)
-	let response = Promise.all([])
+	let elements = result.hits.hits
+	elements = await Promise.all([elements.map(x => makeElement(x._source))])
 }
 
 search({
