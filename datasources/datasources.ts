@@ -423,7 +423,7 @@ export async function search(searchParameters: any) {
 						body[QUERY][BOOL] = bools.bool
 					else if (body[QUERY][BOOL][MUST] == null)
 						body[QUERY][BOOL][MUST] = bools.bool.must
-					else 
+					else
 						bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
 					break
 			}
@@ -437,7 +437,18 @@ export async function search(searchParameters: any) {
 	//console.log(JSON.stringify(body))
 	let result = await el.search(request)
 	let elements = result.hits.hits
-	elements = await Promise.all([elements.map(x => makeElement(x._source))])
+  elements = await Promise.all([elements.map(x => makeElement(x._source))])
+
+  let aggregations = result.aggregations;
+  let response = {
+    totalCount: result.hits.total,
+    filters: searchParameters.filters,
+    facets: searchParameters.facets,
+    results: searchParameters.results
+  }
+
+  return response;
+
 }
 
 search({

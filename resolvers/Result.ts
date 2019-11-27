@@ -9,6 +9,16 @@ export const resolvers = {
 				return 'EntityCountData';
 			}
 		}
+  },
+  SearchResult: {
+		__resolveType(result, context, info) {
+			if (result.id) {
+				return 'Item';
+			}
+			else {
+				return 'Enity';
+			}
+		}
 	}
 }
 

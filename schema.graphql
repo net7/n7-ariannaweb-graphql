@@ -123,6 +123,8 @@ union Result = Item | EntityCountData
 
 union GenericNode = Node | Item
 
+
+
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
@@ -141,19 +143,41 @@ input Page {
   limit: Int!  # size
 }
 
-input Options {
+input OptionsInput {
     icon: String
     classes: String
 }
 
-input Data {
+type Options {
+    icon: String
+    classes: String
+}
+
+input DataInput {
+    label: String!
+    value: String!
+    counter: Int
+    options: OptionsInput
+}
+
+type Data {
     label: String!
     value: String!
     counter: Int
     options: Options
 }
 
-input SearchFacet {
+input SearchFacetInput {
+    id: String!
+    type: String!
+    data: [DataInput!]
+    operator: String
+    limit: Int
+    order: String # field name for ordering
+    metadata: [String]
+}
+
+type SearchFacet {
     id: String!
     type: String!
     data: [Data!]
@@ -163,46 +187,84 @@ input SearchFacet {
     metadata: [String]
 }
 
-input FilterSearchIn {
+input FilterSearchInInput {
     key: String
     operator: String
 }
 
-input SearchFilter {
+type FilterSearchIn {
+    key: String
+    operator: String
+}
+
+input SearchFilterInput {
+    facetId: String
+    value: String
+    searchIn: [FilterSearchInInput!]
+}
+
+type SearchFilter {
     facetId: String
     value: String
     searchIn: [FilterSearchIn!]
 }
 
-input ResultsOrder {
+type ResultsOrder {
+    type: String!
+    key: String!
+    direction: String
+}
+input ResultsOrderInput {
     type: String!
     key: String!
     direction: String
 }
 
-input FieldsTitle {
+type FieldsTitle {
     highlight: Boolean
     limit: Int
 }
 
-input ResultsFields {
-    title: FieldsTitle
+
+input ResultsFieldsInput {
+    id: String
+    highlight: Boolean
+    limit: Int
+}
+type ResultsFields {
+    id: String
+    highlight: Boolean
+    limit: Int
 }
 
-input SearchResults {
-    order: ResultsOrder
-    fields: ResultsFields
-    items: [String]
+input SearchResultsInput {
+    order: ResultsOrderInput
+    fields: [ResultsFieldsInput]
 }
+
+type SearchResults {
+    order: ResultsOrder
+    fields: [ResultsFields]
+    items: [SearchResult]
+}
+
+union SearchResult = Entity | Item
 
 input SearchParameters {
     totalCount: Int!
-    facets: [SearchFacet!]
-    filters: [SearchFilter]
-    results: SearchResults!
+    facets: [SearchFacetInput!]
+    filters: [SearchFilterInput]
+    results: SearchResultsInput
     page: Page
 }
 
+type SearchResponse {
+    totalCount: Int!
+    facets: [SearchFacet!]
+    filters: [SearchFilter]
+    results: SearchResults
+
+}
 #======================================================================================
 #                                QUERY DEFINITIONS
 #======================================================================================
@@ -248,7 +310,7 @@ type Query {
     typeOfEntity:  String
  ): PaginationResult!
 
-search(searchParameters: SearchParameters!): String
+search(searchParameters: SearchParameters!): SearchResponse
 }
 
 
