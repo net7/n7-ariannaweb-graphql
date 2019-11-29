@@ -119,7 +119,7 @@ type PaginationResult {
     totalCount: Int!
     results: [Result!]
 }
-union Result = Item | EntityCountData
+union Result = ItemListing | EntityCountData
 
 union GenericNode = Node | Item
 

@@ -212,7 +212,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 				count: entityHashMap[el.id]
 			})
 		} else {
-      results.push(el)
+      results.push({item: el})
     }
 	});
 
@@ -491,7 +491,7 @@ export async function search(searchParameters: any) {
 
 }
 
-search({
+/*search({
 	"facets": [
 		{
 			"id": "query",
@@ -762,4 +762,4 @@ search({
 		}
 	],
 	"totalCount": 557
-})
+})*/

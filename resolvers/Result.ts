@@ -2,8 +2,8 @@
 export const resolvers = {
 	Result: {
 		__resolveType(result, context, info) {
-			if (result.id) {
-				return 'Item';
+			if (result.item) {
+				return 'ItemListing';
 			}
 			else {
 				return 'EntityCountData';
