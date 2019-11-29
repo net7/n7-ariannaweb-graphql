@@ -369,42 +369,56 @@ export async function search(searchParameters: any) {
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
 		//let internalRequest = {}
-		if (filter && filter.value) {
-			switch (filter.facetId) {
+		//if (filter && filter.value) {
+			switch (facet.id) {
 				case QUERY:
-					// query full text
-					let searchIn = filter.searchIn[0]
-					let term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-					if (filters[QUERY_ALL].value == true)
-						searchIn.key = "*"
-					let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
-					if (body[QUERY] == null)
-						body[QUERY] = bools
-					else if (body[QUERY][BOOL] == null)
-						body[QUERY][BOOL] = bools.bool
-					else
-						body[QUERY][BOOL][MUST] = bools.bool.must
-					break
+          // query full text
+          if (filter && filter.value){
+            let searchIn = filter.searchIn[0]
+            let term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+            if (filters[QUERY_ALL].value == true)
+              searchIn.key = "*"
+            let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
+            if (body[QUERY] == null)
+              body[QUERY] = bools
+            else if (body[QUERY][BOOL] == null)
+              body[QUERY][BOOL] = bools.bool
+            else
+              body[QUERY][BOOL][MUST] = bools.bool.must
+            break
+          }
 				case QUERY_LINKS:
+          if (filter && filter.value){
 					// facets for filtering item results
-					let terms = filter.value.map(element => {
-						let termObject = {}
-						termObject[DOCUMENT_TYPE + '.' + KEYWORD] = element
-						return el.queryTerm(termObject).query
-					})
+            let terms = filter.value.map(element => {
+              let termObject = {}
+              termObject[DOCUMENT_TYPE + '.' + KEYWORD] = element
+              return el.queryTerm(termObject).query
+            })
 
-					if (terms.length > 0) {
-						bools = el.queryBool([], terms).query
-					}
-
-					if (body[QUERY] == null)
-						body[QUERY] = bools
-					else if (body[QUERY][BOOL] == null)
-						body[QUERY][BOOL] = bools.bool
-					else
-						body[QUERY][BOOL][FILTER] = bools.bool.filter
+              if (terms.length > 0) {
+                let bools = el.queryBool([], terms).query
+                if (body[QUERY] == null)
+                  body[QUERY] = bools
+                else if (body[QUERY][BOOL] == null)
+                  body[QUERY][BOOL] = bools.bool
+                else
+                  body[QUERY][BOOL][FILTER] = bools.bool.filter
+              }
+          }
+          //facet results
+          let aggr1 = el.aggsTerms(QUERY_LINKS, DOCUMENT_TYPE, null, 10000).aggs;
+          if (body[AGGS] == null){
+            body[AGGS] = aggr1;
+          }
 					break
 				case ENTITY_TYPES:
+            let aggr2 =el.aggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, null, 10000).aggs;
+            if (body[AGGS] == null){
+              body[AGGS] = aggr2
+            } else {
+              body[AGGS][ENTITY_TYPES] = aggr2[ENTITY_TYPES];
+            }
 					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità
 					break
 				case ENTITY_LINKS:
@@ -416,7 +430,7 @@ export async function search(searchParameters: any) {
 							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
 						}
 					)
-					bools = el.queryBool(list).query
+					let bools = el.queryBool(list).query
 					if (body[QUERY] == null)
 						body[QUERY] = bools
 					else if (body[QUERY][BOOL] == null)
@@ -427,24 +441,50 @@ export async function search(searchParameters: any) {
 						bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
 					break
 			}
-		}
+		//} //if filter.value
 	})
 
 	// returns facets on document Type
-	body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
+	//body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
 
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
 	//console.log(JSON.stringify(body))
 	let result = await el.search(request)
-	let elements = result.hits.hits
-  elements = await Promise.all([elements.map(x => makeElement(x._source))])
+	//let elements = result.hits.hits
+  //elements = await Promise.all([elements.map(x => makeElement(x._source))])
 
-  let aggregations = result.aggregations;
+  let aggregations = [];
+  let elements = [];
+  const items = result.hits.hits.map(x => elements.push(x._source));
+
+  if(result.aggregations){
+
+    facets.forEach( (facet) => {
+      if( result.aggregations[facet.id] != null && !facet.data ) {
+        switch (facet.id) {
+          case QUERY_LINKS:
+            let data = result.aggregations[facet.id].buckets.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket.key,
+                "counter": bucket.doc_count
+              };
+            });
+            facet.data = data;
+            break;
+          }
+        }
+      });
+     }
+
+
+ searchParameters.results.items = elements;
   let response = {
     totalCount: result.hits.total,
     filters: searchParameters.filters,
     facets: searchParameters.facets,
     results: searchParameters.results
+
   }
 
   return response;

@@ -12,11 +12,11 @@ export const resolvers = {
   },
   SearchResult: {
 		__resolveType(result, context, info) {
-			if (result.id) {
+			if (result.parent_type == "cultural_object") {
 				return 'Item';
 			}
 			else {
-				return 'Enity';
+				return 'Entity';
 			}
 		}
 	}
