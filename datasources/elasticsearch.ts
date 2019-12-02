@@ -156,7 +156,8 @@ export const globalAggsTerms = function (buckets, field, size, filter) {
     filterAggs = {};
     filterAggs[name] = { };
     filterAggs[name]['filter'] = {};
-    filterAggs[name]['filter'][filterfield] = {};
+    filterAggs[name]['filter']['term'] = {};
+    filterAggs[name]['filter']['term'][filterfield] = {};
     filterAggs[name]['filter'][filterfield] = value;
 
     filterAggs[name]['aggs'] = termAggs;
