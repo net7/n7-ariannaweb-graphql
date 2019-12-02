@@ -415,8 +415,7 @@ export async function search(searchParameters: any) {
           }
 					break
 				case ENTITY_TYPES: //list of entity types for inner filter
-            let aggr2 =el.aggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, null, 10000).aggs;
-            aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
+            let  aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
             if (body[AGGS] == null){
               body[AGGS] = aggr2
             } else {
@@ -425,23 +424,35 @@ export async function search(searchParameters: any) {
 					break;
 				case ENTITY_LINKS:
 					// add query entity list
-					let list = []
-					filter.value.forEach(value => {
-							let term = {}
+          let list = []
+          if (filter && filter.value){
+            filter.value.forEach(value => {
+              let term = {}
 							term[RELATED_ENTITIES + "." + ID] = value
 							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
 						}
-					)
-					let bools = el.queryBool(list).query
-					if (body[QUERY] == null)
+            )
+            let bools = el.queryBool(list).query
+
+            if (body[QUERY] == null)
 						body[QUERY] = bools
-					else if (body[QUERY][BOOL] == null)
+            else if (body[QUERY][BOOL] == null)
 						body[QUERY][BOOL] = bools.bool
-					else if (body[QUERY][BOOL][MUST] == null)
+            else if (body[QUERY][BOOL][MUST] == null)
 						body[QUERY][BOOL][MUST] = bools.bool.must
-					else
-						bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
-					break
+            else
+            bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
+          }
+
+            let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
+            if (body[AGGS] == null){
+              body[AGGS] = aggr3
+            } else {
+              body[AGGS][ENTITY_LINKS] = aggr3[ENTITY_LINKS];
+            }
+          break
+
+
 			}
 		//} //if filter.value
 	})
@@ -474,6 +485,27 @@ export async function search(searchParameters: any) {
             });
             facet.data = data;
             break;
+          case ENTITY_TYPES:
+            let data2 = result.aggregations[facet.id]['all_entities']['buckets'].buckets.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket.key,
+                "counter": bucket.doc_count
+              };
+            });
+            facet.data = data2;
+            break;
+            case ENTITY_LINKS: {
+              let data3 = result.aggregations[facet.id]['buckets']['buckets'].map(bucket => {
+                return {
+                  "value": bucket.key,
+                  "label": bucket.key,
+                  "counter": bucket.doc_count
+                };
+              });
+              facet.data = data3;
+              break;
+            }
           }
         }
       });

@@ -157,8 +157,7 @@ export const globalAggsTerms = function (buckets, field, size, filter) {
     filterAggs[name] = { };
     filterAggs[name]['filter'] = {};
     filterAggs[name]['filter']['term'] = {};
-    filterAggs[name]['filter']['term'][filterfield] = {};
-    filterAggs[name]['filter'][filterfield] = value;
+    filterAggs[name]['filter']['term'][filterfield] = value;
 
     filterAggs[name]['aggs'] = termAggs;
   }
@@ -168,6 +167,55 @@ export const globalAggsTerms = function (buckets, field, size, filter) {
   } else {
     x.aggs[buckets]['aggs'] = termAggs;
   }
+
+  return x;
+};
+
+/**
+ *
+ * @param buckets buckets name
+ * @param field field to aggregate
+ * @param size max number of buckets returned
+ * @param filter object with filter field {term, value, filter}
+ */
+export const filterAggsTerms = function (buckets, field, size, filter) {
+  if (field === void 0) { field = null; }
+  if (filter === void 0) { filter = null; }
+  if (size === void 0) { size = 10000; }
+  var x = {
+      aggs: {}
+  };
+  x.aggs[buckets] = {};
+
+  let termAggs, filterAggs;
+
+  if (field != null){
+    termAggs = {
+      buckets : {
+        terms: {
+          min_doc_count: 1,
+          size: size,
+          field: field
+        }
+      }
+    };
+  }
+
+  if (filter != null) {
+    const name = filter['filter'];
+    const value = filter['value'];
+    const filterfield = filter['term'];
+    filterAggs = {};
+    filterAggs['term'] = {};
+    filterAggs['term'][filterfield] = value;
+  }
+
+  if ( filterAggs != null ) {
+    x.aggs[buckets]['filter'] = filterAggs;
+  }
+
+  x.aggs[buckets]['aggs'] = termAggs;
+
 
   return x;
 };
