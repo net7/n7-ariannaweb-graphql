@@ -375,7 +375,7 @@ export async function search(searchParameters: any) {
           // query full text
           if (filter && filter.value){
             let searchIn = filter.searchIn[0]
-            let term = filter.value + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+            let term = filter.value[0] + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
             if (filters[QUERY_ALL].value == true)
               searchIn.key = "*"
             let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query

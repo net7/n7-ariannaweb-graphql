@@ -205,7 +205,7 @@ input SearchFilterInput {
 
 type SearchFilter {
     facetId: String
-    value: String
+    value: [String]
     searchIn: [FilterSearchIn!]
 }
 

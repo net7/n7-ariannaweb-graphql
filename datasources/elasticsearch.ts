@@ -150,19 +150,16 @@ export const globalAggsTerms = function (buckets, field, size, filter) {
   }
 
   if (filter != null) {
-    const name = filter['name'];
+    const name = filter['filter'];
     const value = filter['value'];
-    const field = filter['field'];
-    filterAggs = {
-      name : {
-        filter:{
-          terms: {
-            field : value
-          }
-        }
-      }
-    };
-    filterAggs[filter['name']]['aggs'] = termAggs;
+    const filterfield = filter['term'];
+    filterAggs = {};
+    filterAggs[name] = { };
+    filterAggs[name]['filter'] = {};
+    filterAggs[name]['filter'][filterfield] = {};
+    filterAggs[name]['filter'][filterfield] = value;
+
+    filterAggs[name]['aggs'] = termAggs;
   }
 
   if ( filterAggs != null ) {
