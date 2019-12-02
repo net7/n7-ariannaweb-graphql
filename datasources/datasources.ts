@@ -387,7 +387,7 @@ export async function search(searchParameters: any) {
               body[QUERY][BOOL][MUST] = bools.bool.must
             break
           }
-				case QUERY_LINKS:
+				case QUERY_LINKS: //search for resources typology
           if (filter && filter.value){
 					// facets for filtering item results
             let terms = filter.value.map(element => {
@@ -410,17 +410,19 @@ export async function search(searchParameters: any) {
           let aggr1 = el.aggsTerms(QUERY_LINKS, DOCUMENT_TYPE, null, 10000).aggs;
           if (body[AGGS] == null){
             body[AGGS] = aggr1;
+          }else {
+            body[AGGS][QUERY_LINKS] = aggr1[QUERY_LINKS];
           }
 					break
-				case ENTITY_TYPES:
+				case ENTITY_TYPES: //list of entity types for inner filter
             let aggr2 =el.aggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, null, 10000).aggs;
+            aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
             if (body[AGGS] == null){
               body[AGGS] = aggr2
             } else {
               body[AGGS][ENTITY_TYPES] = aggr2[ENTITY_TYPES];
             }
-					// TODO: da chiarire con Edgar: forse fare aggregazione per restituire i tipi di entità
-					break
+					break;
 				case ENTITY_LINKS:
 					// add query entity list
 					let list = []

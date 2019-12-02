@@ -118,6 +118,64 @@ export const aggsTerms = (buckets: string, field: string = null, script: string 
 
 /**
  *
+ * @param buckets buckets name
+ * @param field field to aggregate
+ * @param size max number of buckets returned
+ * @param filter object with filter field {term, value, filter}
+ */
+export const globalAggsTerms = function (buckets, field, size, filter) {
+  if (field === void 0) { field = null; }
+  if (filter === void 0) { filter = null; }
+  if (size === void 0) { size = 10000; }
+  var x = {
+      aggs: {}
+  };
+  x.aggs[buckets] = {
+    global:{}
+
+  };
+
+  let termAggs, filterAggs;
+
+  if (field != null){
+    termAggs = {
+      buckets : {
+        terms: {
+          min_doc_count: 1,
+          size: size,
+          field: field
+        }
+      }
+    };
+  }
+
+  if (filter != null) {
+    const name = filter['name'];
+    const value = filter['value'];
+    const field = filter['field'];
+    filterAggs = {
+      name : {
+        filter:{
+          terms: {
+            field : value
+          }
+        }
+      }
+    };
+    filterAggs[filter['name']]['aggs'] = termAggs;
+  }
+
+  if ( filterAggs != null ) {
+    x.aggs[buckets]['aggs'] = filterAggs;
+  } else {
+    x.aggs[buckets]['aggs'] = termAggs;
+  }
+
+  return x;
+};
+
+/**
+ *
  * @param mustList list of query blocks to insert in multi-conditions block
  */
 export const queryBool = (mustList = [], shouldList = [], filterList = [], notList = []) => {
