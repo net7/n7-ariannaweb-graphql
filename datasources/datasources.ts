@@ -444,11 +444,16 @@ export async function search(searchParameters: any) {
             bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
           }
 
-            let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
+            //let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
+            let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.label.keyword', null, 10000, 'relatedEntities');
+            aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
+
+
+
             if (body[AGGS] == null){
               body[AGGS] = aggr3
             } else {
-              body[AGGS][ENTITY_LINKS] = aggr3[ENTITY_LINKS];
+              body[AGGS][ENTITY_LINKS] = aggr3;
             }
           break
 
@@ -462,7 +467,7 @@ export async function search(searchParameters: any) {
 
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
 	//console.log(JSON.stringify(body))
-	let result = await el.search(request)
+	let result =  await el.search(request)
 	//let elements = result.hits.hits
   //elements = await Promise.all([elements.map(x => makeElement(x._source))])
 
@@ -496,11 +501,17 @@ export async function search(searchParameters: any) {
             facet.data = data2;
             break;
             case ENTITY_LINKS: {
-              let data3 = result.aggregations[facet.id]['buckets']['buckets'].map(bucket => {
+              let data3 = result.aggregations[facet.id][facet.id]['buckets'].map(bucket => {
                 return {
                   "value": bucket.key,
                   "label": bucket.key,
-                  "counter": bucket.doc_count
+                  "counter": bucket.doc_count,
+                  "searchData": facet.searchData.map( y => {
+                    return {
+                      key: y,
+                      value: bucket[facet.id]['buckets'].map( x => x.key )
+                    }
+                  })
                 };
               });
               facet.data = data3;
