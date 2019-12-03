@@ -168,7 +168,7 @@ type Data {
     searchData: [SearchData]
 }
 type SearchData {
-    key: [String]
+    key: String
     value: [String]
 }
 
