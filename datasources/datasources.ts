@@ -385,14 +385,14 @@ export async function search(searchParameters: any) {
               body[QUERY][BOOL] = bools.bool
             else
               body[QUERY][BOOL][MUST] = bools.bool.must
+            }
             break
-          }
 				case QUERY_LINKS: //search for resources typology
           if (filter && filter.value){
 					// facets for filtering item results
             let terms = filter.value.map(element => {
               let termObject = {}
-              termObject[DOCUMENT_TYPE + '.' + KEYWORD] = element
+              termObject[DOCUMENT_TYPE] = element
               return el.queryTerm(termObject).query
             })
 
