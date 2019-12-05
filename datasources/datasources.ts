@@ -365,7 +365,15 @@ export async function search(searchParameters: any) {
 	})
 
 	// request for global index
-	let body = {}
+  let body = {}
+
+  if( searchParameters.page.limit ){
+    body["size"] = searchParameters.page.limit
+  }
+  if( searchParameters.page.offset ){
+    body["from"] = searchParameters.page.offset
+  }
+
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
 		//let internalRequest = {}
