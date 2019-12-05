@@ -467,7 +467,6 @@ export async function search(searchParameters: any) {
 
 
 			}
-		//} //if filter.value
 	})
 
 	// returns facets on document Type
