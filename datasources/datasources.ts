@@ -381,7 +381,7 @@ export async function search(searchParameters: any) {
 			switch (facet.id) {
 				case QUERY:
           // query full text
-          if (filter && filter.value){
+          if (filter && filter.value && filter.value != ""){
             let searchIn = filter.searchIn[0]
             let term = filter.value[0] + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
             if (filters[QUERY_ALL].value == true)
