@@ -411,7 +411,7 @@ export async function search(searchParameters: any) {
                 else if (body[QUERY][BOOL] == null)
                   body[QUERY][BOOL] = bools.bool
                 else
-                  body[QUERY][BOOL][FILTER] = bools.bool.filter
+                  body[QUERY][BOOL][SHOULD] = bools.bool.should
               }
           }
           //facet results
