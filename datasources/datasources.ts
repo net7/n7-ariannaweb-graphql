@@ -436,7 +436,7 @@ export async function search(searchParameters: any) {
           if (filter && filter.value){
             filter.value.forEach(value => {
               let term = {}
-							term[RELATED_ENTITIES + "." + ID] = value
+							term[RELATED_ENTITIES + ".label.keyword"  ] = value
 							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
 						}
             )
@@ -455,8 +455,6 @@ export async function search(searchParameters: any) {
             //let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
             let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.label.keyword', null, 10000, 'relatedEntities');
             aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
-
-
 
             if (body[AGGS] == null){
               body[AGGS] = aggr3
