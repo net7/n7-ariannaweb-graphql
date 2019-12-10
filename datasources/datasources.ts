@@ -415,15 +415,22 @@ export async function search(searchParameters: any) {
               }
           }
           //facet results
-          let aggr1 = el.aggsTerms(QUERY_LINKS, DOCUMENT_TYPE, null, 10000).aggs;
+          //commentend aggregation depending on query results
+         /* let aggr1 = el.aggsTerms(QUERY_LINKS, DOCUMENT_TYPE, null, 10000).aggs;
           if (body[AGGS] == null){
             body[AGGS] = aggr1;
           }else {
             body[AGGS][QUERY_LINKS] = aggr1[QUERY_LINKS];
-          }
+          }*/
+          let aggr1 = el.globalAggsTerms(QUERY_LINKS, DOCUMENT_TYPE, 10000, null).aggs;
+            if (body[AGGS] == null){
+              body[AGGS] = aggr1
+            } else {
+              body[AGGS][QUERY_LINKS] = aggr1[QUERY_LINKS];
+            }
 					break
 				case ENTITY_TYPES: //list of entity types for inner filter
-            let  aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
+            let aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
             if (body[AGGS] == null){
               body[AGGS] = aggr2
             } else {
@@ -486,7 +493,7 @@ export async function search(searchParameters: any) {
       if( result.aggregations[facet.id] != null && !facet.data ) {
         switch (facet.id) {
           case QUERY_LINKS:
-            let data = result.aggregations[facet.id].buckets.map(bucket => {
+            let data = result.aggregations[facet.id]['buckets'].buckets.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket.key,
