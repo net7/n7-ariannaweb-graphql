@@ -460,8 +460,9 @@ export async function search(searchParameters: any) {
           }
 
             //let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
-            let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.label.keyword', null, 10000, 'relatedEntities');
+            let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, 10000, 'relatedEntities');
             aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
+            aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, 10000).aggs[ENTITY_LINKS + "_label"]
 
             if (body[AGGS] == null){
               body[AGGS] = aggr3
@@ -516,7 +517,7 @@ export async function search(searchParameters: any) {
               let data3 = result.aggregations[facet.id][facet.id]['buckets'].map(bucket => {
                 return {
                   "value": bucket.key,
-                  "label": bucket.key,
+                  "label": bucket[facet.id + "_label"].buckets[0].key,
                   "counter": bucket.doc_count,
                   "searchData": facet.searchData.map( y => {
                     return {
