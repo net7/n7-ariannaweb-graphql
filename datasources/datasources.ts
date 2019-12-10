@@ -405,13 +405,13 @@ export async function search(searchParameters: any) {
             })
 
               if (terms.length > 0) {
-                let bools = el.queryBool([], terms).query
+                let bools = el.queryBool(terms).query
                 if (body[QUERY] == null)
                   body[QUERY] = bools
                 else if (body[QUERY][BOOL] == null)
                   body[QUERY][BOOL] = bools.bool
                 else
-                  body[QUERY][BOOL][SHOULD] = bools.bool.should
+                  body[QUERY][BOOL][MUST] = body[QUERY][BOOL][MUST].concat(bools.bool.must)
               }
           }
           //facet results
