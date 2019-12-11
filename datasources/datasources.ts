@@ -443,7 +443,9 @@ export async function search(searchParameters: any) {
           if (filter && filter.value){
             filter.value.forEach(value => {
               let term = {}
-							term[RELATED_ENTITIES + ".label.keyword"  ] = value
+              filter.searchIn.forEach( x => {
+                term[x.key] = value;
+              })
 							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
 						}
             )
