@@ -98,13 +98,13 @@ export const aggsNested = (buckets: string, path: string, aggs: any) => {
  * @param script script to aggregate field in a custom way
  * @param size max number of buckets returned
  */
-export const aggsTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000) => {
+export const aggsTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000, minDocCount = 1) => {
 	const x = {
 		aggs: {}
 	}
 	x.aggs[buckets] = {
 		terms: {
-			min_doc_count: 1,
+			min_doc_count: minDocCount,
 			size: size,
 		}
 	}
@@ -151,7 +151,7 @@ export const aggsNestedTerms = (buckets: string, field: string = null, script: s
  * @param size max number of buckets returned
  * @param filter object with filter field {term, value, filter}
  */
-export const globalAggsTerms = function (buckets, field, size, filter) {
+export const globalAggsTerms = function (buckets, field, size, filter, minDocCount = 1) {
   if (field === void 0) { field = null; }
   if (filter === void 0) { filter = null; }
   if (size === void 0) { size = 10000; }
@@ -169,7 +169,7 @@ export const globalAggsTerms = function (buckets, field, size, filter) {
     termAggs = {
       buckets : {
         terms: {
-          min_doc_count: 1,
+          min_doc_count: minDocCount,
           size: size,
           field: field
         }
