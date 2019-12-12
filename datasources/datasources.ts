@@ -469,8 +469,8 @@ export async function search(searchParameters: any) {
                 term[x.key] = value;
               })
 							list.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(term)).query)
-						}
-            )
+            })
+
             let bools = el.queryBool(list).query
             bools.bool.must.map(x => {
               etFilter[QUERY][BOOL][MUST].push(x)
