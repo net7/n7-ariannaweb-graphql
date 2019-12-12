@@ -1,15 +1,16 @@
 import * as el from "./elasticsearch"
 import { response } from "express"
 import { mapValues } from "apollo-env"
+import * as config from '../assets/app-config.json';
 
 class Page {
 	offset: number
 	limit: number
 }
-const TREE_INDEX = "tree"
-const GLOBAL_INDEX = "global"
-const ENTITIES_INDEX = "entities"
-const OC_INDEX = "cultural_objects"
+const TREE_INDEX = config['treeIndex'] || "tree";
+const GLOBAL_INDEX = config['globalIndex'] || "global"
+const ENTITIES_INDEX = config['entitiesIndex'] || "entities"
+const OC_INDEX = config['OcIndex'] || "cultural_objects"
 const ENTITIES = "entities"
 const RELATED_ENTITIES = "relatedEntities"
 const RELATED_ITEMS = "relatedItems"
@@ -373,6 +374,18 @@ export async function search(searchParameters: any) {
   if( searchParameters.page.offset ){
     body["from"] = searchParameters.page.offset
   }
+
+  if( searchParameters.results.order ){
+    let key = searchParameters.results.order.key;
+    if (searchParameters.results.order.type == "text") {
+      key += ".keyword";
+    }
+    let order = {};
+    order[key] = {"order": searchParameters.results.order.direction};
+    body["sort"] = [order];
+  }
+
+
 
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
