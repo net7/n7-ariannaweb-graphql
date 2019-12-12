@@ -10,7 +10,7 @@ class Page {
 const TREE_INDEX = config['treeIndex'] || "tree";
 const GLOBAL_INDEX = config['globalIndex'] || "global"
 const ENTITIES_INDEX = config['entitiesIndex'] || "entities"
-const OC_INDEX = config['OcIndex'] || "cultural_objects"
+const OC_INDEX = config['ocIndex'] || "cultural_objects"
 const ENTITIES = "entities"
 const RELATED_ENTITIES = "relatedEntities"
 const RELATED_ITEMS = "relatedItems"
@@ -368,6 +368,9 @@ export async function search(searchParameters: any) {
 	// request for global index
   let body = {}
 
+  // request for entity types filter
+  let etFilter =  el.queryBool([],[]);
+
   if( searchParameters.page.limit ){
     body["size"] = searchParameters.page.limit
   }
@@ -399,14 +402,19 @@ export async function search(searchParameters: any) {
             let term = filter.value[0] + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
             if (filters[QUERY_ALL].value == true)
               searchIn.key = "*"
+
             let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
+            etFilter[QUERY][BOOL][MUST]  = bools.bool.must;
+
             if (body[QUERY] == null)
               body[QUERY] = bools
             else if (body[QUERY][BOOL] == null)
               body[QUERY][BOOL] = bools.bool
             else
-              body[QUERY][BOOL][MUST] = bools.bool.must
+              body[QUERY][BOOL][MUST]  = bools.bool.must
+
             }
+
             break
 				case QUERY_LINKS: //search for resources typology
           if (filter && filter.value){
@@ -464,15 +472,20 @@ export async function search(searchParameters: any) {
 						}
             )
             let bools = el.queryBool(list).query
+            bools.bool.must.map(x => {
+              etFilter[QUERY][BOOL][MUST].push(x)
+            })
 
             if (body[QUERY] == null)
 						body[QUERY] = bools
             else if (body[QUERY][BOOL] == null)
 						body[QUERY][BOOL] = bools.bool
             else if (body[QUERY][BOOL][MUST] == null)
-						body[QUERY][BOOL][MUST] = bools.bool.must
+						  body[QUERY][BOOL][MUST] = bools.bool.must
             else
-            bools.bool.must.map(x => body[QUERY][BOOL][MUST].push(x))
+            bools.bool.must.map(x => {
+              body[QUERY][BOOL][MUST].push(x)
+            })
           }
 
             //let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
@@ -486,10 +499,25 @@ export async function search(searchParameters: any) {
               body[AGGS][ENTITY_LINKS] = aggr3;
             }
           break
-
-
 			}
-	})
+  })
+
+  if (body[AGGS][QUERY_LINKS]){
+    const facet = {};
+
+    facet[QUERY_LINKS] = body[AGGS][QUERY_LINKS];
+    console.log(etFilter);
+
+    let aggs = {
+      "global":{},
+      "aggs": {
+      "filtered": {
+        "filter": etFilter[QUERY],
+        "aggs": facet
+      }
+    }};
+    body[AGGS][QUERY_LINKS] = aggs;
+  }
 
 	// returns facets on document Type
 	//body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
@@ -510,7 +538,7 @@ export async function search(searchParameters: any) {
       if( result.aggregations[facet.id] != null && !facet.data ) {
         switch (facet.id) {
           case QUERY_LINKS:
-            let data = result.aggregations[facet.id].buckets.map(bucket => {
+            let data = result.aggregations[facet.id]["filtered"][facet.id].buckets.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket.key,
