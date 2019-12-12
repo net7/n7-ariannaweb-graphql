@@ -1,8 +1,8 @@
 import * as el from "./elasticsearch"
 import { response } from "express"
 import { mapValues } from "apollo-env"
-import * as config from '../assets/app-config.json';
-
+//import * as config from '../assets/app-config.json';
+const config = {};
 class Page {
 	offset: number
 	limit: number
