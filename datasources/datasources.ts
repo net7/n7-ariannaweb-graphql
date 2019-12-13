@@ -159,7 +159,8 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 export async function getEntitiesFiltered(input: string, itemsPagination: Page = { limit: 10000, offset: 0 }, typeOfEntity: string) {
 
 	const boolsArray = []
-	const boolsArray2 = []
+  const boolsArray2 = []
+  let aggr1 = {};
 	if (typeOfEntity != null && typeOfEntity !== "") {
 		var termObject = {}
 		termObject[TYPE_OF_ENTITY] = typeOfEntity
@@ -169,15 +170,22 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 		const q3 = el.queryTerm(termObject)
 		boolsArray.push(q1.query)
 		boolsArray2.push(q3.query)
-	}
+	} else {
+    aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
+    aggr1["type"]['aggs'] = {
+      "hits": {"top_hits":  { "size": itemsPagination.limit, "from": itemsPagination.offset }}
+      }
+
+  }
 
 	const q2 = el.queryString({ fields: [LABEL], value: input.trim() + "*" })
 	boolsArray.push(q2)
-	const bools = el.queryBool(boolsArray)
-	const request = el.requestBuilder(GLOBAL_INDEX, {
+  const bools = el.queryBool(boolsArray)
+const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
-		from: itemsPagination.offset
+    from: itemsPagination.offset,
+    aggs: aggr1
 	})
 
 	const q4 = el.queryString({ fields: [RELATED_ENTITIES + "." + LABEL], value: input.trim() + "*" })
@@ -187,6 +195,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	const agg = el.aggsTerms('docsPerEntity', RELATED_ENTITIES + "." + ID)
 	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
+  //query to recover the related entities for each cultural object
 	const request2 = el.requestBuilder(OC_INDEX, {
 		query: quNes.query,
 		aggs: agNes.aggs,
@@ -197,8 +206,19 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
   var total = 0;
 	const res = await Promise.all(
 		[el.search(request).then(x => {
-  total = x.hits.total
-      return x.hits.hits.map( x => x._source )
+      total = x.hits.total
+      let results = [];
+      if( x.aggregations ){
+        x.aggregations.type.buckets.map(bucket => {
+          bucket.hits.hits.hits.forEach(element => {
+            results.push(element._source);
+          });
+          }
+        )
+        return results;
+      } else {
+        return x.hits.hits.map( x => x._source )
+      }
     }), el.search(request2).then(res => {res.aggregations.
         entities.docsPerEntity.buckets.forEach( el => {
           entityHashMap[el.key] = el.doc_count;

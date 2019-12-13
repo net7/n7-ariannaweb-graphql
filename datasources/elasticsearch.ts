@@ -105,7 +105,7 @@ export const aggsTerms = (buckets: string, field: string = null, script: string 
 	x.aggs[buckets] = {
 		terms: {
 			min_doc_count: minDocCount,
-			size: size,
+			size: size
 		}
 	}
 
