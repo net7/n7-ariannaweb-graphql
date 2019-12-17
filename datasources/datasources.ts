@@ -1,16 +1,16 @@
 import * as el from "./elasticsearch"
 import { response } from "express"
 import { mapValues } from "apollo-env"
-//import * as config from '../assets/app-config.json';
-const config = {};
+import * as config from '../assets/app-config.json';
+//const config = {};
 class Page {
 	offset: number
 	limit: number
 }
-const TREE_INDEX = config['treeIndex'] || "tree";
-const GLOBAL_INDEX = config['globalIndex'] || "global"
-const ENTITIES_INDEX = config['entitiesIndex'] || "entities"
-const OC_INDEX = config['ocIndex'] || "cultural_objects"
+const TREE_INDEX = config['index']['treeIndex'] || "tree";
+const GLOBAL_INDEX = config['index']['globalIndex'] || "global"
+const ENTITIES_INDEX = config['index']['entitiesIndex'] || "entities"
+const OC_INDEX = config['index']['ocIndex'] || "cultural_objects"
 const ENTITIES = "entities"
 const RELATED_ENTITIES = "relatedEntities"
 const RELATED_ITEMS = "relatedItems"
