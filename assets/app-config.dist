@@ -1,0 +1,8 @@
+{
+  "index" : {
+    "treeIndex": "tree",
+    "globalIndex": "global",
+    "entitiesIndex": "entities",
+    "ocIndex": "cultural_objects"
+  }
+}
