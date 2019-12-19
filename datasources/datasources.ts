@@ -146,7 +146,20 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 		item[RELATED_ENTITIES] = results[1]
 		item[RELATED_ITEMS] = result
 		return item
-	}
+  } else {
+    const request2 = el.requestBuilder(TREE_INDEX, el.queryTerm({ id: itemId }))
+    const body = await el.search(request2).then(x => x.hits.hits)
+    const hashMap = {}
+    if (body.length > 0) {
+      let item = body[0]._source
+      if(!item.title) {
+        item['title'] = item.label;
+      }
+      return item
+    }
+  }
+
+
 	return null;
 }
 
