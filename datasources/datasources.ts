@@ -265,28 +265,7 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 
 
 	let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
-  agNes.aggs["global_entities"] = {
-      "global" : {},
-      "aggs": {
-        "entities": {
-          "nested": {
-                "path": "relatedEntities"
-
-          },
-          "aggs": {
-              "buckets": {
-              "terms": {
-                "field": "relatedEntities.typeOfEntity",
-                 "min_doc_count": 0
-              }
-            }
-
-          }
-        }
-      }
-    };
-
-	//const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
+  //const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
 	//const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
@@ -327,22 +306,11 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 			}
 		}),
 	])
-	var typeOfEntityData = []
-  if(res.aggregations.global_entities.entities != undefined) {
-    typeOfEntityData = res.aggregations.global_entities.entities.buckets.buckets.map( x => {
-      return {
-        type: x.key,
-        count: x.doc_count
-      }
-    })
-  }
-	/*for (const prop in typesOfEntity) {
-		if (typesOfEntity.hasOwnProperty(prop)) {
-			typeOfEntityData.push(typesOfEntity[prop])
-		}
-	}*/
 
-	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, typeOfEntityData: typeOfEntityData, entitiesData: results[1] };
+	return {
+    itemsPagination: { items: results[0], totalCount: res.hits.total },
+    //typeOfEntityData: typeOfEntityData,
+    entitiesData: results[1] };
 }
 
 function buildTree(node: any, nodeList: any[]): any {
