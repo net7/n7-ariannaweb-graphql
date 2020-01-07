@@ -254,20 +254,44 @@ const request = el.requestBuilder(GLOBAL_INDEX, {
 }
 
 /**
- *
+ * resolver for globalFilter query
  * @param entityIds entities to filter the items connected to them
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return
  */
 export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
-	const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
-	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+  const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
+
+
+	let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+  agNes.aggs["global_entities"] = {
+      "global" : {},
+      "aggs": {
+        "entities": {
+          "nested": {
+                "path": "relatedEntities"
+
+          },
+          "aggs": {
+              "buckets": {
+              "terms": {
+                "field": "relatedEntities.typeOfEntity",
+                 "min_doc_count": 0
+              }
+            }
+
+          }
+        }
+      }
+    };
+
 	//const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
 	//const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
 		aggs: agNes.aggs,
+
 		//		script_fields: scFi.script_fields,
 		"_source": [],
 		size: itemsPagination.limit,
@@ -294,22 +318,29 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
 		buckets.map(x => {
 			let entity = JSON.parse(x.key)
-			if (typesOfEntity[entity.typeOfEntity] == null)
+		/*	if (typesOfEntity[entity.typeOfEntity] == null)
 				typesOfEntity[entity.typeOfEntity] = { type: entity.typeOfEntity, count: 0 }
-			typesOfEntity[entity.typeOfEntity].count++
+			typesOfEntity[entity.typeOfEntity].count++*/
 			return {
 				entity: entity,
         count: x.doc_count
 			}
 		}),
 	])
-
 	var typeOfEntityData = []
-	for (const prop in typesOfEntity) {
+  if(res.aggregations.global_entities.entities != undefined) {
+    typeOfEntityData = res.aggregations.global_entities.entities.buckets.buckets.map( x => {
+      return {
+        type: x.key,
+        count: x.doc_count
+      }
+    })
+  }
+	/*for (const prop in typesOfEntity) {
 		if (typesOfEntity.hasOwnProperty(prop)) {
 			typeOfEntityData.push(typesOfEntity[prop])
 		}
-	}
+	}*/
 
 	return { itemsPagination: { items: results[0], totalCount: res.hits.total }, typeOfEntityData: typeOfEntityData, entitiesData: results[1] };
 }
