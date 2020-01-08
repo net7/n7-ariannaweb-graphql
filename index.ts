@@ -13,6 +13,6 @@ const server = new ApolloServer({
   playground: true, // playgound to work on zeit.co should anyway be removed before production
 });
 
-server.listen().then(({ url }) => {
+server.listen({port: 4070}).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
