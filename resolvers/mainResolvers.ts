@@ -16,7 +16,7 @@ export const resolvers = merge({
 		autoComplete: async (parent, args, context, info) => await sources.getEntitiesFiltered(args.input, args.itemsPagination, args.typeOfEntity),
 		globalFilter: async (parent, args, context, info) => await sources.getItemsFiltered(args.selectedEntitiesIds, args.itemsPagination, args.entitiesListSize),
 		getEntity: async (parent, args, context, info) => await sources.getEntity(args.entityId, args.itemsPagination, args.entitiesListSize),
-		getTreeOfItems: async (parent, args, context, info) => await sources.getTree(),
+		getTreeOfItems: async (parent, args, context, info) => await sources.getTree(info),
 		getNode: async (parent, args, context, info) => await sources.getNode(args.id, args.maxSimilarItems, args.entitiesListSize),
 		search: async (parent, args, context, info) => await sources.search(args.searchParameters)
 	},
