@@ -35,11 +35,12 @@ function makeItemListing(item: any, entityId: string = "") {
 	if (entities != null)
 		//count number of types of Entity
 		entities.forEach(entity => {
-			if (!object[entity[TYPE_OF_ENTITY]]) { }
+			if (!object[entity[TYPE_OF_ENTITY]]) {
 			object[entity[TYPE_OF_ENTITY]] = {
 				count: 0,
 				type: entity[TYPE_OF_ENTITY]
-			}
+      }
+    }
       object[entity[TYPE_OF_ENTITY]].count += 1
       relation = entityId === entity.id ? entity.relation : relation;
 		})
