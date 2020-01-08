@@ -1,6 +1,7 @@
 const { ApolloServer } = require('apollo-server');
 const { importSchema } = require('graphql-import');
 import  { resolvers } from './resolvers/mainResolvers';
+import responseCachePlugin from 'apollo-server-plugin-response-cache';
 
 var path = require ( 'path' );
 
@@ -10,7 +11,11 @@ const server = new ApolloServer({
   typeDefs: typeDefs,
   resolvers,
   mocks: false,
-  playground: true, // playgound to work on zeit.co should anyway be removed before production
+  playground: true,
+  plugins: [responseCachePlugin()],
+  cacheControl: {
+    defaultMaxAge: 3600,
+  }
 });
 
 server.listen().then(({ url }) => {

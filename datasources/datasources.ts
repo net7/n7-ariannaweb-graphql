@@ -2,6 +2,7 @@ import * as el from "./elasticsearch"
 import { response } from "express"
 import { mapValues } from "apollo-env"
 import * as config from '../assets/app-config.json';
+import 'apollo-cache-control';
 //const config = {};
 class Page {
 	offset: number
@@ -36,11 +37,11 @@ function makeItemListing(item: any, entityId: string = "") {
 		//count number of types of Entity
 		entities.forEach(entity => {
 			if (!object[entity[TYPE_OF_ENTITY]]) {
-			object[entity[TYPE_OF_ENTITY]] = {
-				count: 0,
-				type: entity[TYPE_OF_ENTITY]
+        object[entity[TYPE_OF_ENTITY]] = {
+          count: 0,
+          type: entity[TYPE_OF_ENTITY]
+        }
       }
-    }
       object[entity[TYPE_OF_ENTITY]].count += 1
       relation = entityId === entity.id ? entity.relation : relation;
 		})
@@ -322,7 +323,7 @@ function buildTree(node: any, nodeList: any[]): any {
 	return node
 }
 
-export async function getTree() {
+export async function getTree(info) {
 	const query = {
 		query: {
 			match_all: {}
