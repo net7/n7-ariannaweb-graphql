@@ -188,7 +188,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	} else {
     aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
     aggr1["type"]['aggs'] = {
-      "hits": {"top_hits":  { "size": itemsPagination.limit, "from": itemsPagination.offset }}
+      "hits": {"top_hits":  { "size": itemsPagination.limit, "from": itemsPagination.offset, "sort": [{ "label.keyword" : {"order" : "asc"}}] }}
       }
 
   }
@@ -242,11 +242,18 @@ const request = el.requestBuilder(GLOBAL_INDEX, {
       )])
 	const results = []
 	res[0].forEach(el => {
-		if (entityHashMap[el.id]) {
-			results.push({
-				entity: el,
-				count: entityHashMap[el.id]
-			})
+    if(el.parent_type == "entity" ){
+      if (entityHashMap[el.id]) {
+        results.push({
+          entity: el,
+          count: entityHashMap[el.id]
+        })
+      } else {
+        results.push({
+          entity: el,
+          count: 0
+        })
+      }
 		} else {
       results.push({item: el})
     }
