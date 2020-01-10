@@ -12,7 +12,7 @@ export const resolvers = {
   },
   SearchResult: {
 		__resolveType(result, context, info) {
-			if (result.parent_type == "cultural_object") {
+			if (result.parent_type == "cultural_object" || result.parent_type == "aggregazione-logica") {
 				return 'Item';
 			}
 			else {
