@@ -12,10 +12,10 @@ const server = new ApolloServer({
   resolvers,
   mocks: false,
   playground: true,
-  plugins: [responseCachePlugin()],
+ /* plugins: [responseCachePlugin()],
   cacheControl: {
     defaultMaxAge: 3600,
-  }
+  }*/
 });
 
 server.listen().then(({ url }) => {
