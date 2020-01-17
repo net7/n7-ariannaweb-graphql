@@ -454,7 +454,7 @@ export async function search(searchParameters: any) {
     body["sort"] = [order];
   }
 
-
+  let highlight =  { "fields" : {} };
 
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
@@ -465,9 +465,13 @@ export async function search(searchParameters: any) {
           // query full text
           if (filter && filter.value && filter.value != ""){
             let searchIn = filter.searchIn[0]
-            let term = filter.value[0] + "*" // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
-            if (filters[QUERY_ALL].value == true)
+            let term = el.buildQueryString(filter.value[0]) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+
+            if (filters[QUERY_ALL].value == true){
               searchIn.key = "*"
+            }
+
+            highlight.fields[searchIn.key] = {};
 
             let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
             etFilter[QUERY][BOOL][MUST]  = bools.bool.must;
@@ -588,6 +592,8 @@ export async function search(searchParameters: any) {
 	// returns facets on document Type
 	//body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
 
+  body['highlight'] = highlight;
+
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
 	//console.log(JSON.stringify(body))
 	let result =  await el.search(request)
@@ -596,7 +602,10 @@ export async function search(searchParameters: any) {
 
   let aggregations = [];
   let elements = [];
-  const items = result.hits.hits.map(x => elements.push(x._source));
+  const items = result.hits.hits.map(x => {
+    x._source.highlight = x.highlight;
+    elements.push(x._source)
+  });
 
   if(result.aggregations){
 
