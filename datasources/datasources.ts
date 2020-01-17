@@ -188,19 +188,38 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	} else {
     aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
     aggr1["type"]['aggs'] = {
-      "hits": {"top_hits":  { "size": itemsPagination.limit, "from": itemsPagination.offset, "sort": [{ "label.keyword" : {"order" : "asc"}}] }}
+      "hits": {"top_hits":  {
+        "size": itemsPagination.limit,
+        "from": itemsPagination.offset,
+        "sort": [
+          {"_score": {"order": "desc"}},
+          { "label.keyword" : {"order" : "asc"}}
+        ],
+        "highlight" : {
+          "fields" : {
+              "label" : {}
+          }
+        }
+      },
+
+      }
       }
 
   }
 
-	const q2 = el.queryString({ fields: [LABEL], value: input.trim() + "*" })
+  const highlight = { fields: {}};
+  highlight.fields[LABEL] = {};
+
+	const q2 = el.queryString({ fields: [LABEL], value: el.buildQueryString(input) })
 	boolsArray.push(q2)
   const bools = el.queryBool(boolsArray)
 const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
     from: itemsPagination.offset,
-    aggs: aggr1
+    aggs: aggr1,
+    highlight: highlight
+
 	})
 
 	const q4 = el.queryString({ fields: [RELATED_ENTITIES + "." + LABEL], value: input.trim() + "*" })
@@ -226,6 +245,9 @@ const request = el.requestBuilder(GLOBAL_INDEX, {
       if( x.aggregations ){
         x.aggregations.type.buckets.map(bucket => {
           bucket.hits.hits.hits.forEach(element => {
+            if( element.highlight ){
+              element._source.highlight = element.highlight;
+            }
             results.push(element._source);
           });
           }
