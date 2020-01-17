@@ -254,7 +254,10 @@ const request = el.requestBuilder(GLOBAL_INDEX, {
         )
         return results;
       } else {
-        return x.hits.hits.map( x => x._source )
+        return x.hits.hits.map( x => {
+          x._source.highlight = x.highlight;
+           return x._source ;
+        })
       }
     }), el.search(request2).then(res => {res.aggregations.
         entities.docsPerEntity.buckets.forEach( el => {
