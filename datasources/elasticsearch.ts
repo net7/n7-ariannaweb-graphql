@@ -274,10 +274,38 @@ export const queryString = (queryField: { fields: string[], value: string }) => 
 	const x = {
 		query_string: {
 			query: queryField.value,
-			fields: queryField.fields
+      fields: queryField.fields,
+      default_operator: "AND"
 		}
 	}
 	return x
+}
+
+/**
+ *
+ * @param term the term to parse to obrain query string
+ * @param options option to parse string
+ */
+
+export const buildQueryString = (term: string, options: any = {}) => {
+
+  const allowWildCard = options.allowWildCard ? options.allowWildCard : true,
+        splitString = options.splitString ? options.splitString : true;
+
+  let termToArray:any,
+      queryTerms:any;
+
+  if( splitString ) {
+    termToArray = term.split(" ");
+  } else {
+    termToArray = [term];
+  }
+
+  if ( allowWildCard ) {
+    queryTerms = termToArray.map( t => "*" + t + "*");
+  }
+
+	return queryTerms.join(" ");
 }
 
 /**
@@ -289,5 +317,7 @@ export const queryTerm = (termField: any) => {
 		query: {
 			term: termField
 		}
-	}
+  }
+
+
 }
