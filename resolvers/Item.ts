@@ -5,8 +5,11 @@ export const resolvers = {
 		fields(item) {
 			return createFields(item.fields)
     },
-    breadcrumbs(obj, args, context, info) {
-      return [{label: "aaaa"}];
+    breadcrumbs(item, args, context, info) {
+      if( item.path ){
+        return item.path;
+      }
+      return null;
     },
     title(item, args, context, info) {
       if( item.title )
@@ -19,8 +22,13 @@ export const resolvers = {
         return item.highlight.label[0];
       }
       return item.label;
-  }
+    }
+  },
 
-	}
+  LinkElement: {
+    link(item, args, context, info) {
+      return item.id;
+    }
+  }
 }
 
