@@ -198,6 +198,39 @@ export const globalAggsTerms = function (buckets, field, size, filter, minDocCou
 
   return x;
 };
+/**
+ *
+ * @param buckets buckets name
+ * @param field field to aggregate
+ * @param size max number of buckets returned
+ * @param filter object with filter field {term, value, filter}
+ */
+export const topHits = function (buckets, limit, offset, sort = null, minDocCount = 1) {
+
+  const querysort = sort ? sort : [
+          {"_score": {"order": "desc"}},
+          { "label.keyword" : {"order" : "asc"}}
+        ];
+
+  const hits = {"top_hits":  {
+          "size": limit,
+          "from": offset,
+          "sort": querysort,
+          "highlight" : {
+            "fields" : {
+                "label" : {}
+            }
+          }
+        }
+    }
+
+  var x = {
+      aggs: {}
+  };
+  x.aggs[buckets] = hits;
+
+  return x;
+};
 
 /**
  *
