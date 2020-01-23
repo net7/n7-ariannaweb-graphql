@@ -17,7 +17,7 @@ export function getGlobalFilterResult( args:any ){
     if(!typeOfEntityFiler) {
         typeOfEntityFiler = [];
         allTypesOfEntity.forEach( (toe) => {
-            typeOfEntityFiler.push( { typeOfEntityId: toe.id , enabled: true } );
+            typeOfEntityFiler.push( { typeOfEntityId: toe , enabled: true } );
         } );
     }
 
@@ -34,11 +34,11 @@ export function getGlobalFilterResult( args:any ){
       const typeOfEMinCount = Math.floor(40000/Math.pow(reductionFactor,2));
       const typeOfEMaxCount = Math.floor(100000/Math.pow(reductionFactor,2));
       toeCounts[i] = Helpers.getRandomIntInclusive(typeOfEMinCount,typeOfEMaxCount);
-      let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
+      let toe = allTypesOfEntity.find( (toe) => toe === typeOfEntityFiler[i].typeOfEntityId );
       if(args.selectedEntitiesIds)
       args.selectedEntitiesIds.forEach( (selId) => {
         let bEntity = getBasicEntityById(selId);
-        if( bEntity && (bEntity.typeOfEntity.id === toe.id) ){
+        if( bEntity && (bEntity.typeOfEntity === toe) ){
           const selElementMinCount = Math.floor(toeCounts[i]/2.1);
           const selElementMaxCount = Math.floor(toeCounts[i]/2.05);
           let count = Helpers.getRandomIntInclusive(selElementMinCount,selElementMaxCount);
@@ -52,7 +52,7 @@ export function getGlobalFilterResult( args:any ){
 
     for(let i=0;i<typeOfEntityFiler.length;i++){
         let toeCount:number = toeCounts[i];
-        let toe = allTypesOfEntity.find( (toe) => toe.id === typeOfEntityFiler[i].typeOfEntityId );
+        let toe = allTypesOfEntity.find( (toe) => toe === typeOfEntityFiler[i].typeOfEntityId );
         if(!toe){
             throw new UserInputError('Form Arguments invalid', {
                 message: "No Type of entity present with id: '" + typeOfEntityFiler[i].typeOfEntityId + "'",
@@ -66,7 +66,7 @@ export function getGlobalFilterResult( args:any ){
             if(args.selectedEntitiesIds)
               args.selectedEntitiesIds.forEach( (selId) => {
                 let bEntity = getBasicEntityById(selId);
-                if( bEntity && (bEntity.typeOfEntity.id === toe.id) ){
+                if( bEntity && (bEntity.typeOfEntity === toe) ){
                   let count = selectedEntitiesIdsCounts[selId];
                   toeCount -= (count/2.5);
                   let eCdta = {

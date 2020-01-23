@@ -1,27 +1,23 @@
-const { ApolloServer} = require('apollo-server');
-const resolvers = require('./resolvers');
-const ParametersAPI = require('./datasources/parameters');
+const { ApolloServer } = require('apollo-server');
+const { importSchema } = require('graphql-import');
+import  { resolvers } from './resolvers/mainResolvers';
+import responseCachePlugin from 'apollo-server-plugin-response-cache';
 
-var fs = require ( 'fs' );
 var path = require ( 'path' );
 
-const typeDefs = fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
-
-const { mocks } =  require('./mocks/mocks');
+const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
 
 const server = new ApolloServer({
-  typeDefs,
-  mocks,
-  mockEntireSchema: true,
+  typeDefs: typeDefs,
   resolvers,
-  playground: true, // playgound set to true allows the playground to work on zeit.co should anyway be removed before production
-  dataSources: () => ({
-    ParametersAPI: new ParametersAPI()
-})
+  mocks: false,
+  playground: true,
+ /* plugins: [responseCachePlugin()],
+  cacheControl: {
+    defaultMaxAge: 3600,
+  }*/
 });
 
 server.listen().then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
-
-//module.exports = server.createHandler ();
