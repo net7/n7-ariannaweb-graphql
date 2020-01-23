@@ -368,7 +368,13 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
       })
 
     })
-	])
+  ])
+
+  entitiesList.sort(function(a, b){
+    if(a.count < b.count) return 1;
+    if(a.count > b.count) return -1;
+    return 0;
+});
 
 	return {
     itemsPagination: { items: results[0], totalCount: res.hits.total },
