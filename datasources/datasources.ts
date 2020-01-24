@@ -187,7 +187,10 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 		boolsArray2.push(q3.query)
 	} else {
     aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
-    aggr1["type"]['aggs'] = {
+
+
+    aggr1["type"]['aggs'] = el.topHits("hits", itemsPagination.limit, itemsPagination.offset).aggs;
+    /*{
       "hits": {"top_hits":  {
         "size": itemsPagination.limit,
         "from": itemsPagination.offset,
@@ -203,7 +206,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
       },
 
       }
-      }
+      }*/
 
   }
 
@@ -293,12 +296,26 @@ const request = el.requestBuilder(GLOBAL_INDEX, {
  * @param itemsPagination object containing pagination parameter
  * @param entitiesListSize entityList size to return
  */
-export async function getItemsFiltered(entityIds: [string], itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
+export async function getItemsFiltered(entityIds, itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
   const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
 
+  let aggsEntity = el.aggsTerms("entities", 'relatedEntities.typeOfEntity');
+  aggsEntity.aggs['entities']['aggs'] = agg.aggs;
 
-	let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+  let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, aggsEntity)
+  let aggr1 = el.aggsTerms("type", "relatedEntities.typeOfEntity", null, 10000, 0).aggs;
+ /* aggr1["type"]['aggs'] =  el.topHits("hits", entitiesListSize, 0).aggs;;
+
+  let topHitsNested = {
+    "nested": {
+      "path": "relatedEntities"
+    },
+    "aggs": aggr1
+  }*/
+
+
+
   //const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
 	//const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
@@ -309,7 +326,8 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 		"_source": [],
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
-	}
+  }
+  //body["aggs"]["hits"] = topHitsNested;
 
 	const entities = []
 	if (entityIds != null && entityIds.length > 0) {
@@ -324,27 +342,45 @@ export async function getItemsFiltered(entityIds: [string], itemsPagination: Pag
 	const request = el.requestBuilder(OC_INDEX, body)
 
 	const res = await el.search(request)
-	const buckets = res.aggregations[ENTITIES].docsPerEntity.buckets
-	const typesOfEntity = {}
+  //const buckets = res.aggregations[ENTITIES].docsPerEntity.buckets
+  const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
+	const typesOfEntity = {};
+  let entitiesList = [];
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
-		buckets.map(x => {
+	/*	buckets.map(x => {
 			let entity = JSON.parse(x.key)
-		/*	if (typesOfEntity[entity.typeOfEntity] == null)
-				typesOfEntity[entity.typeOfEntity] = { type: entity.typeOfEntity, count: 0 }
-			typesOfEntity[entity.typeOfEntity].count++*/
 			return {
 				entity: entity,
         count: x.doc_count
 			}
-		}),
-	])
+    })*/
+    buckets.forEach(element => {
+      element.docsPerEntity.buckets.map(x => {
+        let entity = JSON.parse(x.key)
+        entitiesList.push(
+           {
+            entity: entity,
+            count: x.doc_count
+          }
+        )
+      })
+
+    })
+  ])
+
+  entitiesList.sort(function(a, b){
+    if(a.count < b.count) return 1;
+    if(a.count > b.count) return -1;
+    return 0;
+});
 
 	return {
     itemsPagination: { items: results[0], totalCount: res.hits.total },
     //typeOfEntityData: typeOfEntityData,
-    entitiesData: results[1] };
+    entitiesData: entitiesList
+  };
 }
 
 function buildTree(node: any, nodeList: any[]): any {
