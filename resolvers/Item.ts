@@ -22,6 +22,27 @@ export const resolvers = {
         return item.highlight.label[0];
       }
       return item.label;
+    },
+    relatedTypesOfEntity(item, args, context, info) {
+      let entities = [];
+      if ( item.relatedEntities && item.relatedEntities.length > 0 ){
+        let countData = {};
+
+        item.relatedEntities.forEach(entity => {
+          if (!countData[entity['typeOfEntity']]) {
+            countData[entity['typeOfEntity']] = {
+              count: 0,
+              type: entity['typeOfEntity']
+            }
+          }
+          countData[entity['typeOfEntity']].count += 1;
+        })
+
+        for (const e in countData) {
+          entities.push( countData[e] );
+        }
+        return entities;
+      }
     }
   },
 

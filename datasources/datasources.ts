@@ -325,7 +325,8 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 		//		script_fields: scFi.script_fields,
 		"_source": [],
 		size: itemsPagination.limit,
-		from: itemsPagination.offset
+    from: itemsPagination.offset,
+    sort: [{"label.keyword": {"order": "asc"}}]
   }
   //body["aggs"]["hits"] = topHitsNested;
 
@@ -612,7 +613,6 @@ export async function search(searchParameters: any) {
     const facet = {};
 
     facet[QUERY_LINKS] = body[AGGS][QUERY_LINKS];
-    console.log(etFilter);
 
     let aggs = {
       "global":{},
