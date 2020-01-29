@@ -39,6 +39,7 @@ type Item {
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
+    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)
     relatedItems: [ItemListing!] # related items
     breadcrumbs: [LinkElement!]
 }
