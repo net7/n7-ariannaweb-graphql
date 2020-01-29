@@ -32,6 +32,7 @@ type Item {
     label: String!
     title: String!
     document_type: String
+    document_classification: String
     text: String
     icon: String
     subTitle: String
