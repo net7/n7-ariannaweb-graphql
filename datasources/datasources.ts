@@ -66,7 +66,7 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 	const q1 = el.queryTerm(termObject)
 	const quNes = el.queryNested(RELATED_ENTITIES, q1)
 	const script = scriptEntityFields
-	const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
+  const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
 	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
 	const req = el.requestBuilder(OC_INDEX, {
@@ -303,6 +303,9 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   let aggsEntity = el.aggsTerms("entities", 'relatedEntities.typeOfEntity');
   aggsEntity.aggs['entities']['aggs'] = agg.aggs;
 
+  aggsEntity.aggs['entities']['aggs']['distinctTerms'] = { "cardinality": {
+    "field": RELATED_ENTITIES + "." + ID
+  }};
   let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, aggsEntity)
   let aggr1 = el.aggsTerms("type", "relatedEntities.typeOfEntity", null, 10000, 0).aggs;
  /* aggr1["type"]['aggs'] =  el.topHits("hits", entitiesListSize, 0).aggs;;
@@ -347,6 +350,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
 	const typesOfEntity = {};
   let entitiesList = [];
+  let typeOfEntityData = [];
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
@@ -358,6 +362,10 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 			}
     })*/
     buckets.forEach(element => {
+      typeOfEntityData.push({
+        type: element.key,
+        count: element.distinctTerms.value
+      });
       element.docsPerEntity.buckets.map(x => {
         let entity = JSON.parse(x.key)
         entitiesList.push(
@@ -379,7 +387,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 
 	return {
     itemsPagination: { items: results[0], totalCount: res.hits.total },
-    //typeOfEntityData: typeOfEntityData,
+    typeOfEntityData: typeOfEntityData,
     entitiesData: entitiesList
   };
 }
