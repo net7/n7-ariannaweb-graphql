@@ -28,7 +28,7 @@ export const resolvers = {
       let entities = [];
       if ( item.relatedEntities && item.relatedEntities.length > 0 ){
         let countData = {};
-
+        let checkRelatedEntities = [];
         item.relatedEntities.forEach(entity => {
           if (!countData[entity['typeOfEntity']]) {
             countData[entity['typeOfEntity']] = {
@@ -36,7 +36,10 @@ export const resolvers = {
               type: entity['typeOfEntity']
             }
           }
-          countData[entity['typeOfEntity']].count += 1;
+          if (checkRelatedEntities.indexOf(entity.id) < 0 ) {
+            checkRelatedEntities.push(entity.id);
+            countData[entity['typeOfEntity']].count += 1;
+          }
         })
 
         for (const e in countData) {
