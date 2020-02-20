@@ -1,0 +1,8 @@
+{
+  "index" : {
+    "treeIndex": "unifi_tree",
+    "globalIndex": "unifi_global",
+    "entitiesIndex": "unifi_entities",
+    "ocIndex": "unifi_cultural_objects"
+  }
+}
