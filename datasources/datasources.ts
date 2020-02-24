@@ -300,6 +300,22 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 
   const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
 
+  agg["aggs"]["docsPerEntity"]['aggs'] = {
+        "cultural_objects" : {
+          "reverse_nested": {},
+          "aggs": {
+              "culturalObjects": {
+                  "terms": {
+                      "min_doc_count": 1,
+                      "size": 10,
+                      "field": "id"
+                  }
+              }
+          }
+        }
+      };
+
+
   let aggsEntity = el.aggsTerms("entities", 'relatedEntities.typeOfEntity');
   aggsEntity.aggs['entities']['aggs'] = agg.aggs;
 
@@ -371,7 +387,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
         entitiesList.push(
            {
             entity: entity,
-            count: x.doc_count
+            count: x.cultural_objects.doc_count
           }
         )
       })
