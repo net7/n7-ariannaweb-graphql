@@ -300,6 +300,22 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 
   const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
 
+  agg["aggs"]["docsPerEntity"]['aggs'] = {
+        "cultural_objects" : {
+          "reverse_nested": {},
+          "aggs": {
+              "culturalObjects": {
+                  "terms": {
+                      "min_doc_count": 1,
+                      "size": 10,
+                      "field": "id"
+                  }
+              }
+          }
+        }
+      };
+
+
   let aggsEntity = el.aggsTerms("entities", 'relatedEntities.typeOfEntity');
   aggsEntity.aggs['entities']['aggs'] = agg.aggs;
 
@@ -371,7 +387,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
         entitiesList.push(
            {
             entity: entity,
-            count: x.doc_count
+            count: x.cultural_objects.doc_count
           }
         )
       })
@@ -407,22 +423,13 @@ export async function getTree(info) {
 		},
 		sort: {
 		},
-		size: 10000
+		size: 25000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
 	}
 	query.sort[POSITION] = { "order": "asc" }
 	const request = el.requestBuilder(TREE_INDEX, query)
 
-	var res = await el.search(request, "1m")
-	var scrollId = res._scroll_id
+	var res = await el.search(request)
 	res = res.hits.hits.map(x => x._source)
-	var res2
-	do {
-		res2 = await el.scroll(scrollId, "1m")
-	}
-	while (res2.hits.hits > 0) {
-		scrollId = res2._scroll_id
-		res.push(res2.hits.hits)
-	}
 	const root = res.shift()
 	const tree = buildTree(root, res)
 	return tree

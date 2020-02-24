@@ -97,7 +97,7 @@ type Node {
     icon: String
     img: String
     fields: [Field!]
-    branches: [Node!]
+    branches: [GenericNode!]
 }
 
 """ Element containing a label and an optional link for the element
