@@ -70,6 +70,9 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
 	const req = el.requestBuilder(OC_INDEX, {
+    "sort" : {
+      "label.keyword" : {"order" : "asc"}
+    },
 		query: quNes.query,
 		aggs: agNes.aggs,
 		size: itemsPagination.limit,
