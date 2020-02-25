@@ -411,6 +411,9 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   };
 }
 
+
+
+
 function buildTree(node: any, nodeList: any[]): any {
 	node[CHILDREN] = []
 	while (nodeList.length > 0 && nodeList[0][LEVEL] > node[LEVEL]) {
