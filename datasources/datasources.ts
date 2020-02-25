@@ -520,15 +520,17 @@ export async function search(searchParameters: any) {
           // query full text
           if (filter && filter.value && filter.value != ""){
             let searchIn = filter.searchIn[0]
+            let searchInkey = [searchIn.key];
             let term = el.buildQueryString(filter.value[0]) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
 
             if (filters[QUERY_ALL].value == true){
-              searchIn.key = "*"
+              searchIn.key = "*";
+              searchInkey = ["label^5", "text^4", "fields.*^3"];
             }
 
             highlight.fields[searchIn.key] = {};
 
-            let bools = el.queryBool([el.queryString({ fields: [searchIn.key], value: term })]).query
+            let bools = el.queryBool([el.queryString({ fields: searchInkey, value: term })]).query
             etFilter[QUERY][BOOL][MUST]  = bools.bool.must;
 
             if (body[QUERY] == null)
