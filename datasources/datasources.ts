@@ -214,7 +214,11 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
   }
 
   const highlight = { fields: {}};
-  highlight.fields[LABEL] = {};
+
+  highlight.fields[LABEL] = {
+    "type" : "fvh",
+    "fragment_offset": 0
+  };
 
 	const q2 = el.queryString({ fields: [LABEL], value: el.buildQueryString(input) })
 	boolsArray.push(q2)
@@ -502,17 +506,36 @@ export async function search(searchParameters: any) {
     body["from"] = searchParameters.page.offset
   }
 
+let rescore = null;
+
   if( searchParameters.results.order ){
     let key = searchParameters.results.order.key;
     if (searchParameters.results.order.type == "text") {
       key += ".keyword";
+    }
+    else {
+    //rescore cannot be applied on query with sort different from _score
+    rescore = {
+      "window_size" : 50,
+      "query" : {
+          "rescore_query" : {
+            "match_phrase" : {
+                "label" : {
+                  "slop" : 2
+                }
+            }
+          },
+          "query_weight" : 0.7,
+          "rescore_query_weight" : 1.2
+      }
+     };
     }
     let order = {};
     order[key] = {"order": searchParameters.results.order.direction};
     body["sort"] = [order];
   }
 
-  let highlight =  { "fields" : {} };
+  let highlight =  { "fields" : {}, "fragment_size": 500 };
 
 	facets.forEach(facet => {
 		const filter = filters[facet.id]
@@ -524,15 +547,19 @@ export async function search(searchParameters: any) {
           if (filter && filter.value && filter.value != ""){
             let searchIn = filter.searchIn[0]
             let searchInkey = [searchIn.key];
-            let term = el.buildQueryString(filter.value[0]) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+            let term = el.buildQueryString(filter.value[0], {allowWildCard: false}) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
 
             if (filters[QUERY_ALL].value == true){
               searchIn.key = "*";
-              searchInkey = ["label^5", "text^4", "fields.*^3"];
+              searchInkey = filters[QUERY_ALL].searchIn[0].key.split(","); // ["label^5", "text^4", "fields.*^3"];
             }
-
-            highlight.fields[searchIn.key] = {};
-
+            if(rescore != null) {
+              rescore.query.rescore_query.match_phrase.label['query'] = filter.value[0];
+            }
+            highlight.fields[searchIn.key] = {
+              "type" : "fvh",
+              "fragment_offset": 0
+            };
             let bools = el.queryBool([el.queryString({ fields: searchInkey, value: term })]).query
             etFilter[QUERY][BOOL][MUST]  = bools.bool.must;
 
