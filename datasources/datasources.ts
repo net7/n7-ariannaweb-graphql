@@ -352,7 +352,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 		"_source": [],
 		size: itemsPagination.limit,
     from: itemsPagination.offset,
-    sort: [{"label.keyword": {"order": "asc"}}]
+    sort: [{"label_sort.keyword": {"order": "asc"}}]
   }
   //body["aggs"]["hits"] = topHitsNested;
 
@@ -551,7 +551,7 @@ let rescore = null;
 
             if (filters[QUERY_ALL].value == true){
               searchIn.key = "*";
-              searchInkey = filters[QUERY_ALL].searchIn[0].key.split(","); // ["label^5", "text^4", "fields.*^3"];
+              searchInkey = filters[QUERY_ALL].searchIn[0].key == "query-all" ? ["*"] : filters[QUERY_ALL].searchIn[0].key.split(","); // ["label^5", "text^4", "fields.*^3"];
             }
             if(rescore != null) {
               rescore.query.rescore_query.match_phrase.label['query'] = filter.value[0];
