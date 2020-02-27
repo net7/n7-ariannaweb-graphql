@@ -322,7 +322,7 @@ export const queryString = (queryField: { fields: string[], value: string }) => 
 
 export const buildQueryString = (term: string, options: any = {}) => {
 
-  const allowWildCard = options.allowWildCard ? options.allowWildCard : true,
+  const allowWildCard = options.allowWildCard != "undefined" ? options.allowWildCard : true,
         splitString = options.splitString ? options.splitString : true;
 
   let termToArray:any,
@@ -336,6 +336,8 @@ export const buildQueryString = (term: string, options: any = {}) => {
 
   if ( allowWildCard ) {
     queryTerms = termToArray.map( t => "*" + t + "*");
+  } else {
+    queryTerms = termToArray;
   }
 
 	return queryTerms.join(" ");

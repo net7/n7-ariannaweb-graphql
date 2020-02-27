@@ -19,8 +19,8 @@ export const resolvers = {
         return item.label;
     },
     label(item, args, context, info) {
-      if( item.highlight && item.highlight.label && item.highlight.label[0] != "" ){
-        return item.highlight.label[0];
+      if( item.highlight && item.highlight['label.ngrams'] && item.highlight['label.ngrams'][0] != "" ){
+        return item.highlight['label.ngrams'][0];
       }
       return item.label;
     },
