@@ -17,6 +17,7 @@ const RELATED_ENTITIES = "relatedEntities"
 const RELATED_ITEMS = "relatedItems"
 const TYPE_OF_ENTITY = "typeOfEntity"
 const LABEL = "label"
+const LABEL_NGRAMS = "label.ngrams"
 const ID = "id"
 const CHILDREN = "branches"
 const LEVEL = "level"
@@ -179,6 +180,14 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 	const boolsArray = []
   const boolsArray2 = []
   let aggr1 = {};
+
+  const highlight = { fields: {}};
+  highlight.fields[LABEL_NGRAMS] = {
+    "type" : "fvh",
+    "fragment_offset": 0
+  };
+  highlight.fields[LABEL] = {};
+
 	if (typeOfEntity != null && typeOfEntity !== "") {
 		var termObject = {}
 		termObject[TYPE_OF_ENTITY] = typeOfEntity
@@ -192,7 +201,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
     aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
 
 
-    aggr1["type"]['aggs'] = el.topHits("hits", itemsPagination.limit, itemsPagination.offset).aggs;
+    aggr1["type"]['aggs'] = el.topHits("hits", itemsPagination.limit, itemsPagination.offset, null, 1, highlight).aggs;
     /*{
       "hits": {"top_hits":  {
         "size": itemsPagination.limit,
@@ -213,22 +222,17 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   }
 
-  const highlight = { fields: {}};
+  const filter = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}) });
 
-  highlight.fields[LABEL] = {
-    "type" : "fvh",
-    "fragment_offset": 0
-  };
 
-	const q2 = el.queryString({ fields: [LABEL], value: el.buildQueryString(input) })
+	const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, {allowWildCard: false, stripDoubleQuotes: true}) })
 	boolsArray.push(q2)
-  const bools = el.queryBool(boolsArray)
-const request = el.requestBuilder(GLOBAL_INDEX, {
+  const bools = el.queryBool(boolsArray, [], filter)
+  const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
     from: itemsPagination.offset,
-    aggs: aggr1,
-    highlight: highlight
+    aggs: aggr1
 
 	})
 

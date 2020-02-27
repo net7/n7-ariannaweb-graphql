@@ -205,7 +205,7 @@ export const globalAggsTerms = function (buckets, field, size, filter, minDocCou
  * @param size max number of buckets returned
  * @param filter object with filter field {term, value, filter}
  */
-export const topHits = function (buckets, limit, offset, sort = null, minDocCount = 1) {
+export const topHits = function (buckets, limit, offset, sort = null, minDocCount = 1, highlight = null) {
 
   const querysort = sort ? sort : [
           {"_score": {"order": "desc"}},
@@ -216,11 +216,7 @@ export const topHits = function (buckets, limit, offset, sort = null, minDocCoun
           "size": limit,
           "from": offset,
           "sort": querysort,
-          "highlight" : {
-            "fields" : {
-                "label" : {}
-            }
-          }
+          "highlight" : highlight
         }
     }
 
@@ -303,7 +299,7 @@ export const queryBool = (mustList = [], shouldList = [], filterList = [], notLi
  *
  * @param queryField object containing the field name and the value to search on it
  */
-export const queryString = (queryField: { fields: string[], value: string }) => {
+export const queryString = (queryField: { fields: string[], value: string }):any => {
 	const x = {
 		query_string: {
 			query: queryField.value,
@@ -323,10 +319,15 @@ export const queryString = (queryField: { fields: string[], value: string }) => 
 export const buildQueryString = (term: string, options: any = {}) => {
 
   const allowWildCard = options.allowWildCard != "undefined" ? options.allowWildCard : true,
-        splitString = options.splitString ? options.splitString : true;
+        splitString = options.splitString ? options.splitString : true,
+        stripDoubleQuotes = options.stripDoubleQuotes ? options.stripDoubleQuotes : false;
 
   let termToArray:any,
       queryTerms:any;
+
+  if ( stripDoubleQuotes ){
+    term = term.replace(/\\*"/g,"");
+  }
 
   if( splitString ) {
     termToArray = term.split(" ");
