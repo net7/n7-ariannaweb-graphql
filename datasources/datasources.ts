@@ -510,34 +510,38 @@ export async function search(searchParameters: any) {
     body["from"] = searchParameters.page.offset
   }
 
-let rescore = null;
+  let rescore = null;
+  let order = {};
 
   if( searchParameters.results.order ){
     let key = searchParameters.results.order.key;
+
     if (searchParameters.results.order.type == "text") {
       key += ".keyword";
+      order[key] = {"order": searchParameters.results.order.direction};
+
     }
     else {
 
-    //rescore cannot be applied on query with sort different from _score
-    rescore = {
-      "window_size" : 50,
-      "query" : {
-          "rescore_query" : {
-            "match_phrase" : {
-                "label" : {
-                  "slop" : 2
-                }
-            }
-          },
-          "query_weight" : 0.7,
-          "rescore_query_weight" : 1.2
-      }
-     };
+      //rescore cannot be applied on query with sort different from _score
+      rescore = {
+        "window_size" : 50,
+        "query" : {
+            "rescore_query" : {
+              "match_phrase" : {
+                  "label" : {
+                    "slop" : 2
+                  }
+              }
+            },
+            "query_weight" : 0.7,
+            "rescore_query_weight" : 1.2
+        }
+      };
+      order[key] = {"order": searchParameters.results.order.direction};
+      order["label_sort.keyword"] = {"order": "ASC"}; //aggiungo un secondo criterio di ordinamento
     }
-    let order = {};
-    order[key] = {"order": searchParameters.results.order.direction};
-    order["label_sort.keyword"] = {"order": "ASC"}; //aggiungo un secondo criterio di ordinamento
+
     body["sort"] = [order];
   }
 
