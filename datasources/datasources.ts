@@ -518,6 +518,7 @@ let rescore = null;
       key += ".keyword";
     }
     else {
+
     //rescore cannot be applied on query with sort different from _score
     rescore = {
       "window_size" : 50,
@@ -536,6 +537,7 @@ let rescore = null;
     }
     let order = {};
     order[key] = {"order": searchParameters.results.order.direction};
+    order["label_sort.keyword"] = {"order": "ASC"}; //aggiungo un secondo criterio di ordinamento
     body["sort"] = [order];
   }
 
@@ -562,16 +564,14 @@ let rescore = null;
               rescore.query.rescore_query.match_phrase.label['query'] = filter.value[0];
             }
 
-
-
             searchIn.key.split(",").forEach(element => {
               if(element.indexOf(".ngrams") >= 0){
-
+                const baseField = element.substring(0, element.indexOf(".ngrams"));
                 query_filter.push(
-                  el.queryString({ fields: [ element.substring(0, element.indexOf(".ngrams")) ], value: el.buildQueryString(filter.value[0], {allowWildCard: true})  })
+                  el.queryString({ fields: [ baseField ], value: el.buildQueryString(filter.value[0], {allowWildCard: true})  })
                 )
 
-
+                highlight.fields[baseField] = {};
                 highlight.fields[element] = {
                   "type" : "fvh",
                   "fragment_offset": 0
