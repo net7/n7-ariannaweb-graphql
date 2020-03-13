@@ -223,11 +223,12 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
   }
 
   const filter = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}) });
+  const should = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}).substring(1) }, 'AND', 3);
 
 
 	const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, {allowWildCard: false, stripDoubleQuotes: true}) })
 	boolsArray.push(q2)
-  const bools = el.queryBool(boolsArray, [], filter)
+  const bools = el.queryBool(boolsArray, should, filter)
   const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
 		size: itemsPagination.limit,
@@ -558,6 +559,7 @@ export async function search(searchParameters: any) {
             let searchIn = filter.searchIn[0]
             let searchInkey = searchIn.key.split(",");
             let query_filter = [];
+            let should_filter = [];
             let term = el.buildQueryString(filter.value[0], {allowWildCard: false, stripDoubleQuotes: true}) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
 
             if (filters[QUERY_ALL].value == true){
@@ -575,6 +577,11 @@ export async function search(searchParameters: any) {
                   el.queryString({ fields: [ baseField ], value: el.buildQueryString(filter.value[0], {allowWildCard: true})  })
                 )
 
+                should_filter.push(
+                  el.queryString({ fields: [ baseField ], value: el.buildQueryString(filter.value[0], {allowWildCard: true}).substring(1) },  'AND', 3)
+                )
+
+
                 highlight.fields[baseField] = {};
                 highlight.fields[element] = {
                   "type" : "fvh",
@@ -587,8 +594,13 @@ export async function search(searchParameters: any) {
             });
 
 
-            let bools = el.queryBool([el.queryString({ fields: searchInkey, value: term })],[], query_filter).query
-            etFilter[QUERY][BOOL][MUST]  = bools.bool.must;
+            let bools = el.queryBool(
+                [el.queryString({ fields: searchInkey, value: term })],
+                should_filter,
+                query_filter
+              ).query
+
+            etFilter[QUERY][BOOL][MUST] = bools.bool.must;
 
             if (body[QUERY] == null)
               body[QUERY] = bools
@@ -703,12 +715,17 @@ export async function search(searchParameters: any) {
   }
 
 	// returns facets on document Type
-	//body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
+  //body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
+
+  //non si può usare il rescore in combinazione con il sort
+  /*if ( rescore ){
+    body['rescore'] = rescore;
+  }*/
 
   body['highlight'] = highlight;
 
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
-	//console.log(JSON.stringify(body))
+	console.log(JSON.stringify(body))
 	let result =  await el.search(request)
 	//let elements = result.hits.hits
   //elements = await Promise.all([elements.map(x => makeElement(x._source))])
