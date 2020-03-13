@@ -299,14 +299,19 @@ export const queryBool = (mustList = [], shouldList = [], filterList = [], notLi
  *
  * @param queryField object containing the field name and the value to search on it
  */
-export const queryString = (queryField: { fields: string[], value: string }):any => {
+export const queryString = (queryField: { fields: string[], value: string }, default_operator = "AND", boost:number = null):any => {
 	const x = {
 		query_string: {
 			query: queryField.value,
       fields: queryField.fields,
-      default_operator: "AND"
+      default_operator: default_operator
 		}
-	}
+  }
+
+  if (boost) {
+    x.query_string['boost'] = boost;
+  }
+
 	return x
 }
 
