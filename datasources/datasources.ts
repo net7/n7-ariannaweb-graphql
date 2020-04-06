@@ -594,10 +594,27 @@ export async function search(searchParameters: any) {
             });
 
 
-            let bools = el.queryBool(
+           /* let bools = el.queryBool(
                 [el.queryString({ fields: searchInkey, value: term })],
                 should_filter,
                 query_filter
+              ).query*/
+
+              const should_query = [
+                el.queryString({ fields: searchInkey, value: term }),
+                {
+                  "function_score": {
+                    "script_score": {
+                        "script": "-0.3*doc['label_sort.keyword'].value.indexOf('"+ term +"') "
+                    }
+                }
+                }
+              ];
+
+            let bools = el.queryBool(
+              should_query,
+                should_filter,
+                []
               ).query
 
             etFilter[QUERY][BOOL][MUST] = bools.bool.must;
