@@ -27,7 +27,7 @@ const RELATION = "relation"
 const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
   "." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \""
-  + RELATION + "\":\"' + doc['" + RELATED_ENTITIES +"." + RELATION + ".keyword'].value  + '\", \""
+  + RELATION + "\":\"' + doc['" + RELATED_ENTITIES +"." + RELATION + ".keyword'].value.replace('\"', '\\\\\u0022') + '\", \""
   + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
 
