@@ -223,11 +223,22 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
   }
 
   const filter = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}) });
-  const should = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}).substring(1) }, 'AND', 3);
+  const should = el.queryString({ fields: [ LABEL ], value: el.buildQueryString(input, {allowWildCard: true}).substring(1) }, 'AND', 3.5);
 
 
 	const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, {allowWildCard: false, stripDoubleQuotes: true}) })
-	boolsArray.push(q2)
+	boolsArray.push(q2);
+	boolsArray.push(
+    {
+      "function_score": {
+        "script_score": {
+            "script": "int index = doc['label_sort.keyword'].value.indexOf('"+ input +"');"
+            + "if(index === 0){ 1 } else { -0.5*index}"
+        },
+        "boost_mode": "sum"
+    }
+    }
+  );
   const bools = el.queryBool(boolsArray, should, filter)
   const request = el.requestBuilder(GLOBAL_INDEX, {
 		query: bools.query,
@@ -253,6 +264,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
 	const entityHashMap = {}
   var total = 0;
+  //console.log(JSON.stringify(request))
 	const res = await Promise.all(
 		[el.search(request).then(x => {
       total = x.hits.total
@@ -578,7 +590,7 @@ export async function search(searchParameters: any) {
                 )
 
                 should_filter.push(
-                  el.queryString({ fields: [ baseField ], value: el.buildQueryString(filter.value[0], {allowWildCard: true}).substring(1) },  'AND', 3)
+                  el.queryString({ fields: [ baseField ], value: el.buildQueryString(filter.value[0], {allowWildCard: true}).substring(1) },  'AND', 3.5)
                 )
 
 
@@ -605,8 +617,10 @@ export async function search(searchParameters: any) {
                 {
                   "function_score": {
                     "script_score": {
-                        "script": "-0.3*doc['label_sort.keyword'].value.indexOf('"+ term +"') "
-                    }
+                        "script": "int index = doc['label_sort.keyword'].value.indexOf('"+ term +"');"
+                        + "if(index === 0){ 1 } else { -0.5*index}"
+                    },
+                    "boost_mode": "sum"
                 }
                 }
               ];
@@ -700,8 +714,6 @@ export async function search(searchParameters: any) {
               body[QUERY][BOOL][MUST].push(x)
             })
           }
-
-            //let aggr3 = el.filterAggsTerms(ENTITY_LINKS, 'label.keyword', 10000, {filter: 'all_entities', term:'parent_type', value: "entity"}).aggs;
             let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, 10000, 'relatedEntities');
             aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
             aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, 10000).aggs[ENTITY_LINKS + "_label"]
@@ -742,10 +754,8 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
 	let request = el.requestBuilder(GLOBAL_INDEX, body)
-	console.log(JSON.stringify(body))
+	//console.log("SEARCH",JSON.stringify(body))
 	let result =  await el.search(request)
-	//let elements = result.hits.hits
-  //elements = await Promise.all([elements.map(x => makeElement(x._source))])
 
   let aggregations = [];
   let elements = [];
