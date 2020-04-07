@@ -26,9 +26,10 @@ const RELATION = "relation"
 
 const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
-	"." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \"" + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
+  "." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \""
+  + RELATION + "\":\"' + doc['" + RELATED_ENTITIES +"." + RELATION + ".keyword'].value  + '\", \""
+  + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + TYPE_OF_ENTITY + "'].value + '\"}'"
-
 
 function makeItemListing(item: any, entityId: string = "") {
 	let object = {}
@@ -384,7 +385,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 	}
 
 	const request = el.requestBuilder(OC_INDEX, body)
-
+  //console.log("GLOBAL FILTER", JSON.stringify( body));
 	const res = await el.search(request)
   //const buckets = res.aggregations[ENTITIES].docsPerEntity.buckets
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
