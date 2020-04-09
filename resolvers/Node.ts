@@ -6,13 +6,13 @@ export const resolvers = {
 			return createFields(node.fields)
     },
 		document_type(node) {
-      if (node.node_type != null && node.node_type == "oc"){
+      if (node.fields.node_type != null && node.fields.node_type  == "oc"){
         return "oggetto-culturale"
       } else return "aggregazione-logica"
     },
 		document_classification(node) {
-			if (node.document_classification != null){
-        return node.document_classification
+			if (node.fields.document_classification != null){
+        return node.fields.document_classification
       }
     }
 	}
