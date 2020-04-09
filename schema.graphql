@@ -96,6 +96,8 @@ type Node {
     label: String!
     icon: String
     img: String
+    document_type: String
+    document_classification: String
     fields: [Field!]
     branches: [Node!]
 }
