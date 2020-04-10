@@ -53,6 +53,11 @@ export const resolvers = {
         }
         return entities;
       }
+    },
+    document_type(node) {
+      if (node.fields.node_type != null){
+        return node.fields.node_type;
+      } else return "oggetto-culturale"
     }
   },
 
@@ -60,6 +65,7 @@ export const resolvers = {
     link(item, args, context, info) {
       return item.id;
     }
+
   }
 }
 
