@@ -24,7 +24,13 @@ const LEVEL = "level"
 const POSITION = "position"
 const RELATION = "relation"
 
-const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
+const scriptEntityFieldsGlobal = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
+	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
+  "." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \""
+  + TYPE_OF_ENTITY + "\":\"' + doc['" + RELATED_ENTITIES +
+  "." + TYPE_OF_ENTITY + "'].value + '\"}'"
+
+  const scriptEntityFields = "'{\"" + ID + "\":\"' + doc['" + RELATED_ENTITIES +
 	"." + ID + "'].value + '\",\"" + LABEL + "\":\"' + doc['" + RELATED_ENTITIES +
   "." + LABEL + ".keyword'].value.replace('\u0022', '') + '\", \""
   + RELATION + "\":\"' + doc['" + RELATED_ENTITIES +"." + RELATION + ".keyword'].value.replace('\"', '\\\\\u0022') + '\", \""
@@ -323,7 +329,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
  */
 export async function getItemsFiltered(entityIds, itemsPagination: Page = { limit: 10, offset: 0 }, entitiesListSize: number = 10000, itemIdToDiscard: string = null) {
 
-  const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFields, entitiesListSize)
+  const agg = el.aggsTerms("docsPerEntity", null, scriptEntityFieldsGlobal, entitiesListSize)
 
   agg["aggs"]["docsPerEntity"]['aggs'] = {
         "cultural_objects" : {
