@@ -9,3 +9,4 @@ assets/app-config.json
 assets/*.json
 .history
 .history/*
+ansible_elasticsearch_config
