@@ -449,7 +449,7 @@ export async function getTree(info) {
 		},
 		sort: {
 		},
-		size: 40000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
+		size: 35000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
 	}
 	query.sort[POSITION] = { "order": "asc" }
 	const request = el.requestBuilder(TREE_INDEX, query)
