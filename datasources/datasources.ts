@@ -74,30 +74,30 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 	const q1 = el.queryTerm(termObject)
 	const quNes = el.queryNested(RELATED_ENTITIES, q1)
 	const script = scriptEntityFields
-  const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
-	const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
+  //const agg = el.aggsTerms("docsPerEntity", null, script, entitiesListSize)
+	//const agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, agg)
 
 	const req = el.requestBuilder(OC_INDEX, {
     "sort" : {
       "label.keyword" : {"order" : "asc"}
     },
 		query: quNes.query,
-		aggs: agNes.aggs,
+	//	aggs: agNes.aggs,
 		size: itemsPagination.limit,
 		from: itemsPagination.offset
 	})
 	var entities = []
 	const items = await el.search(req).then(x => {
-		entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
+		/*entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
 			return {
 				entity: JSON.parse(x.key),
 				count: x.doc_count
 			}
-		}).filter(x => x.entity.id !== entityId)
+		}).filter(x => x.entity.id !== entityId)*/
 
 		return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
 	})
-	return { relatedEntities: entities, relatedItems: items }
+	return items;
 }
 
 /**
@@ -119,16 +119,19 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
 	const results = await Promise.all([el.search(req1).then(x => {
 		let entity = x.hits.hits.length > 0 ? x.hits.hits[0]._source : null
 		return entity
-	}),
-	getRelations(entityId, itemsPagination, entitiesListSize)
+	})
 	])
 
 	if (results[0] == null) {
 		return null
 	}
 
-	results[0][RELATED_ITEMS] = results[1][RELATED_ITEMS]
-	results[0][RELATED_ENTITIES] = results[1][RELATED_ENTITIES]
+  results[0].params = {
+    'itemsPagination': itemsPagination,
+    'entitiesListSize': entitiesListSize
+  }
+	//results[0][RELATED_ITEMS] = results[1][RELATED_ITEMS]
+	//results[0][RELATED_ENTITIES] = results[1][RELATED_ENTITIES]
 	return results[0]
 }
 
@@ -151,18 +154,23 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
 		const results = await Promise.all([
 			item.relatedEntities != null ? item.relatedEntities.forEach(x => hashMap[x.id] = x) : null,
 			getItemsFiltered(null, { limit: 1, offset: 0 }, 10000).then(x => x.entitiesData)
-		])
-		results[1] = results[1].filter(x => hashMap[x.entity.id] != null).map(x => { x[RELATION] = hashMap[x.entity.id][RELATION]; return x; } ).slice(0, entitiesListSize)
-		//return items related with first three related entities of the object
+    ])
+
+    results[1] = results[1]
+    .filter(x => hashMap[x.entity.id] != null)
+    .map(x => { x[RELATION] = hashMap[x.entity.id][RELATION]; return x; } )
+    .slice(0, entitiesListSize)
+
+
+    //return items related with first three related entities of the object
 		const result = await getItemsFiltered(results[1].slice(0, 2).map(x => x.entity.id),
 			{ limit: maxSimilarItems, offset: 0 }, 1, itemId).then(x => x.itemsPagination.items)
-		item[RELATED_ENTITIES] = results[1]
+		//item[RELATED_ENTITIES] = results[1]
 		item[RELATED_ITEMS] = result
 		return item
   } else {
     const request2 = el.requestBuilder(TREE_INDEX, el.queryTerm({ id: itemId }))
     const body = await el.search(request2).then(x => x.hits.hits)
-    const hashMap = {}
     if (body.length > 0) {
       let item = body[0]._source
       if(!item.title) {
@@ -171,8 +179,6 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
       return item
     }
   }
-
-
 	return null;
 }
 
@@ -355,19 +361,6 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   }};
   let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, aggsEntity)
   let aggr1 = el.aggsTerms("type", "relatedEntities.typeOfEntity", null, 10000, 0).aggs;
- /* aggr1["type"]['aggs'] =  el.topHits("hits", entitiesListSize, 0).aggs;;
-
-  let topHitsNested = {
-    "nested": {
-      "path": "relatedEntities"
-    },
-    "aggs": aggr1
-  }*/
-
-
-
-  //const source = "def list = new HashMap(); for (type in params['_source']." + RELATED_ENTITIES + ") { def key = type." + TYPE_OF_ENTITY + "; if(list[key] != null){list[key]['count']++;} else { list[key] = new HashMap(); list[key]['count'] = 1; list[key]['type'] = type." + TYPE_OF_ENTITY + "; }} return list;"
-	//const scFi = el.scriptFields('typeOfEntitiesCount', source)
 
 	const body = {
 		aggs: agNes.aggs,
@@ -393,7 +386,6 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 	const request = el.requestBuilder(OC_INDEX, body)
   //console.log("GLOBAL FILTER", JSON.stringify( body));
 	const res = await el.search(request)
-  //const buckets = res.aggregations[ENTITIES].docsPerEntity.buckets
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
 	const typesOfEntity = {};
   let entitiesList = [];
@@ -457,7 +449,7 @@ export async function getTree(info) {
 		},
 		sort: {
 		},
-		size: 25000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
+		size: 40000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
 	}
 	query.sort[POSITION] = { "order": "asc" }
 	const request = el.requestBuilder(TREE_INDEX, query)
@@ -470,10 +462,9 @@ export async function getTree(info) {
 }
 
 export async function getNode(id: string, maxSimilarItems: number, entitiesListSize: number) {
-	const results = await Promise.all([el.search(el.requestBuilder("tree", el.queryTerm({ id: id }))),
-	getItem(id, maxSimilarItems, entitiesListSize)])
-
-	return results[1] != null ? results[1] : results[0].hits.hits.length > 0 ? results[0].hits.hits[0]._source : null
+	const results = await Promise.all([getItem(id, maxSimilarItems, entitiesListSize)])
+  return results[0];
+	//return results[1] != null ? results[1] : results[0].hits.hits.length > 0 ? results[0].hits.hits[0]._source : null
 }
 
 /**
