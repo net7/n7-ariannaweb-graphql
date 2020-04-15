@@ -1,4 +1,5 @@
 import { createFields } from "./utils"
+import * as sources from '../datasources/datasources'
 
 export const resolvers = {
 	Entity: {
@@ -16,6 +17,20 @@ export const resolvers = {
       } else {
         return item.label;
       }
+    },
+    relatedEntities(item, {id}){
+      return item.relatedEntities.map( x => {
+        return {
+          entity: x,
+          count: 1
+        }
+      });
+    },
+    async relatedItems(item, args, context, info){
+
+     return sources.getRelations(item.id, item.params.itemsPagination, item.params.entitiesListSize);
+
+     // return item.relatedEntities;
     }
 	}
 }
