@@ -69,8 +69,10 @@ export const resolvers = {
 
           ids.push(x.id);
         } else {
-          hashMap[x.id]["entity"]["relation"] += ", " + x.relation
-          hashMap[x.id]["relation"] += ", " + x.relation
+          if(x.relation != ""){
+            hashMap[x.id]["entity"]["relation"] = hashMap[x.id]["entity"]["relation"] != "" ? hashMap[x.id]["entity"]["relation"] + ", " + x.relation :x.relation;
+            hashMap[x.id]["relation"] = hashMap[x.id]["relation"] != "" ? hashMap[x.id]["relation"] +", " + x.relation : x.relation
+          }
         }
       });
       const result = sources.getEntityRelatedItemsCount(ids).
