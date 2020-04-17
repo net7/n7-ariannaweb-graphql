@@ -19,13 +19,15 @@ export const resolvers = {
       }
     },
     relatedEntities(item, {id}){
-      return item.relatedEntities.map( x => {
-        return {
-          entity: x,
-          count: 1
-        }
-      });
-    },
+      if( item.relatedEntities ){
+        return item.relatedEntities.map( x => {
+          return {
+            entity: x,
+            count: 1
+          }
+        });
+      } else return []
+        },
     async relatedItems(item, args, context, info){
 
      return sources.getRelations(item.id, item.params.itemsPagination, item.params.entitiesListSize);
