@@ -1,6 +1,26 @@
 import { createFields } from "./utils"
 import * as sources from '../datasources/datasources'
 
+
+const images_base = {
+  196:
+  [
+    "http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Documentiscolasticiesercitazioniuniversitarie/0002_001_2b.tif",
+    "http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Documentiscolasticiesercitazioniuniversitarie/0002_002_2f.tif",
+  ],
+  172: ["http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Concorsiuniversitari/ConcorsoallacattedradiArchitetturaediComposizionearchitettonicaallaFacoltdIngegneriadellUniversitdiNapoli1950/0002_001_2a.tif"],
+  92:[
+    "http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Concorsiuniversitari/ConcorsoallacattedradiArchitetturaediComposizionearchitettonicaallaFacoltdIngegneriadellUniversitdiNapoli1950/0003_001_3a.tif",
+  "http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Concorsiuniversitari/ConcorsoallacattedradiArchitetturaediComposizionearchitettonicaallaFacoltdIngegneriadellUniversitdiNapoli1950/0004_001_4b.tif"
+  ]
+}
+/*"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoFrancescoRodolico/Soggettiarchitettonici/Umbria/0280_0002_Spello.tif",
+"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Concorsiuniversitari/ConcorsoallacattedradiArchitetturaediComposizionearchitettonicaallaFacoltdIngegneriadellUniversitdiNapoli1950/0003_001_3a.tif",
+"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoGiuseppeGiorgioGori1906-1969/Concorsiuniversitari/ConcorsoallacattedradiArchitetturaediComposizionearchitettonicaallaFacoltdIngegneriadellUniversitdiNapoli1950/0004_001_4b.tif",
+"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoFrancescoRodolico/Soggettiarchitettonici/Umbria/0282_0001_Spoleto.tif",
+"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoFrancescoRodolico/Soggettiarchitettonici/Umbria/0283_0005_Spoleto.tif",
+"http://iipserver.hyperborea.com/fast/iipsrv1.fcgi?FIF=/mnt/links/unifi/BibliotecadiScienzeTecnologiche/FondoFrancescoRodolico/Soggettiarchitettonici/Umbria/0280_0002_Spello.tif"*/
+
 export const resolvers = {
   Item: {
     fields(item) {
@@ -59,6 +79,10 @@ export const resolvers = {
       if (node.fields.node_type != null) {
         return node.fields.node_type;
       } else return "oggetto-culturale"
+    },
+    image: (root) =>{
+      console.log(root)
+      return images_base[root.itemId];
     },
     relatedEntities(node) {
       let hashMap = {};
