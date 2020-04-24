@@ -36,7 +36,8 @@ type Item {
     text: String
     icon: String
     subTitle: String
-    image: [String]
+    images: [String]
+    image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
     relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)
@@ -267,7 +268,8 @@ input SearchParameters {
     facets: [SearchFacetInput!]
     filters: [SearchFilterInput]
     results: SearchResultsInput
-    page: Page
+    page: Page,
+    gallery: Boolean
 }
 
 type SearchResponse {

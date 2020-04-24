@@ -29,8 +29,9 @@ export const resolvers = {
       } else return []
         },
     async relatedItems(item, args, context, info){
-
-     return sources.getRelations(item.id, item.params.itemsPagination, item.params.entitiesListSize);
+      const itemPagination = item.params != null ? item.params.itemsPagination : "";
+      const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
+     return sources.getRelations(item.id, itemPagination, entitiesListSize);
 
      // return item.relatedEntities;
     }
