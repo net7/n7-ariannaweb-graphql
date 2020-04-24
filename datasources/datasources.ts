@@ -884,6 +884,13 @@ export async function search(searchParameters: any) {
   /*if ( rescore ){
     body['rescore'] = rescore;
   }*/
+  if( searchParameters.gallery ){
+    body[QUERY][BOOL][MUST].push({
+      "exists": {
+        "field": "digitalObjects"
+      }
+    })
+  }
 
   body['highlight'] = highlight;
 
