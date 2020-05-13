@@ -10,8 +10,7 @@ const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
 const server = new ApolloServer({
   typeDefs: typeDefs,
   resolvers,
-  mocks: mocks,
-  mockEntireSchema: false,
+  mocks: false,
   playground: true,
   plugins: [responseCachePlugin()],
   /*cacheControl: {
