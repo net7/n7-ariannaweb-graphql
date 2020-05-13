@@ -1,6 +1,6 @@
 export const elasticAuth = {
-	username: 'admin',
-	password: 'ricercaElastica'
+	username: 'esmuruca',
+	password: 'murucaes'
 }
 
-export const elasticNodeAddress = 'https://95.216.97.241:9200'
+export const elasticNodeAddress = 'http://es-staging.netseven.it/'
