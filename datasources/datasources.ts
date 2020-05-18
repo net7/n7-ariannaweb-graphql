@@ -254,7 +254,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
       "function_score": {
         "script_score": {
           "script": "int index = doc['label_sort.keyword'].value.indexOf('" + input + "');"
-            + "if(index === 0){ 1 } else { -0.5*index}"
+            + "if(index === 0){ 1 } else { Math.pow(0.5, index) }"
         },
         "boost_mode": "sum"
       }
@@ -751,7 +751,7 @@ export async function search(searchParameters: any) {
               "function_score": {
                 "script_score": {
                   "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
-                    + "if(index === 0){ 1 } else { -0.5*index}"
+                    + "if(index === 0){ 1 } else { Math.pow(0.5, index)}"
                 },
                 "boost_mode": "sum"
               }
@@ -895,7 +895,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("SEARCH",JSON.stringify(body))
+  //console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
