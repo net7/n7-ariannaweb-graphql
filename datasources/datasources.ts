@@ -175,12 +175,14 @@ export async function getItem(itemId: string, maxSimilarItems: number = 10000, e
       }
     }
 
+    item.index = "oc_index";
     return item
   } else {
     const request2 = el.requestBuilder(TREE_INDEX, el.queryTerm({ id: itemId }))
     const body = await el.search(request2).then(x => x.hits.hits)
     if (body.length > 0) {
-      let item = body[0]._source
+      let item = body[0]._source;
+      item.index = "tree_index";
       if (!item.title) {
         item['title'] = item.label;
       }
