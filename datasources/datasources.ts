@@ -788,7 +788,7 @@ export async function search(searchParameters: any) {
           })
 
           if (terms.length > 0) {
-            let bools = el.queryBool(null, terms).query
+            let bools = el.queryBool(terms).query
             if (body[QUERY] == null)
               body[QUERY] = bools
             else if (body[QUERY][BOOL] == null)
