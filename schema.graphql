@@ -32,12 +32,15 @@ type Item {
     label: String!
     title: String!
     document_type: String
+    document_classification: String
     text: String
     icon: String
     subTitle: String
+    images: [String]
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
+    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)
     relatedItems: [ItemListing!] # related items
     breadcrumbs: [LinkElement!]
 }
@@ -94,6 +97,8 @@ type Node {
     label: String!
     icon: String
     img: String
+    document_type: String
+    document_classification: String
     fields: [Field!]
     branches: [Node!]
 }
@@ -263,7 +268,8 @@ input SearchParameters {
     facets: [SearchFacetInput!]
     filters: [SearchFilterInput]
     results: SearchResultsInput
-    page: Page
+    page: Page,
+    gallery: Boolean
 }
 
 type SearchResponse {

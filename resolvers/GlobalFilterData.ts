@@ -6,7 +6,7 @@ const ENTITIES_INDEX = config['index']['entitiesIndex'] || "entities"
 
 export const resolvers = {
 	GlobalFilterData: {
-    typeOfEntityData : async (obj, args, context, info) => {
+    /*typeOfEntityData : async (obj, args, context, info) => {
       // request for global index
       let body = { size: 0}
       let aggr1 = el.globalAggsTerms("entity_count", "typeOfEntity", 10000, null).aggs;
@@ -27,7 +27,7 @@ export const resolvers = {
         })
       }
       return typeOfEntityData;
-    }
+    }*/
 	}
 }
 

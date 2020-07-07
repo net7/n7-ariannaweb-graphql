@@ -28,8 +28,8 @@
     "now": "^16.7.2"
   },
   "devDependencies": {
-    "nodemon": "^1.19.1",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.4"
+    "nodemon": "~1.19.1",
+    "ts-node": "~8.5.4",
+    "typescript": "~3.7.4"
   }
 }
