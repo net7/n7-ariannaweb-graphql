@@ -705,9 +705,9 @@ export async function search(searchParameters: any) {
         if (filter && filter.value && filter.value != "") {
           let searchIn = filter.searchIn[0]
           let searchInkey = searchIn.key.split(",");
-          let query_filter = [];
-          let should_filter = [];
-          let term = el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true }) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+          let query_filter = [];  
+          let should_filter:any;       
+          let term = el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: false }) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
 
           if (filters[QUERY_ALL].value == true) {
             searchInkey = filters[QUERY_ALL].searchIn[0].key == "query-all" ? ["*"] : filters[QUERY_ALL].searchIn[0].key.split(","); // ["label^5", "text^4", "fields.*^3"];
@@ -724,13 +724,10 @@ export async function search(searchParameters: any) {
                 el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: true }) })
               )
 
-              should_filter.push(
-                el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: true }).substring(1) }, 'AND', 3.5)
-              )
-
-
-              highlight.fields[baseField] = {};
-              highlight.fields[element] = {
+            should_filter = el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: false })}, 'AND', 3.5)
+              
+            highlight.fields[baseField] = {};
+            highlight.fields[element] = {
                 "type": "fvh",
                 "fragment_offset": 0
               };
@@ -746,23 +743,27 @@ export async function search(searchParameters: any) {
                should_filter,
                query_filter
              ).query*/
-
+          let score_term =  el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: true });
           const should_query = [
-            el.queryString({ fields: searchInkey, value: term }),
+            el.queryString({ fields: searchInkey, value: score_term }),
             {
               "function_score": {
+                "query": {
+                  "query_string": el.queryString({ fields: searchInkey, value: term }).query_string
+                },
                 "script_score": {
                   "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
-                    + "if(index === 0){ 1 } else { Math.pow(0.5, index)}"
+                    + "if(index === 0){ 3 } else { Math.pow(0.8, index)}"
                 },
-                "boost_mode": "sum"
+                "boost_mode": "multiply"
               }
-            }
+            },
+            should_filter
           ];
 
           let bools = el.queryBool(
+            [],
             should_query,
-            should_filter,
             []
           ).query
 
@@ -897,7 +898,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("SEARCH",JSON.stringify(request))
+  console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];

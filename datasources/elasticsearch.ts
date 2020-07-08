@@ -325,7 +325,8 @@ export const buildQueryString = (term: string, options: any = {}) => {
 
   const allowWildCard = options.allowWildCard != "undefined" ? options.allowWildCard : true,
         splitString = options.splitString ? options.splitString : true,
-        stripDoubleQuotes = options.stripDoubleQuotes ? options.stripDoubleQuotes : false;
+        stripDoubleQuotes = options.stripDoubleQuotes ? options.stripDoubleQuotes : false,
+        allowFuzziness = options.allowFuzziness ? options.allowFuzziness : false;
 
   let termToArray:any,
       queryTerms:any;
@@ -345,8 +346,14 @@ export const buildQueryString = (term: string, options: any = {}) => {
   } else {
     queryTerms = termToArray;
   }
+  
+  queryTerms =  queryTerms.join(" ");
+  if( allowFuzziness ) {
+    queryTerms = queryTerms + "~";
+  }
 
-	return queryTerms.join(" ");
+  return queryTerms;
+
 }
 
 /**
