@@ -4,5 +4,10 @@
     "globalIndex": "global",
     "entitiesIndex": "entities",
     "ocIndex": "cultural_objects"
+  },
+  "elasticNodeAddress" : "http://es-staging.netseven.it/",
+  "elasticAuth": {
+    "username": "esmuruca",
+	  "password": "murucaes"
   }
 }

@@ -1,6 +1,8 @@
+import * as config from '../assets/app-config.json';
+
 export const elasticAuth = {
-	username: 'esmuruca',
-	password: 'murucaes'
+	username: config.elasticAuth.username,
+	password: config.elasticAuth.password
 }
 
-export const elasticNodeAddress = 'http://es-staging.netseven.it/'
+export const elasticNodeAddress = config.elasticNodeAddress
