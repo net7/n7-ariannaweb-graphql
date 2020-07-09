@@ -335,6 +335,8 @@ export const buildQueryString = (term: string, options: any = {}) => {
     term = term.replace(/\\*"/g,"");
   }
 
+  term = term.replace(/-/g,"\\\\-");
+
   if( splitString ) {
     termToArray = term.split(" ");
   } else {
