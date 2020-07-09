@@ -196,6 +196,7 @@ type SearchFacet {
     limit: Int
     order: String # field name for ordering
     metadata: [String]
+    totalCount: Int
 }
 
 input FilterSearchInInput {
@@ -212,6 +213,7 @@ input SearchFilterInput {
     facetId: String
     value: [String]
     searchIn: [FilterSearchInInput!]
+    pagination: Page  
 }
 
 type SearchFilter {
