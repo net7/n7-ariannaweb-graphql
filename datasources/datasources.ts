@@ -245,10 +245,8 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   }
 
-  const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
+  //const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
   const should = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }).substring(1) }, 'AND', 3.5);
-
-
   const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true }) })
   boolsArray.push(q2);
   boolsArray.push(
@@ -262,7 +260,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
       }
     }
   );
-  const bools = el.queryBool(boolsArray, should, filter)
+  const bools = el.queryBool(boolsArray, should)
   const request = el.requestBuilder(GLOBAL_INDEX, {
     query: bools.query,
     size: itemsPagination.limit,
@@ -287,7 +285,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   const entityHashMap = {}
   var total = 0;
-  //console.log(JSON.stringify(request))
+  console.log(JSON.stringify(request))
   const res = await Promise.all(
     [el.search(request).then(x => {
       total = x.hits.total
@@ -789,7 +787,7 @@ export async function search(searchParameters: any) {
           })
 
           if (terms.length > 0) {
-            let bools = el.queryBool(null, terms).query
+            let bools = el.queryBool(terms).query
             if (body[QUERY] == null)
               body[QUERY] = bools
             else if (body[QUERY][BOOL] == null)
