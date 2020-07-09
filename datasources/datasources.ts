@@ -571,7 +571,7 @@ export async function getEntityRelatedItemsCount(entityIds, itemsPagination: Pag
 }
 
 
-function buildTree(node: any, nodeList: any[]): any {
+function buildTree(node: any, nodeList): any {
   node[CHILDREN] = []
   while (nodeList.length > 0 && nodeList[0][LEVEL] > node[LEVEL]) {
     node[CHILDREN].push(buildTree(nodeList.shift(), nodeList))
