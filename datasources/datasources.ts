@@ -848,7 +848,9 @@ export async function search(searchParameters: any) {
               body[QUERY][BOOL][MUST].push(x)
             })
         }
-        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, 10000, 'relatedEntities');
+
+        const limit = ( filter.pagination != undefined ) ? filter.pagination.limit : "1000"; 
+        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, limit, 'relatedEntities');
         aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
         aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, 10000).aggs[ENTITY_LINKS + "_label"]
 
