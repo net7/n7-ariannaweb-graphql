@@ -6,3 +6,4 @@ export const elasticAuth = {
 }
 
 export const elasticNodeAddress = config.elasticNodeAddress
+export const elasticFuzziness = config.fuzziness

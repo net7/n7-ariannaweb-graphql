@@ -9,5 +9,6 @@
   "elasticAuth": {
     "username": "esmuruca",
 	  "password": "murucaes"
-  }
+  },
+  "fuzziness": 1
 }

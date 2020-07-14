@@ -756,23 +756,33 @@ export async function search(searchParameters: any) {
                 "boost_mode": "multiply"
               }
             },
-            should_filter
+          //  should_filter
           ];
 
-          let bools = el.queryBool(
+          let bools1 = el.queryBool(
             [],
             should_query,
             []
           ).query
 
-          etFilter[QUERY][BOOL][MUST] = bools.bool.must;
+          etFilter[QUERY][BOOL][MUST] = bools1.bool.should.slice();
 
-          if (body[QUERY] == null)
-            body[QUERY] = bools
+          if (body[QUERY] == null){
+            body[QUERY] = {},
+            body[QUERY][BOOL] = {};
+            body[QUERY][BOOL][MUST] = [];
+            body[QUERY][BOOL][MUST].push(
+              {
+                "bool": {
+                  "should": bools1.bool.should
+                }
+              }
+            );
+          }
           else if (body[QUERY][BOOL] == null)
-            body[QUERY][BOOL] = bools.bool
+            body[QUERY][BOOL] = bools1.bool
           else
-            body[QUERY][BOOL][MUST] = bools.bool.must
+            body[QUERY][BOOL][MUST] = bools1.bool.must
 
         }
 
@@ -793,7 +803,9 @@ export async function search(searchParameters: any) {
             else if (body[QUERY][BOOL] == null)
               body[QUERY][BOOL] = bools.bool
             else
-              body[QUERY][BOOL][MUST].push(bools)
+            bools.bool.must.map(x => {
+              body[QUERY][BOOL][MUST].push(x)
+            })
           }
         }
         //facet results
@@ -866,7 +878,7 @@ export async function search(searchParameters: any) {
 
     facet[QUERY_LINKS] = body[AGGS][QUERY_LINKS];
 
-    let aggs = {
+    /*let aggs = {
       "global": {},
       "aggs": {
         "filtered": {
@@ -874,8 +886,9 @@ export async function search(searchParameters: any) {
           "aggs": facet
         }
       }
-    };
-    body[AGGS][QUERY_LINKS] = aggs;
+    };*/
+
+    //body[AGGS][QUERY_LINKS] = aggs;
   }
 
   // returns facets on document Type
@@ -912,7 +925,7 @@ export async function search(searchParameters: any) {
       if (result.aggregations[facet.id] != null && !facet.data) {
         switch (facet.id) {
           case QUERY_LINKS:
-            let data = result.aggregations[facet.id]["filtered"][facet.id].buckets.map(bucket => {
+            let data = result.aggregations[facet.id].buckets.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket.key,

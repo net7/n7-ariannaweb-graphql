@@ -1,5 +1,5 @@
 import { Client } from '@elastic/elasticsearch'
-import { elasticAuth as auth, elasticNodeAddress as addr } from "./elasticConfig"
+import { elasticAuth as auth, elasticNodeAddress as addr, elasticFuzziness as fuzziness } from "./elasticConfig"
 
 const client = new Client({ node: addr, auth: auth, ssl: { rejectUnauthorized: false } })
 
@@ -304,7 +304,8 @@ export const queryString = (queryField: { fields: string[], value: string }, def
 		query_string: {
 			query: queryField.value,
       fields: queryField.fields,
-      default_operator: default_operator
+      default_operator: default_operator,
+      "fuzziness": fuzziness
 		}
   }
 
