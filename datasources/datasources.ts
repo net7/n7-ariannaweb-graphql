@@ -803,14 +803,14 @@ export async function search(searchParameters: any) {
              body[AGGS][QUERY_LINKS] = aggr1[QUERY_LINKS];
            }*/
         break
-      /*case ENTITY_TYPES: //list of entity types for inner filter
+      case ENTITY_TYPES: //list of entity types for inner filter
         let aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, { filter: 'all_entities', term: 'parent_type', value: "entity" }).aggs;
         if (body[AGGS] == null) {
           body[AGGS] = aggr2
         } else {
           body[AGGS][ENTITY_TYPES] = aggr2[ENTITY_TYPES];
         }
-        break;*/
+        break;
       case ENTITY_LINKS:
         // add query entity list
         let list = []
@@ -917,7 +917,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  console.log("SEARCH",JSON.stringify(request))
+  //console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
