@@ -852,7 +852,7 @@ export async function search(searchParameters: any) {
         let aggr_filter;
         let filter_object = {};
         let must_list = [];
-        if ( filters[ENTITY_TYPES] && filters[ENTITY_TYPES].value != null ){
+        if ( filters[ENTITY_TYPES] && filters[ENTITY_TYPES].value.length > 0 ){
           must_list.push({
             "terms": {
               "relatedEntities.typeOfEntity": filters[ENTITY_TYPES].value 
@@ -860,7 +860,7 @@ export async function search(searchParameters: any) {
           })    
         }
               
-        if ( filters[ENTITY_SEARCH] && filters[ENTITY_SEARCH].value != null ){
+        if ( filters[ENTITY_SEARCH] && filters[ENTITY_SEARCH].value.length != null ){
           must_list.push(
             { "query_string": {
                 "query": filters[ENTITY_SEARCH].value + "*",
