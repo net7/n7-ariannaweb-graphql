@@ -803,14 +803,14 @@ export async function search(searchParameters: any) {
              body[AGGS][QUERY_LINKS] = aggr1[QUERY_LINKS];
            }*/
         break
-      case ENTITY_TYPES: //list of entity types for inner filter
+      /*case ENTITY_TYPES: //list of entity types for inner filter
         let aggr2 = el.globalAggsTerms(ENTITY_TYPES, DOCUMENT_TYPE, 10000, { filter: 'all_entities', term: 'parent_type', value: "entity" }).aggs;
         if (body[AGGS] == null) {
           body[AGGS] = aggr2
         } else {
           body[AGGS][ENTITY_TYPES] = aggr2[ENTITY_TYPES];
         }
-        break;
+        break;*/
       case ENTITY_LINKS:
         // add query entity list
         let list = []
@@ -840,19 +840,46 @@ export async function search(searchParameters: any) {
             })
         }
 
-        const limit = ( filter.pagination != undefined ) ? filter.pagination.limit : "1000"; 
-        const offset = ( filter.pagination != undefined ) ? filter.pagination.offset : "0"; 
+        const limit:number = ( filter.pagination != undefined ) ? filter.pagination.limit : 1000; 
+        const offset:number = ( filter.pagination != undefined ) ? filter.pagination.offset : 0; 
 
-        const size =  offset + limit;
+        const size:number =  offset + limit;
 
         let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
         aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
         aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
 
+        let aggr_filter;
+        let filter_object = {};
+        let must_list = [];
+        if ( filters[ENTITY_TYPES] && filters[ENTITY_TYPES].value != null ){
+          must_list.push({
+            "terms": {
+              "relatedEntities.typeOfEntity": filters[ENTITY_TYPES].value 
+            }
+          })    
+        }
+              
+        if ( filters[ENTITY_SEARCH] && filters[ENTITY_SEARCH].value != null ){
+          must_list.push(
+            { "query_string": {
+                "query": filters[ENTITY_SEARCH].value + "*",
+                "fields": [
+                    "relatedEntities.label"
+                ]
+            }}
+          )           
+        }
+          
+        filter_object = el.queryBool(must_list).query;
+        aggr_filter = el.filterAggsTerms(ENTITY_LINKS, 'relatedEntities.id', size, filter_object, 'relatedEntities');
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs;
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
+
         if (body[AGGS] == null) {
-          body[AGGS] = aggr3
+          body[AGGS] = aggr_filter
         } else {
-          body[AGGS][ENTITY_LINKS] = aggr3;
+          body[AGGS][ENTITY_LINKS] = aggr_filter;
         }
         break
     }
@@ -890,7 +917,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("SEARCH",JSON.stringify(request))
+  console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
@@ -927,7 +954,7 @@ export async function search(searchParameters: any) {
             break;
           case ENTITY_LINKS: {
             const offset = ( filters[ENTITY_LINKS].pagination != undefined ) ? filters[ENTITY_LINKS].pagination.offset : 0;
-            const data_offset = result.aggregations[facet.id][facet.id]['buckets'].slice(offset);
+            const data_offset = result.aggregations[facet.id][facet.id][facet.id]['buckets'].slice(offset);
             let data3 = data_offset.map(bucket => {
               return {
                 "value": bucket.key,

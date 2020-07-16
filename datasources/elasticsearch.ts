@@ -233,12 +233,15 @@ export const topHits = function (buckets, limit, offset, sort = null, minDocCoun
  * @param buckets buckets name
  * @param field field to aggregate
  * @param size max number of buckets returned
- * @param filter object with filter field {term, value, filter}
+ * @param filter object with filter query
  */
-export const filterAggsTerms = function (buckets, field, size, filter) {
+export const filterAggsTerms = function (buckets, field, size, filter:{}, nested_path = "") {
   if (field === void 0) { field = null; }
   if (filter === void 0) { filter = null; }
   if (size === void 0) { size = 10000; }
+
+
+  
   var x = {
       aggs: {}
   };
@@ -247,32 +250,34 @@ export const filterAggsTerms = function (buckets, field, size, filter) {
   let termAggs, filterAggs;
 
   if (field != null){
-    termAggs = {
-      buckets : {
+    termAggs = {};
+    termAggs[buckets] = {};
+    termAggs[ buckets ] = {      
         terms: {
           min_doc_count: 1,
           size: size,
           field: field
-        }
-      }
+        }      
     };
   }
 
-  if (filter != null) {
-    const name = filter['filter'];
-    const value = filter['value'];
-    const filterfield = filter['term'];
-    filterAggs = {};
-    filterAggs['term'] = {};
-    filterAggs['term'][filterfield] = value;
-  }
-
-  if ( filterAggs != null ) {
-    x.aggs[buckets]['filter'] = filterAggs;
+  if ( filter != null ) {
+    x.aggs[buckets]['filter'] = filter;
   }
 
   x.aggs[buckets]['aggs'] = termAggs;
 
+
+  if( nested_path != ""){
+    const nested = {
+        aggs: x.aggs,
+        nested : {
+          path : nested_path
+        }
+      }
+      
+      x = nested;
+    }
 
   return x;
 };
