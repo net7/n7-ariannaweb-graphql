@@ -850,9 +850,13 @@ export async function search(searchParameters: any) {
         }
 
         const limit = ( filter.pagination != undefined ) ? filter.pagination.limit : "1000"; 
-        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, limit, 'relatedEntities');
-        aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
-        aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, 10000).aggs[ENTITY_LINKS + "_label"]
+        const offset = ( filter.pagination != undefined ) ? filter.pagination.offset : "0"; 
+
+        const size =  offset + limit;
+
+        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
+        aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
+        aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
 
         if (body[AGGS] == null) {
           body[AGGS] = aggr3
@@ -934,7 +938,9 @@ export async function search(searchParameters: any) {
             facet.data = data2;
             break;
           case ENTITY_LINKS: {
-            let data3 = result.aggregations[facet.id][facet.id]['buckets'].map(bucket => {
+            const offset = filters[ENTITY_LINKS].pagination.offset;
+            const data_offset = result.aggregations[facet.id][facet.id]['buckets'].slice(offset);
+            let data3 = data_offset.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket[facet.id + "_label"].buckets[0].key,
