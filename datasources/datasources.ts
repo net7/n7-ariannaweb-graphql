@@ -890,7 +890,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  console.log("SEARCH",JSON.stringify(request))
+  //console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
@@ -926,7 +926,7 @@ export async function search(searchParameters: any) {
             facet.data = data2;
             break;
           case ENTITY_LINKS: {
-            const offset = filters[ENTITY_LINKS].pagination.offset;
+            const offset = ( filters[ENTITY_LINKS].pagination != undefined ) ? filters[ENTITY_LINKS].pagination.offset : 0;
             const data_offset = result.aggregations[facet.id][facet.id]['buckets'].slice(offset);
             let data3 = data_offset.map(bucket => {
               return {
