@@ -101,6 +101,7 @@ type Node {
     document_classification: String
     fields: [Field!]
     branches: [Node!]
+    relatedEntities: [EntityCountData!]
 }
 
 """ Element containing a label and an optional link for the element
