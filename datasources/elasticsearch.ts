@@ -377,3 +377,18 @@ export const queryTerm = (termField: any) => {
 
 
 }
+/**
+ *
+ * @param termField object containing the field name to check if exists
+ */
+export const queryExists = (termField: any) => {
+	return {
+    query: {
+      exists: {
+        field: termField
+      }
+    }
+  }
+
+
+}

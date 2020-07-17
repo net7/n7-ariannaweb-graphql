@@ -6,9 +6,10 @@ import * as entity from './Entity'
 import * as node from './Node'
 import * as genericNode from './GenericNode'
 import * as globalFilterData from './GlobalFilterData'
+import * as mapObject from './MapObject'
 import * as result from './Result'
 
-const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result].map(x => x.resolvers)
+const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject].map(x => x.resolvers)
 
 export const resolvers = merge({
 	Query: {
@@ -18,6 +19,7 @@ export const resolvers = merge({
 		getEntity: async (parent, args, context, info) => await sources.getEntity(args.entityId, args.itemsPagination, args.entitiesListSize),
 		getTreeOfItems: async (parent, args, context, info) => await sources.getTree(info),
 		getNode: async (parent, args, context, info) => await sources.getNode(args.id, args.maxSimilarItems, args.entitiesListSize),
-		search: async (parent, args, context, info) => await sources.search(args.searchParameters)
+		search: async (parent, args, context, info) => await sources.search(args.searchParameters),
+		getMapObjects: async (parent, args, context, info) => await sources.getMapObjects(args.field)
 	},
 }, ...externalResolvers)

@@ -989,3 +989,22 @@ export async function search(searchParameters: any) {
   return response;
 
 }
+
+export async function getMapObjects(field) {
+
+  if (!field || field == "") {
+    field = "contestoSpaziale.coordinateGeografiche";
+  }
+  const request = el.requestBuilder(GLOBAL_INDEX, el.queryExists(field))
+  const body = await el.search(request).then(x => x.hits.hits);
+
+  let elements = [];
+
+  if (body.length > 0) {
+    body.map(x => {       
+        elements.push({item: x._source})
+      });
+  }
+
+  return elements; 
+}
