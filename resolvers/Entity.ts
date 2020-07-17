@@ -19,15 +19,38 @@ export const resolvers = {
       }
     },
     relatedEntities(item, {id}){
-      if( item.relatedEntities ){
+      /*if( item.relatedEntities ){
         return item.relatedEntities.map( x => {
           return {
             entity: x,
             count: 1
           }
         });
-      } else return []
-        },
+      } else return []*/
+      let hashMap = {};
+      let ids = [];
+
+      if( item.relatedEntities ){
+
+
+        item.relatedEntities.forEach(x => {
+          if (!hashMap[x.id]) {
+            hashMap[x.id]= {"entity": x, "relation": x.relation, "count": 1};
+            ids.push(x.id);
+          } else {
+            if(x.relation != ""){
+              hashMap[x.id]["entity"]["relation"] = hashMap[x.id]["entity"]["relation"] != "" ? hashMap[x.id]["entity"]["relation"] + ", " + x.relation :x.relation;
+              hashMap[x.id]["relation"] = hashMap[x.id]["relation"] != "" ? hashMap[x.id]["relation"] +", " + x.relation : x.relation
+              hashMap[x.id]["count"] += 1;
+            }
+          }
+        });      
+        return Object.values(hashMap);
+      }
+      return [];    
+    
+    },
+
     async relatedItems(item, args, context, info){
       const itemPagination = item.params != null ? item.params.itemsPagination : "";
       const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
