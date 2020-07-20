@@ -969,6 +969,7 @@ export async function search(searchParameters: any) {
               };
             });
             facet.data = data3;
+            facet.totalCount = result.aggregations[facet.id][facet.id].doc_count
             break;
           }
         }
