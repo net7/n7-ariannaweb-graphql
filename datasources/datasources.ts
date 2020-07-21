@@ -848,7 +848,6 @@ export async function search(searchParameters: any) {
         let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
         aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
         aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
-
         let aggr_filter;
         let filter_object = {};
         let must_list = [];
@@ -875,6 +874,7 @@ export async function search(searchParameters: any) {
         aggr_filter = el.filterAggsTerms(ENTITY_LINKS, 'relatedEntities.id', size, filter_object, 'relatedEntities');
         aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs;
         aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs']['distinctTerms'] = {"cardinality": {"field":"relatedEntities.id"}}
 
         if (body[AGGS] == null) {
           body[AGGS] = aggr_filter
@@ -969,7 +969,7 @@ export async function search(searchParameters: any) {
               };
             });
             facet.data = data3;
-            facet.totalCount = result.aggregations[facet.id][facet.id].doc_count
+            facet.totalCount = result.aggregations[facet.id][facet.id]['distinctTerms'].value
             break;
           }
         }
