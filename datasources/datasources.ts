@@ -245,10 +245,8 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   }
 
-  const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
+  //const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
   const should = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }).substring(1) }, 'AND', 3.5);
-
-
   const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true }) })
   boolsArray.push(q2);
   boolsArray.push(
@@ -262,7 +260,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
       }
     }
   );
-  const bools = el.queryBool(boolsArray, should, filter)
+  const bools = el.queryBool(boolsArray, should)
   const request = el.requestBuilder(GLOBAL_INDEX, {
     query: bools.query,
     size: itemsPagination.limit,
@@ -287,7 +285,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   const entityHashMap = {}
   var total = 0;
-  //console.log(JSON.stringify(request))
+  console.log(JSON.stringify(request))
   const res = await Promise.all(
     [el.search(request).then(x => {
       total = x.hits.total
@@ -571,7 +569,7 @@ export async function getEntityRelatedItemsCount(entityIds, itemsPagination: Pag
 }
 
 
-function buildTree(node: any, nodeList: any[]): any {
+function buildTree(node: any, nodeList): any {
   node[CHILDREN] = []
   while (nodeList.length > 0 && nodeList[0][LEVEL] > node[LEVEL]) {
     node[CHILDREN].push(buildTree(nodeList.shift(), nodeList))
@@ -658,7 +656,6 @@ export async function search(searchParameters: any) {
     body["from"] = searchParameters.page.offset
   }
 
-  let rescore = null;
   let order = {};
 
   if (searchParameters.results.order) {
@@ -670,22 +667,6 @@ export async function search(searchParameters: any) {
 
     }
     else {
-
-      //rescore cannot be applied on query with sort different from _score
-      rescore = {
-        "window_size": 50,
-        "query": {
-          "rescore_query": {
-            "match_phrase": {
-              "label": {
-                "slop": 2
-              }
-            }
-          },
-          "query_weight": 0.7,
-          "rescore_query_weight": 1.2
-        }
-      };
       order[key] = { "order": searchParameters.results.order.direction };
       order["label_sort.keyword"] = { "order": "ASC" }; //aggiungo un secondo criterio di ordinamento
     }
@@ -705,16 +686,12 @@ export async function search(searchParameters: any) {
         if (filter && filter.value && filter.value != "") {
           let searchIn = filter.searchIn[0]
           let searchInkey = searchIn.key.split(",");
-          let query_filter = [];
-          let should_filter = [];
-          let term = el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true }) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
+          let query_filter = [];  
+          let should_filter:any;       
+          let term = el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: false }) // searchIn.operator === "LIKE" ? filter.value + "*" ? searchIn.operator === "=" : filter.value + "*" : filter.value + "*"
 
           if (filters[QUERY_ALL].value == true) {
             searchInkey = filters[QUERY_ALL].searchIn[0].key == "query-all" ? ["*"] : filters[QUERY_ALL].searchIn[0].key.split(","); // ["label^5", "text^4", "fields.*^3"];
-          }
-
-          if (rescore != null) {
-            rescore.query.rescore_query.match_phrase.label['query'] = filter.value[0];
           }
 
           searchIn.key.split(",").forEach(element => {
@@ -724,13 +701,10 @@ export async function search(searchParameters: any) {
                 el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: true }) })
               )
 
-              should_filter.push(
-                el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: true }).substring(1) }, 'AND', 3.5)
-              )
-
-
-              highlight.fields[baseField] = {};
-              highlight.fields[element] = {
+            should_filter = el.queryString({ fields: [baseField], value: el.buildQueryString(filter.value[0], { allowWildCard: false })}, 'AND', 3.5)
+              
+            highlight.fields[baseField] = {};
+            highlight.fields[element] = {
                 "type": "fvh",
                 "fragment_offset": 0
               };
@@ -746,34 +720,48 @@ export async function search(searchParameters: any) {
                should_filter,
                query_filter
              ).query*/
-
+          let score_term =  el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: true });
           const should_query = [
-            el.queryString({ fields: searchInkey, value: term }),
+            el.queryString({ fields: searchInkey, value: score_term }),
             {
               "function_score": {
+                "query": {
+                  "query_string": el.queryString({ fields: searchInkey, value: term }).query_string
+                },
                 "script_score": {
                   "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
-                    + "if(index === 0){ 1 } else { Math.pow(0.5, index)}"
+                    + "if(index === 0){ 3 } else { Math.pow(0.8, index)}"
                 },
-                "boost_mode": "sum"
+                "boost_mode": "multiply"
               }
-            }
+            },
+          //  should_filter
           ];
 
-          let bools = el.queryBool(
+          let bools1 = el.queryBool(
+            [],
             should_query,
-            should_filter,
             []
           ).query
 
-          etFilter[QUERY][BOOL][MUST] = bools.bool.must;
+          etFilter[QUERY][BOOL][MUST] = bools1.bool.should.slice();
 
-          if (body[QUERY] == null)
-            body[QUERY] = bools
+          if (body[QUERY] == null){
+            body[QUERY] = {},
+            body[QUERY][BOOL] = {};
+            body[QUERY][BOOL][MUST] = [];
+            body[QUERY][BOOL][MUST].push(
+              {
+                "bool": {
+                  "should": bools1.bool.should
+                }
+              }
+            );
+          }
           else if (body[QUERY][BOOL] == null)
-            body[QUERY][BOOL] = bools.bool
+            body[QUERY][BOOL] = bools1.bool
           else
-            body[QUERY][BOOL][MUST] = bools.bool.must
+            body[QUERY][BOOL][MUST] = bools1.bool.must
 
         }
 
@@ -788,13 +776,15 @@ export async function search(searchParameters: any) {
           })
 
           if (terms.length > 0) {
-            let bools = el.queryBool(null, terms).query
+            let bools = el.queryBool(terms).query
             if (body[QUERY] == null)
               body[QUERY] = bools
             else if (body[QUERY][BOOL] == null)
               body[QUERY][BOOL] = bools.bool
             else
-              body[QUERY][BOOL][MUST].push(bools)
+            bools.bool.must.map(x => {
+              body[QUERY][BOOL][MUST].push(x)
+            })
           }
         }
         //facet results
@@ -849,14 +839,47 @@ export async function search(searchParameters: any) {
               body[QUERY][BOOL][MUST].push(x)
             })
         }
-        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, 10000, 'relatedEntities');
-        aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, 10000).aggs
-        aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, 10000).aggs[ENTITY_LINKS + "_label"]
+
+        const limit:number = ( filter.pagination != undefined ) ? filter.pagination.limit : 1000; 
+        const offset:number = ( filter.pagination != undefined ) ? filter.pagination.offset : 0; 
+
+        const size:number =  offset + limit;
+
+        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
+        aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
+        aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
+        let aggr_filter;
+        let filter_object = {};
+        let must_list = [];
+        if ( filters[ENTITY_TYPES] && filters[ENTITY_TYPES].value.length > 0 ){
+          must_list.push({
+            "terms": {
+              "relatedEntities.typeOfEntity": filters[ENTITY_TYPES].value 
+            }
+          })    
+        }
+              
+        if ( filters[ENTITY_SEARCH] && filters[ENTITY_SEARCH].value.length != null ){
+          must_list.push(
+            { "query_string": {
+                "query": filters[ENTITY_SEARCH].value + "*",
+                "fields": [
+                    "relatedEntities.label"
+                ]
+            }}
+          )           
+        }
+          
+        filter_object = el.queryBool(must_list).query;
+        aggr_filter = el.filterAggsTerms(ENTITY_LINKS, 'relatedEntities.id', size, filter_object, 'relatedEntities');
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs;
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
+        aggr_filter['aggs'][ENTITY_LINKS]['aggs']['distinctTerms'] = {"cardinality": {"field":"relatedEntities.id"}}
 
         if (body[AGGS] == null) {
-          body[AGGS] = aggr3
+          body[AGGS] = aggr_filter
         } else {
-          body[AGGS][ENTITY_LINKS] = aggr3;
+          body[AGGS][ENTITY_LINKS] = aggr_filter;
         }
         break
     }
@@ -867,7 +890,7 @@ export async function search(searchParameters: any) {
 
     facet[QUERY_LINKS] = body[AGGS][QUERY_LINKS];
 
-    let aggs = {
+    /*let aggs = {
       "global": {},
       "aggs": {
         "filtered": {
@@ -875,17 +898,14 @@ export async function search(searchParameters: any) {
           "aggs": facet
         }
       }
-    };
-    body[AGGS][QUERY_LINKS] = aggs;
+    };*/
+
+    //body[AGGS][QUERY_LINKS] = aggs;
   }
 
   // returns facets on document Type
   //body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
 
-  //non si può usare il rescore in combinazione con il sort
-  /*if ( rescore ){
-    body['rescore'] = rescore;
-  }*/
   if( searchParameters.gallery ){
     body[QUERY][BOOL][MUST].push({
       "exists": {
@@ -913,7 +933,7 @@ export async function search(searchParameters: any) {
       if (result.aggregations[facet.id] != null && !facet.data) {
         switch (facet.id) {
           case QUERY_LINKS:
-            let data = result.aggregations[facet.id]["filtered"][facet.id].buckets.map(bucket => {
+            let data = result.aggregations[facet.id].buckets.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket.key,
@@ -933,7 +953,9 @@ export async function search(searchParameters: any) {
             facet.data = data2;
             break;
           case ENTITY_LINKS: {
-            let data3 = result.aggregations[facet.id][facet.id]['buckets'].map(bucket => {
+            const offset = ( filters[ENTITY_LINKS].pagination != undefined ) ? filters[ENTITY_LINKS].pagination.offset : 0;
+            const data_offset = result.aggregations[facet.id][facet.id][facet.id]['buckets'].slice(offset);
+            let data3 = data_offset.map(bucket => {
               return {
                 "value": bucket.key,
                 "label": bucket[facet.id + "_label"].buckets[0].key,
@@ -947,6 +969,7 @@ export async function search(searchParameters: any) {
               };
             });
             facet.data = data3;
+            facet.totalCount = result.aggregations[facet.id][facet.id]['distinctTerms'].value
             break;
           }
         }
@@ -968,275 +991,21 @@ export async function search(searchParameters: any) {
 
 }
 
-/*search({
-	"facets": [
-		{
-			"id": "query",
-			"type": "value"
-		},
-		{
-			"id": "query-all",
-			"type": "value",
-			"data": [
-				{
-					"value": "1",
-					"label": "Cerca in tutti campi delle schede"
-				}
-			]
-		},
-		{
-			"id": "query-links",
-			"type": "value",
-			"data": [
-				{
-					"value": "people",
-					"label": "Persone",
-					"counter": 80,
-					"options": {
-						"icon": "n7-icon-biography",
-						"classes": "color-people"
-					}
-				},
-				{
-					"value": "places",
-					"label": "Luoghi",
-					"counter": 90,
-					"options": {
-						"icon": "n7-icon-map1",
-						"classes": "color-places"
-					}
-				},
-				{
-					"value": "concepts",
-					"label": "Concetti",
-					"counter": 62,
-					"options": {
-						"icon": "n7-icon-lightbulb",
-						"classes": "color-concepts"
-					}
-				},
-				{
-					"value": "organizations",
-					"label": "Organizzazioni",
-					"counter": 75,
-					"options": {
-						"icon": "n7-icon-building",
-						"classes": "color-organizations"
-					}
-				}
-			]
-		},
-		{
-			"id": "entity-types",
-			"type": "value",
-			"operator": "OR",
-			"limit": 10,
-			"order": "count",
-			"data": [
-				{
-					"value": "people",
-					"label": "Persone"
-				},
-				{
-					"value": "places",
-					"label": "Luoghi"
-				},
-				{
-					"value": "concepts",
-					"label": "Concetti"
-				},
-				{
-					"value": "organizations",
-					"label": "Organizzazioni"
-				}
-			]
-		},
-		{
-			"id": "entity-search",
-			"type": "value"
-		},
-		{
-			"id": "entity-links",
-			"type": "value",
-			"metadata": [
-				"title",
-				"entity-type"
-			],
-			"data": [
-				{
-					"value": "milano",
-					"label": "milano",
-					"counter": 69,
-					"metadata": {
-						"title": "milano",
-						"entity-type": "places"
-					}
-				},
-				{
-					"value": "roma",
-					"label": "roma",
-					"counter": 80,
-					"metadata": {
-						"title": "roma",
-						"entity-type": "places"
-					}
-				},
-				{
-					"value": "spazio",
-					"label": "spazio",
-					"counter": 71,
-					"metadata": {
-						"title": "spazio",
-						"entity-type": "concepts"
-					}
-				},
-				{
-					"value": "rodolfo-marna",
-					"label": "rodolfo marna",
-					"counter": 22,
-					"metadata": {
-						"title": "rodolfo marna",
-						"entity-type": "people"
-					}
-				},
-				{
-					"value": "alighiero-boetti",
-					"label": "alighiero boetti",
-					"counter": 94,
-					"metadata": {
-						"title": "alighiero boetti",
-						"entity-type": "people"
-					}
-				}
-			]
-		},
-		{
-			"id": "date-from",
-			"type": "value",
-			"data": [
-				{
-					"value": "1990",
-					"label": "1990"
-				},
-				{
-					"value": "1991",
-					"label": "1991"
-				},
-				{
-					"value": "1992",
-					"label": "1992"
-				},
-				{
-					"value": "1993",
-					"label": "1993"
-				}
-			]
-		},
-		{
-			"id": "date-to",
-			"type": "value",
-			"data": [
-				{
-					"value": "2000",
-					"label": "2000"
-				},
-				{
-					"value": "2001",
-					"label": "2001"
-				},
-				{
-					"value": "2002",
-					"label": "2002"
-				},
-				{
-					"value": "2003",
-					"label": "2003"
-				}
-			]
-		}
-	],
-	"page": {
-		"offset": 0,
-		"limit": 10
-	},
-	"results": {
-		"order": {
-			"type": "score",
-			"key": "author",
-			"direction": "DESC"
-		},
-		"fields": {
-			"title": {
-				"highlight": true,
-				"limit": 50
-			}
-		},
-		"items": []
-	},
-	"filters": [
-		{
-			"facetId": "query",
-			"value": "sil",
-			"searchIn": [
-				{
-					"key": "label",
-					"operator": "LIKE"
-				}
-			]
-		},
-		{
-			"facetId": "query-all",
-			"value": null,
-			"searchIn": [
-				{
-					"key": "query-all",
-					"operator": "="
-				}
-			]
-		},
-		{
-			"facetId": "query-links",
-			"value": [
-				"organizzazioni",
-				"persona"
-			],
-			"searchIn": [
-				{
-					"key": "relatedEntities.typeOfEntity",
-					"operator": "="
-				}
-			]
-		},
-		{
-			"facetId": "entity-links",
-			"value": ["0263a407-d0dd-4647-98e2-109b0b0c05f3"],
-			"searchIn": [
-				{
-					"key": "source.id",
-					"operator": "="
-				}
-			]
-		},
-		{
-			"facetId": "date-from",
-			"value": null,
-			"searchIn": [
-				{
-					"key": "source.dateStart",
-					"operator": ">="
-				}
-			]
-		},
-		{
-			"facetId": "date-to",
-			"value": null,
-			"searchIn": [
-				{
-					"key": "source.dateEnd",
-					"operator": "<="
-				}
-			]
-		}
-	],
-	"totalCount": 557
-})*/
+export async function getMapObjects(field) {
+
+  if (!field || field == "") {
+    field = "contestoSpaziale.coordinateGeografiche";
+  }
+  const request = el.requestBuilder(GLOBAL_INDEX, el.queryExists(field))
+  const body = await el.search(request).then(x => x.hits.hits);
+
+  let elements = [];
+
+  if (body.length > 0) {
+    body.map(x => {       
+        elements.push({item: x._source})
+      });
+  }
+
+  return elements; 
+}

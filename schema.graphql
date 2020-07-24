@@ -101,6 +101,7 @@ type Node {
     document_classification: String
     fields: [Field!]
     branches: [Node!]
+    relatedEntities: [EntityCountData!]
 }
 
 """ Element containing a label and an optional link for the element
@@ -114,7 +115,7 @@ type LinkElement {
 type ItemListingPaginationResult {
    """ the total count of the itemListings that matched the query request
    if no pagination was requested """
-   totalCount: Int!
+   totalCount: Int  !
    """ subset of the totalCount itemListings which have been requested
    by the query's pagination section """
    items: [ItemListing!]
@@ -196,6 +197,7 @@ type SearchFacet {
     limit: Int
     order: String # field name for ordering
     metadata: [String]
+    totalCount: Int
 }
 
 input FilterSearchInInput {
@@ -212,6 +214,7 @@ input SearchFilterInput {
     facetId: String
     value: [String]
     searchIn: [FilterSearchInInput!]
+    pagination: Page  
 }
 
 type SearchFilter {
@@ -259,6 +262,12 @@ type SearchResults {
     order: ResultsOrder
     fields: [ResultsFields]
     items: [SearchResult]
+}
+
+type MapObject {
+    lat: String
+    lon: String
+    item: SearchResult
 }
 
 union SearchResult = Entity | Item
@@ -325,6 +334,9 @@ type Query {
  ): PaginationResult!
 
 search(searchParameters: SearchParameters!): SearchResponse
+
+getMapObjects(field: String) : [MapObject]
+
 }
 
 

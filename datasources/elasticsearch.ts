@@ -1,5 +1,5 @@
 import { Client } from '@elastic/elasticsearch'
-import { elasticAuth as auth, elasticNodeAddress as addr } from "./elasticConfig"
+import { elasticAuth as auth, elasticNodeAddress as addr, elasticFuzziness as fuzziness } from "./elasticConfig"
 
 const client = new Client({ node: addr, auth: auth, ssl: { rejectUnauthorized: false } })
 
@@ -123,7 +123,7 @@ export const aggsTerms = (buckets: string, field: string = null, script: string 
  * @param script script to aggregate field in a custom way
  * @param size max number of buckets returned
  */
-export const aggsNestedTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000, path = "") => {
+export const aggsNestedTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000, path = "", limit:number = 0) => {
 	const x = {
     aggs: {},
     nested : {
@@ -132,7 +132,7 @@ export const aggsNestedTerms = (buckets: string, field: string = null, script: s
 	}
 	x.aggs[buckets] = {
 		terms: {
-			min_doc_count: 1,
+      min_doc_count: 1,
 			size: size,
 		}
 	}
@@ -233,12 +233,15 @@ export const topHits = function (buckets, limit, offset, sort = null, minDocCoun
  * @param buckets buckets name
  * @param field field to aggregate
  * @param size max number of buckets returned
- * @param filter object with filter field {term, value, filter}
+ * @param filter object with filter query
  */
-export const filterAggsTerms = function (buckets, field, size, filter) {
+export const filterAggsTerms = function (buckets, field, size, filter:{}, nested_path = "") {
   if (field === void 0) { field = null; }
   if (filter === void 0) { filter = null; }
   if (size === void 0) { size = 10000; }
+
+
+  
   var x = {
       aggs: {}
   };
@@ -247,32 +250,34 @@ export const filterAggsTerms = function (buckets, field, size, filter) {
   let termAggs, filterAggs;
 
   if (field != null){
-    termAggs = {
-      buckets : {
+    termAggs = {};
+    termAggs[buckets] = {};
+    termAggs[ buckets ] = {      
         terms: {
           min_doc_count: 1,
           size: size,
           field: field
-        }
-      }
+        }      
     };
   }
 
-  if (filter != null) {
-    const name = filter['filter'];
-    const value = filter['value'];
-    const filterfield = filter['term'];
-    filterAggs = {};
-    filterAggs['term'] = {};
-    filterAggs['term'][filterfield] = value;
-  }
-
-  if ( filterAggs != null ) {
-    x.aggs[buckets]['filter'] = filterAggs;
+  if ( filter != null ) {
+    x.aggs[buckets]['filter'] = filter;
   }
 
   x.aggs[buckets]['aggs'] = termAggs;
 
+
+  if( nested_path != ""){
+    const nested = {
+        aggs: x.aggs,
+        nested : {
+          path : nested_path
+        }
+      }
+      
+      x = nested;
+    }
 
   return x;
 };
@@ -304,7 +309,8 @@ export const queryString = (queryField: { fields: string[], value: string }, def
 		query_string: {
 			query: queryField.value,
       fields: queryField.fields,
-      default_operator: default_operator
+      default_operator: default_operator,
+      "fuzziness": fuzziness
 		}
   }
 
@@ -325,7 +331,8 @@ export const buildQueryString = (term: string, options: any = {}) => {
 
   const allowWildCard = options.allowWildCard != "undefined" ? options.allowWildCard : true,
         splitString = options.splitString ? options.splitString : true,
-        stripDoubleQuotes = options.stripDoubleQuotes ? options.stripDoubleQuotes : false;
+        stripDoubleQuotes = options.stripDoubleQuotes ? options.stripDoubleQuotes : false,
+        allowFuzziness = options.allowFuzziness ? options.allowFuzziness : false;
 
   let termToArray:any,
       queryTerms:any;
@@ -333,6 +340,8 @@ export const buildQueryString = (term: string, options: any = {}) => {
   if ( stripDoubleQuotes ){
     term = term.replace(/\\*"/g,"");
   }
+
+  term = term.replace(/-/g,"\\\\-");
 
   if( splitString ) {
     termToArray = term.split(" ");
@@ -345,8 +354,14 @@ export const buildQueryString = (term: string, options: any = {}) => {
   } else {
     queryTerms = termToArray;
   }
+  
+  queryTerms =  queryTerms.join(" ");
+  if( allowFuzziness ) {
+    queryTerms = queryTerms + "~";
+  }
 
-	return queryTerms.join(" ");
+  return queryTerms;
+
 }
 
 /**
@@ -358,6 +373,21 @@ export const queryTerm = (termField: any) => {
 		query: {
 			term: termField
 		}
+  }
+
+
+}
+/**
+ *
+ * @param termField object containing the field name to check if exists
+ */
+export const queryExists = (termField: any) => {
+	return {
+    query: {
+      exists: {
+        field: termField
+      }
+    }
   }
 
 
