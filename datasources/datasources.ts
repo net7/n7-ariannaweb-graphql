@@ -254,9 +254,9 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
       "function_score": {
         "script_score": {
           "script": "int index = doc['label_sort.keyword'].value.indexOf('" + input + "');"
-            + "if(index === 0){ 1 } else { Math.pow(0.5, index) }"
+            + "if(index === 0){ 5 } else { Math.pow(0.8, index) }"
         },
-        "boost_mode": "sum"
+        "boost_mode": "multiply"
       }
     }
   );
