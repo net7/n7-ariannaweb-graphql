@@ -247,7 +247,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   //const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
   const should = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }).substring(1) }, 'AND', 3.5);
-  const q2 = el.queryString({ fields: [LABEL_NGRAMS], value: el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true }) })
+  const q2 = el.queryString({ fields: [LABEL_NGRAMS, LABEL], value: el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: true }) })
   boolsArray.push(q2);
   boolsArray.push(
     {
@@ -285,7 +285,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   const entityHashMap = {}
   var total = 0;
-  console.log(JSON.stringify(request))
+  //console.log(JSON.stringify(request))
   const res = await Promise.all(
     [el.search(request).then(x => {
       total = x.hits.total
