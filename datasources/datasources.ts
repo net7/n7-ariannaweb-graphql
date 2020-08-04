@@ -776,15 +776,24 @@ export async function search(searchParameters: any) {
           })
 
           if (terms.length > 0) {
-            let bools = el.queryBool(terms).query
-            if (body[QUERY] == null)
+            let bools = el.queryBool([], terms).query
+            body["post_filter"] = {
+              bool : {
+                should: bools.bool.should
+              }
+            }
+
+           /* if (body[QUERY] == null){
               body[QUERY] = bools
-            else if (body[QUERY][BOOL] == null)
-              body[QUERY][BOOL] = bools.bool
+            }
+            else if (body[QUERY][BOOL] == null){
+              body[QUERY][BOOL] = bools.bool 
+            }
             else
             bools.bool.must.map(x => {
               body[QUERY][BOOL][MUST].push(x)
             })
+            )*/
           }
         }
         //facet results
