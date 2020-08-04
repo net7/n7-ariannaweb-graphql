@@ -53,7 +53,14 @@ export const resolvers = {
       })
 
       return result;
-    }
+    },
+    breadcrumbs(item, args, context, info) {
+      if (item.path) {
+        item.path.shift();
+        return item.path;
+      }
+      return null;
+    },
 	}
 }
 
