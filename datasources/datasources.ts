@@ -722,7 +722,7 @@ export async function search(searchParameters: any) {
                should_filter,
                query_filter
              ).query*/
-          let score_term =  el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: false });
+          let score_term =  el.buildQueryString(filter.value[0], { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: true });
           const should_query = [
             el.queryString({ fields: searchInkey, value: score_term }),
             {
@@ -1005,7 +1005,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  console.log("SEARCH",JSON.stringify(request))
+  //console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
