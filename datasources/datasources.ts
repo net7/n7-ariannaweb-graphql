@@ -1017,7 +1017,12 @@ export async function search(searchParameters: any) {
 
   if (result.aggregations) {
 
-    facets.forEach((facet) => {
+    facets.forEach((facet, index) => {
+
+      if( facet.id == QUERY_LINKS_FILTER_FACETS) {
+        facets.splice(index, 1);
+      } 
+
       if (result.aggregations[facet.id] != null && !facet.data) {
         switch (facet.id) {
           case QUERY_LINKS:
