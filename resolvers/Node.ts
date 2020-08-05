@@ -1,4 +1,5 @@
 import { createFields } from "./utils"
+import { orderRelatedEntities } from "./utils"
 import * as sources from '../datasources/datasources'
 
 export const resolvers = {
@@ -49,7 +50,7 @@ export const resolvers = {
             relatedEntities.push(hashMap[element.key]);
           }
         });
-        return relatedEntities;
+        return relatedEntities.sort( orderRelatedEntities );
       })
 
       return result;
