@@ -25,3 +25,13 @@ export function createFields(object: any): any {
 	}
 	return array
 }
+
+export function orderRelatedEntities(a, b){
+	if ( a.entity.label < b.entity.label ){
+	  return -1;
+	}
+	if ( a.entity.label > b.entity.label){
+	  return 1;
+	}
+	return 0;
+  }
