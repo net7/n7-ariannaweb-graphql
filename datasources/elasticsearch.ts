@@ -123,24 +123,53 @@ export const aggsTerms = (buckets: string, field: string = null, script: string 
  * @param script script to aggregate field in a custom way
  * @param size max number of buckets returned
  */
-export const aggsNestedTerms = (buckets: string, field: string = null, script: string = null, size: number = 10000, path = "", limit:number = 0) => {
-	const x = {
-    aggs: {},
-    nested : {
-      path : path
-    }
-	}
-	x.aggs[buckets] = {
-		terms: {
-      min_doc_count: 1,
-			size: size,
-		}
-	}
+export const aggsNestedTerms = (
+  buckets: string, 
+  field: string = null, 
+  script: string = null, 
+  size: number = 10000,
+  path = "", 
+  global: boolean = false,
+  include: any = null) => {
 
-	if (field != null)
-		x.aggs[buckets].terms['field'] = field
-	if (script != null)
-		x.aggs[buckets].terms['script'] = script
+  const aggs = {
+    terms: {
+      min_doc_count: 1,
+      size: size,
+    }
+  }
+
+  if (field != null)
+    aggs.terms['field'] = field
+  if (script != null)
+    aggs.terms['script'] = script
+  if (include != null && include.length > 0)
+    aggs.terms['include'] = include
+
+  let x:any = {};
+  if( global ) {
+     x = {
+      aggs: {},
+      global: {}
+    }
+    x['aggs'][buckets] = {
+      nested : {
+        path : path
+      },
+      aggs:{}
+    };
+    x['aggs'][buckets]['aggs'][buckets] = aggs;
+
+
+  }  else{
+    x = {
+      aggs: {},
+      nested : {
+        path : path
+      }
+    }
+    x['aggs'][buckets] = aggs;
+  }
 	return x
 }
 

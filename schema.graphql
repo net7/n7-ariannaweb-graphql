@@ -102,6 +102,7 @@ type Node {
     fields: [Field!]
     branches: [Node!]
     relatedEntities: [EntityCountData!]
+    breadcrumbs: [LinkElement!]
 }
 
 """ Element containing a label and an optional link for the element

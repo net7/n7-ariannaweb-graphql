@@ -558,7 +558,7 @@ export async function getEntityRelatedItemsCount(entityIds, itemsPagination: Pag
     sort: [{ "label_sort.keyword": { "order": "asc" } }]
   }
 
-  const request = el.requestBuilder(OC_INDEX, body)
+  const request = el.requestBuilder(GLOBAL_INDEX, body)
   //console.log("GLOBAL FILTER", JSON.stringify( body));
   const res = await el.search(request)
  // const buckets = res.aggregations[ENTITIES][ENTITIES]["typeOfEntity"].buckets;
@@ -609,7 +609,9 @@ export async function getNode(id: string, maxSimilarItems: number, entitiesListS
 const QUERY = "query"
 const QUERY_ALL = "query-all"
 const QUERY_LINKS = "query-links"
+const QUERY_LINKS_FILTER_FACETS = "query-links-filter-facets"
 const ENTITY_LINKS = "entity-links"
+const ACTIVE_ENTITY_LINKS = "active-entity-links"
 const ENTITY_TYPES = "entity-types"
 const ENTITY_SEARCH = "entity-search"
 
@@ -764,7 +766,53 @@ export async function search(searchParameters: any) {
             body[QUERY][BOOL][MUST] = bools1.bool.must
 
         }
-
+        break
+        case QUERY_LINKS_FILTER_FACETS: //search for resources typology
+        if (filter && filter.value) {
+          // facets for filtering item results
+          let terms = filter.value.map(element => {
+            let termObject = {}
+            termObject[DOCUMENT_TYPE] = element
+            return el.queryTerm(termObject).query
+          })
+          if (terms.length > 0) {
+            let bools = el.queryBool([], terms).query
+            
+            if (body[QUERY] == null){
+              body[QUERY] = {};
+              body[QUERY][BOOL] = {
+                must: [
+                  { bool: {
+                      should: bools.bool.should
+                    }
+                  }
+                ]
+              }
+              //body[QUERY] = bools
+            }
+            else if (body[QUERY][BOOL] == null){
+              //body[QUERY][BOOL] = bools.bool              
+              body[QUERY][BOOL] = {
+                must: [{ 
+                        bool: {
+                          should: bools.bool.should
+                      }
+                    }
+                  ]
+                }
+              }
+            else
+           // bools.bool.must.map(x => {
+           //   body[QUERY][BOOL][MUST].push(x)
+           // })
+            body[QUERY][BOOL][MUST].push({ 
+                bool: {
+                  should: bools.bool.should
+              }
+            })
+          }
+        }
+        //facet results 
         break
       case QUERY_LINKS: //search for resources typology
         if (filter && filter.value) {
@@ -776,15 +824,47 @@ export async function search(searchParameters: any) {
           })
 
           if (terms.length > 0) {
-            let bools = el.queryBool(terms).query
-            if (body[QUERY] == null)
-              body[QUERY] = bools
-            else if (body[QUERY][BOOL] == null)
-              body[QUERY][BOOL] = bools.bool
+            let bools = el.queryBool([], terms).query
+            body["post_filter"] = {
+              bool : {
+                should: bools.bool.should
+              }
+            }
+
+           /* if (body[QUERY] == null){
+              body[QUERY] = {};
+              body[QUERY][BOOL] = {
+                must: [
+                  { bool: {
+                      should: bools.bool.should
+                    }
+                  }
+                ]
+              }
+              //body[QUERY] = bools
+            }
+            else if (body[QUERY][BOOL] == null){
+              //body[QUERY][BOOL] = bools.bool              
+              body[QUERY][BOOL] = {
+                must: [{ 
+                        bool: {
+                          should: bools.bool.should
+                      }
+                    }
+                  ]
+                }
+              }
             else
-            bools.bool.must.map(x => {
-              body[QUERY][BOOL][MUST].push(x)
-            })
+           // bools.bool.must.map(x => {
+           //   body[QUERY][BOOL][MUST].push(x)
+           // })
+            body[QUERY][BOOL][MUST].push({ 
+              bool: {
+                should: bools.bool.should
+            }
+          })*/
+
+
           }
         }
         //facet results
@@ -845,9 +925,10 @@ export async function search(searchParameters: any) {
 
         const size:number =  offset + limit;
 
-        let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
-        aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
-        aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
+      //test before deleting
+      //let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
+      // aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
+      //aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
         let aggr_filter;
         let filter_object = {};
         let must_list = [];
@@ -857,8 +938,7 @@ export async function search(searchParameters: any) {
               "relatedEntities.typeOfEntity": filters[ENTITY_TYPES].value 
             }
           })    
-        }
-              
+        }              
         if ( filters[ENTITY_SEARCH] && filters[ENTITY_SEARCH].value.length != null ){
           must_list.push(
             { "query_string": {
@@ -869,18 +949,26 @@ export async function search(searchParameters: any) {
             }}
           )           
         }
-          
+        
         filter_object = el.queryBool(must_list).query;
         aggr_filter = el.filterAggsTerms(ENTITY_LINKS, 'relatedEntities.id', size, filter_object, 'relatedEntities');
         aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs;
         aggr_filter['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
         aggr_filter['aggs'][ENTITY_LINKS]['aggs']['distinctTerms'] = {"cardinality": {"field":"relatedEntities.id"}}
-
+        
         if (body[AGGS] == null) {
           body[AGGS] = aggr_filter
         } else {
           body[AGGS][ENTITY_LINKS] = aggr_filter;
         }
+        
+          
+        //add aggs for selected filters
+        let aggrActive = el.aggsNestedTerms(ACTIVE_ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities', true, filter.value);
+        aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
+        aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ACTIVE_ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ACTIVE_ENTITY_LINKS + "_label"]  
+        body[AGGS][ACTIVE_ENTITY_LINKS] = aggrActive;
+
         break
     }
   })
@@ -929,7 +1017,12 @@ export async function search(searchParameters: any) {
 
   if (result.aggregations) {
 
-    facets.forEach((facet) => {
+    facets.forEach((facet, index) => {
+
+      if( facet.id == QUERY_LINKS_FILTER_FACETS) {
+        facets.splice(index, 1);
+      } 
+
       if (result.aggregations[facet.id] != null && !facet.data) {
         switch (facet.id) {
           case QUERY_LINKS:
@@ -968,6 +1061,24 @@ export async function search(searchParameters: any) {
                 })
               };
             });
+
+            if(data3.length <= 0){
+              const data_active = result.aggregations[ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS]['buckets'];
+              data3 = data_active.map(bucket => {
+                return {
+                    "value": bucket.key,
+                    "label": bucket[facet.id + "_label"].buckets[0].key,
+                    "counter": 0,
+                    "searchData": facet.searchData.map(y => {
+                      return {
+                        key: y,
+                        value: bucket[facet.id]['buckets'].map(x => x.key)
+                      }
+                    })
+                  };
+                });
+            }            
+
             facet.data = data3;
             facet.totalCount = result.aggregations[facet.id][facet.id]['distinctTerms'].value
             break;
