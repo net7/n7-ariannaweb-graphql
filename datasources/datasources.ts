@@ -883,10 +883,12 @@ export async function search(searchParameters: any) {
         
           
         //add aggs for selected filters
-        let aggrActive = el.aggsNestedTerms(ACTIVE_ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities', true, filter.value);
-        aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
-        aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ACTIVE_ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ACTIVE_ENTITY_LINKS + "_label"]  
-        body[AGGS][ACTIVE_ENTITY_LINKS] = aggrActive;
+        if (filter && filter.value && filter.value.length > 0) {
+          let aggrActive = el.aggsNestedTerms(ACTIVE_ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities', true, filter.value);
+          aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
+          aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ACTIVE_ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ACTIVE_ENTITY_LINKS + "_label"]  
+          body[AGGS][ACTIVE_ENTITY_LINKS] = aggrActive;
+        }
 
         break
     }
@@ -968,7 +970,7 @@ export async function search(searchParameters: any) {
               };
             });
 
-            if(data3.length <= 0){
+            if(data3.length <= 0 && result.aggregations[ACTIVE_ENTITY_LINKS]){
               const data_active = result.aggregations[ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS]['buckets'];
               data3 = data_active.map(bucket => {
                 return {
