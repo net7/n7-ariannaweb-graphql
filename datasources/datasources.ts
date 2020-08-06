@@ -1009,3 +1009,4 @@ export async function getMapObjects(field) {
 
   return elements; 
 }
+
