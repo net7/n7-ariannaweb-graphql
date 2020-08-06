@@ -1,4 +1,5 @@
 import { createFields } from "./utils"
+import { orderRelatedEntities } from "./utils"
 import * as sources from '../datasources/datasources'
 
 export const resolvers = {
@@ -56,6 +57,9 @@ export const resolvers = {
       }
     },
     document_type(node) {
+      if(node.document_type != null){
+        return node.document_type;
+      }
       if (node.fields.node_type != null) {
         return node.fields.node_type;
       } else return "oggetto-culturale"
@@ -104,7 +108,7 @@ export const resolvers = {
             relatedEntities.push(hashMap[element.key]);
           }
         });
-        return relatedEntities;
+        return relatedEntities.sort( orderRelatedEntities );
       })
 
       return result;
