@@ -339,6 +339,7 @@ export const queryString = (queryField: { fields: string[], value: string }, def
 			query: queryField.value,
       fields: queryField.fields,
       default_operator: default_operator,
+      lenient: true,
       "fuzziness": fuzziness
 		}
   }
