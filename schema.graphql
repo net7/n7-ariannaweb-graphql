@@ -22,6 +22,7 @@ type Entity {
     wikiTab: WikiTab
     fields: [Field!]
     relatedItems: [ItemListing!] # related items
+    relatedAl: [ItemListing!] # related items
     relatedEntities: [EntityCountData!]
 }
 

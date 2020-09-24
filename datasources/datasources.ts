@@ -99,6 +99,32 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
   })
   return items;
 }
+export async function getRelationsAl(entityId: string, itemsPagination: Page = { limit: 10000, offset: 0 }, entitiesListSize: number) {
+  //get items connected to the Entity
+  const termObject = {}
+  termObject[RELATED_ENTITIES + "." + ID] = entityId
+  const q1 = el.queryTerm(termObject)
+  const quNes = el.queryNested(RELATED_ENTITIES, q1)
+  const termAl = {"document_type" : "aggregazione-logica"}
+  const q2 = el.queryTerm(termAl)
+
+  const queryBool = el.queryBool([quNes.query,q2.query]);
+
+  const req = el.requestBuilder(GLOBAL_INDEX, {
+    "sort": {
+      "label.keyword": { "order": "asc" }
+    },
+    query: queryBool.query,
+    //	aggs: agNes.aggs,
+    size: itemsPagination.limit,
+    from: itemsPagination.offset
+  })
+  var entities = []
+  const items = await el.search(req).then(x => {
+    return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+  })
+  return items;
+}
 
 /**
  *
