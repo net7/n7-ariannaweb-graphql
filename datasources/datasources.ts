@@ -87,7 +87,6 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
     from: itemsPagination.offset
   })
   var entities = []
-  console.log("related items", JSON.stringify(req))
   const items = await el.search(req).then(x => {
 		/*entities = x.aggregations.entities.docsPerEntity.buckets.map(x => {
 			return {
