@@ -248,38 +248,19 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
     boolsArray2.push(q3.query)
   } else {
     aggr1 = el.aggsTerms("type", DOCUMENT_TYPE, null, 10000, 0).aggs;
-
-
     aggr1["type"]['aggs'] = el.topHits("hits", itemsPagination.limit, itemsPagination.offset, null, 1, highlight).aggs;
-    /*{
-      "hits": {"top_hits":  {
-        "size": itemsPagination.limit,
-        "from": itemsPagination.offset,
-        "sort": [
-          {"_score": {"order": "desc"}},
-          { "label.keyword" : {"order" : "asc"}}
-        ],
-        "highlight" : {
-          "fields" : {
-              "label" : {}
-          }
-        }
-      },
-
-      }
-      }*/
-
   }
 
   //const filter = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }) });
-  const should = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true }).substring(1) }, 'AND', 3.5);
+  const term = el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: false })
+  const should = el.queryString({ fields: [LABEL], value: el.buildQueryString(input, { allowWildCard: true, stripDoubleQuotes: true }).substring(1) }, 'AND', 3.5);
   const q2 = el.queryString({ fields: [LABEL_NGRAMS, LABEL], value: el.buildQueryString(input, { allowWildCard: false, stripDoubleQuotes: true, allowFuzziness: true }) })
   boolsArray.push(q2);
   boolsArray.push(
     {
       "function_score": {
         "script_score": {
-          "script": "int index = doc['label_sort.keyword'].value.indexOf('" + input + "');"
+          "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
             + "if(index === 0){ 5 } else { Math.pow(0.8, index) }"
         },
         "boost_mode": "multiply"
@@ -311,7 +292,7 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
 
   const entityHashMap = {}
   var total = 0;
-  //console.log(JSON.stringify(request))
+ // console.log(JSON.stringify(request))
   const res = await Promise.all(
     [el.search(request).then(x => {
       total = x.hits.total
