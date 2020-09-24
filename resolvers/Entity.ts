@@ -19,14 +19,6 @@ export const resolvers = {
       }
     },
     relatedEntities(item, {id}){
-      /*if( item.relatedEntities ){
-        return item.relatedEntities.map( x => {
-          return {
-            entity: x,
-            count: 1
-          }
-        });
-      } else return []*/
       let hashMap = {};
       let ids = [];
 
@@ -55,6 +47,13 @@ export const resolvers = {
       const itemPagination = item.params != null ? item.params.itemsPagination : "";
       const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
      return sources.getRelations(item.id, itemPagination, entitiesListSize);
+
+     // return item.relatedEntities;
+    },
+    async relatedAl(item, args, context, info){
+      const itemPagination = item.params != null ? item.params.itemsPagination : "";
+      const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
+     return sources.getRelationsAl(item.id, itemPagination, entitiesListSize);
 
      // return item.relatedEntities;
     }
