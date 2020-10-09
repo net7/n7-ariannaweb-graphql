@@ -1020,7 +1020,7 @@ export async function search(searchParameters: any) {
 export async function getMapObjects(field) {
 
   if (!field || field == "") {
-    field = "contestoSpaziale.coordinateGeografiche";
+    field = "fields.coordinate";
   }
   const request = el.requestBuilder(GLOBAL_INDEX, el.queryExists(field))
   const body = await el.search(request).then(x => x.hits.hits);
