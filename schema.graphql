@@ -276,8 +276,7 @@ type EventObject {
     id: ID!
     start: String
     end: String
-    labelStart: String
-    labelEnd: String
+    label: String
     item: SearchResult
 }
 

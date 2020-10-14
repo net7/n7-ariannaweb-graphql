@@ -13,13 +13,15 @@ export const resolvers = {
 			if(node.item.date_start)
 			return node.item.date_start
     	},
-		labelStart(node) {
+		label(node) {
+			let label = "";
 			if(node.item.fields.data_inizio)
-			return node.item.fields.data_inizio
-    	},
-		labelEnd(node) {
+				label = node.item.fields.data_inizio
+				
 			if(node.item.fields.data_fine)
-			return node.item.fields.data_fine
+				label += " - " + node.item.fields.data_fine
+
+				return label;
     	}
 	}
 }

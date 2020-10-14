@@ -1047,7 +1047,6 @@ export async function getEventObjects(field) {
   
   const queryBool = el.queryBool([q1.query,q2.query]);
   const request = el.requestBuilder(GLOBAL_INDEX, queryBool)
-  console.log(request);
   const body = await el.search(request).then(x => x.hits.hits);
 
   let elements = [];
