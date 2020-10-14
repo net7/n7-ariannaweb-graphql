@@ -272,6 +272,15 @@ type MapObject {
     item: SearchResult
 }
 
+type EventObject {
+    id: ID!
+    start: String
+    end: String
+    labelStart: String
+    labelEnd: String
+    item: SearchResult
+}
+
 union SearchResult = Entity | Item
 
 input SearchParameters {
@@ -338,6 +347,7 @@ type Query {
 search(searchParameters: SearchParameters!): SearchResponse
 
 getMapObjects(field: String) : [MapObject]
+getEventObjects(field: String) : [EventObject]
 
 }
 

@@ -1036,3 +1036,28 @@ export async function getMapObjects(field) {
   return elements; 
 }
 
+export async function getEventObjects(field) {
+
+  if (!field || field == "") {
+    field = "date_start";
+  }
+  const termObject = {"document_type": "evento"}
+  const q1 = el.queryTerm(termObject)
+  const q2 = el.queryExists(field);
+  
+  const queryBool = el.queryBool([q1.query,q2.query]);
+  const request = el.requestBuilder(GLOBAL_INDEX, queryBool)
+  console.log(request);
+  const body = await el.search(request).then(x => x.hits.hits);
+
+  let elements = [];
+
+  if (body.length > 0) {
+    body.map(x => {       
+        elements.push({item: x._source})
+      });
+  }
+
+  return elements; 
+}
+
