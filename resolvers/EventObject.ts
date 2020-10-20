@@ -18,7 +18,7 @@ export const resolvers = {
 			if(node.item.fields.data_inizio)
 				label = node.item.fields.data_inizio
 				
-			if(node.item.fields.data_fine)
+			if(node.item.fields.data_fine && node.item.fields.data_fine !== node.item.fields.data_inizio)
 				label = label == "" ?  node.item.fields.data_fine : label + " - " + node.item.fields.data_fine
 
 				return label;
