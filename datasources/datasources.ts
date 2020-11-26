@@ -376,10 +376,13 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
     "field": RELATED_ENTITIES + "." + ID
   }};
   let agNes = el.aggsNested(ENTITIES, RELATED_ENTITIES, aggsEntity)
-  let aggr1 = el.aggsTerms("type", "relatedEntities.typeOfEntity", null, 10000, 0).aggs;
+  let aggr1 = el.globalAggsTerms("type", "typeOfEntity", 10000, null, 0);
 
 	const body = {
-		aggs: agNes.aggs,
+		aggs: {
+      [ENTITIES]: agNes.aggs[ENTITIES], 
+      "type": aggr1.aggs['type']
+    },
 
 		//		script_fields: scFi.script_fields,
 		"_source": [],
@@ -399,13 +402,18 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 		body[QUERY] = el.queryBool(entities).query
 	}
 
-	const request = el.requestBuilder(OC_INDEX, body)
+  const request = el.requestBuilder(GLOBAL_INDEX, body)
   //console.log("GLOBAL FILTER", JSON.stringify( body));
+
 	const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
-	const typesOfEntity = {};
+  const entitiesCount = {};  
   let entitiesList = [];
   let typeOfEntityData = [];
+
+  res.aggregations["type"].buckets.buckets.map( x => {
+    entitiesCount[x.key] = x.doc_count;
+  });
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
@@ -413,7 +421,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
     buckets.forEach(element => {
       typeOfEntityData.push({
         type: element.key,
-        count: element.distinctTerms.value
+        count: entitiesCount[element.key]
       });
       element.docsPerEntity.buckets.map(x => {
         let entity = JSON.parse(x.key)
