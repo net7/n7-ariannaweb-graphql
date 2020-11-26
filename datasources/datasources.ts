@@ -392,19 +392,24 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   }
   //body["aggs"]["hits"] = topHitsNested;
 
-	const entities = []
+  const entities = []
+  const excludeQuery = [{
+    "term": {
+        "parent_type": "entity"
+    }
+  }];
+
 	if (entityIds != null && entityIds.length > 0) {
 		for (const entityId of entityIds) {
 			const termObject = {}
 			termObject[RELATED_ENTITIES + "." + ID] = entityId
 			entities.push(el.queryNested(RELATED_ENTITIES, el.queryTerm(termObject)).query)
 		}
-		body[QUERY] = el.queryBool(entities).query
 	}
+  body[QUERY] = el.queryBool(entities, null, null, excludeQuery).query
 
   const request = el.requestBuilder(GLOBAL_INDEX, body)
   //console.log("GLOBAL FILTER", JSON.stringify( body));
-
 	const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
   const entitiesCount = {};  
@@ -508,7 +513,7 @@ export async function getRelatedItems(entityIds, itemsPagination: Page = { limit
   }
 
   const request = el.requestBuilder(OC_INDEX, body)
-  //console.log("GLOBAL FILTER", JSON.stringify( body));
+  console.log("GLOBAL FILTER", JSON.stringify( body));
   const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
   const typesOfEntity = {};
