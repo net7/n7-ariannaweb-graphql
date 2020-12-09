@@ -3,7 +3,7 @@ export function createFields(object: any): any {
 	let array = []
 	for (const prop in object) {
 		if (object.hasOwnProperty(prop)) {
-			if (typeof object[prop] === 'string')
+			if (typeof object[prop] === 'string' || typeof object[prop] === 'boolean' )
 				array.push({ key: prop, value: object[prop] })
 			//else if (Array.isArray(object[prop])) {
       else if (typeof object[prop] == 'object' ) {
