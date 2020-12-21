@@ -38,6 +38,7 @@ type Item {
     icon: String
     subTitle: String
     images: [String]
+    pdf:[String]
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
@@ -95,7 +96,7 @@ type GlobalFilterData {
 (used for navigation, as: Patrimonio)"""
 type Node {
     id: ID!
-    label: String!
+    label: String
     icon: String
     img: String
     document_type: String
