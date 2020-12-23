@@ -30,7 +30,7 @@ type Entity {
 """ An basic item (such as: "Genova, la sopraelevata", etc...)"""
 type Item {
     id: ID!
-    label: String!
+    label: String
     title: String!
     document_type: String
     document_classification: String
