@@ -13,7 +13,7 @@ union Field = KeyValueField | KeyValueFieldGroup
 """ An entity (such as: 'Alighiero Boetti', 'Luce', etc...) """
 type Entity {
     id: ID!
-    label: String!
+    label: String
     typeOfEntity: String!
     document_type: String
     relation: String
