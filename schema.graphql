@@ -13,7 +13,7 @@ union Field = KeyValueField | KeyValueFieldGroup
 """ An entity (such as: 'Alighiero Boetti', 'Luce', etc...) """
 type Entity {
     id: ID!
-    label: String!
+    label: String
     typeOfEntity: String!
     document_type: String
     relation: String
@@ -30,7 +30,7 @@ type Entity {
 """ An basic item (such as: "Genova, la sopraelevata", etc...)"""
 type Item {
     id: ID!
-    label: String!
+    label: String
     title: String!
     document_type: String
     document_classification: String
@@ -38,6 +38,7 @@ type Item {
     icon: String
     subTitle: String
     images: [String]
+    pdf:[String]
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
@@ -95,7 +96,7 @@ type GlobalFilterData {
 (used for navigation, as: Patrimonio)"""
 type Node {
     id: ID!
-    label: String!
+    label: String
     icon: String
     img: String
     document_type: String
