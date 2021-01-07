@@ -64,6 +64,11 @@ export const resolvers = {
         return node.fields.node_type;
       } else return "oggetto-culturale"
     },
+    document_classification(node) {
+			if (node.fields.document_classification != null){
+        return node.fields.document_classification
+      }
+    },
     images: (node) =>{
       let images = [];
       if( node["digitalObjects"] && node["digitalObjects"].length > 0 ){
