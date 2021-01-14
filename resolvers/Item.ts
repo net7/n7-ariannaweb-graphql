@@ -1,5 +1,5 @@
 import { createFields } from "./utils"
-import { orderRelatedEntities } from "./utils"
+import { orderRelatedEntities, orderDigitalObjects } from "./utils"
 import * as sources from '../datasources/datasources'
 
 export const resolvers = {
@@ -81,11 +81,19 @@ export const resolvers = {
       }
       return images;
     },
+    digitalObjects: (node) =>{
+      return node["digitalObjects"].sort(orderDigitalObjects);
+    },
     image: (node) => {
       if( node["digitalObjects"] && node["digitalObjects"].length > 0 ){
-        return node["digitalObjects"][0]['images'][0].url + "&WID=500&CVT=jpeg";
+        for (let element of node["digitalObjects"]) {
+          if( element.doType == "IIPURLS" ){
+            return element['images'][0].url + "&WID=500&CVT=jpeg";            
+          } else if ( element.doType == "jpg-png" ) {
+            return element['images'][0].url_m;
+          } 
+        }
       }
-      return "";
     },
     relatedEntities(node) {
       let hashMap = {};

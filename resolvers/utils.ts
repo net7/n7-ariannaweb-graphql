@@ -35,3 +35,13 @@ export function orderRelatedEntities(a, b){
 	}
 	return 0;
   }
+
+export function orderDigitalObjects(a, b){
+	if ( a.ordine < b.ordine ){
+	  return -1;
+	}
+	if ( a.ordine > b.ordine){
+	  return 1;
+	}
+	return 0;
+  }
