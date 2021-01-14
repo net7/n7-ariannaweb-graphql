@@ -17,12 +17,26 @@ export const resolvers = {
         return node.fields.document_classification
       }
     },
-    img: (node) => {
+   /* img: (node) => {
       if( node['fields']["images"] && node['fields']["images"] .length > 0 ){
         return node['fields']["images"][0]['images'][0].url + "&WID=50&CVT=jpeg";
       }
       return "";
 
+    },*/
+    img: (node) => {
+      if( node['fields']["images"] && node['fields']["images"] .length > 0 ){      
+        for (let element of node['fields']["images"]) {
+          if( element.doType == "IIPURLS" ){
+            return element['images'][0].url + "&WID=50&CVT=jpeg";            
+          } else if ( element.doType == "jpg-png" ) {
+            return element['images'][0].url_s;
+          } 
+        }
+      }
+      if( node['fields']["digitalObjects"] && node['fields']["digitalObjects"].length > 0 ){
+        
+      }
     },
     relatedEntities(node) {
       let hashMap = {};

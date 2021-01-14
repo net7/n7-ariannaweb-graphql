@@ -38,6 +38,7 @@ type Item {
     icon: String
     subTitle: String
     images: [String]
+    digitalObjects: [DigitalObject]
     pdf:[String]
     image: String
     fields: [Field!]
@@ -132,6 +133,21 @@ union Result = ItemListing | EntityCountData
 
 union GenericNode = Node | Item
 
+type DigitalObject {
+    order: String
+    label: String
+    type: String
+    url: String
+    items: [BinaryItem]
+}
+
+type BinaryItem {
+    order: String
+    label: String
+    url: String
+    url_m: String
+    url_s: String
+}
 
 
 #======================================================================================

@@ -9,8 +9,9 @@ import * as globalFilterData from './GlobalFilterData'
 import * as mapObject from './MapObject'
 import * as eventObject from './EventObject'
 import * as result from './Result'
+import * as digitalObject from './DigitalObject'
 
-const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject].map(x => x.resolvers)
+const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject, digitalObject].map(x => x.resolvers)
 
 export const resolvers = merge({
 	Query: {
