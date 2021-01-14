@@ -260,8 +260,8 @@ export async function getEntitiesFiltered(input: string, itemsPagination: Page =
     {
       "function_score": {
         "script_score": {
-          "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
-            + "if(index === 0){ 5 } else { Math.pow(0.8, index) }"
+          "script": "if(doc['label_sort.keyword'].size() > 0 ){int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
+            + "if(index === 0){ 5 } else { Math.pow(0.8, index) }} else {1}"
         },
         "boost_mode": "multiply"
       }
@@ -751,8 +751,8 @@ export async function search(searchParameters: any) {
                   "query_string": el.queryString({ fields: searchInkey, value: term }).query_string
                 },
                 "script_score": {
-                  "script": "int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
-                    + "if(index === 0){ 3 } else { Math.pow(0.8, index)}"
+                  "script": "if(doc['label_sort.keyword'].size() > 0 ) {int index = doc['label_sort.keyword'].value.indexOf('" + term + "');"
+                    + "if(index === 0){ 3 } else { Math.pow(0.8, index)}} else {1}"
                 },
                 "boost_mode": "multiply"
               }
@@ -933,7 +933,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("SEARCH",JSON.stringify(request))
+  console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
