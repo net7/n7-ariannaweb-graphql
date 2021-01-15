@@ -26,7 +26,7 @@ export const resolvers = {
 			}
 		},
 		label(node) {
-			return node.label
+			return node.titolo
 		},
 		order(node) {
 			return node.ordine
