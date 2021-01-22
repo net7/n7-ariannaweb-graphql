@@ -94,7 +94,7 @@ export const resolvers = {
             image = image == "" ? "/assets/images/arianna/pdf-thumb.jpg" : image; 
           }
           else if ( element.doType == "jpg-png" ) {
-            image = element['images'][0].url_m;
+            image = image == "" ? element['images'][0].url_m : image;
           } 
         }
         return image;
