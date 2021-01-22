@@ -86,13 +86,18 @@ export const resolvers = {
     },
     image: (node) => {
       if( node["digitalObjects"] && node["digitalObjects"].length > 0 ){
+        let image = "";
         for (let element of node["digitalObjects"]) {
           if( element.doType == "IIPURLS" ){
             return element['images'][0].url + "&WID=500&CVT=jpeg";            
-          } else if ( element.doType == "jpg-png" ) {
-            return element['images'][0].url_m;
+          } else if (element.doType == "pdf" ) {
+            image = image == "" ? "/assets/images/arianna/pdf-thumb.jpg" : image; 
+          }
+          else if ( element.doType == "jpg-png" ) {
+            image = element['images'][0].url_m;
           } 
         }
+        return image;
       }
     },
     relatedEntities(node) {

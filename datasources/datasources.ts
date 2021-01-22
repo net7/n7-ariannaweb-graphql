@@ -928,6 +928,11 @@ export async function search(searchParameters: any) {
         "field": "digitalObjects"
       }
     })
+    body[QUERY][BOOL][MUST].push({
+      "terms": {
+        "digitalObjects.doType.keyword": ["pdf", "jpg-png", "iip"]
+      }
+    })
   }
 
   body['highlight'] = highlight;
