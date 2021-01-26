@@ -86,8 +86,12 @@ export const resolvers = {
     },
     image: (node) => {
       if( node["digitalObjects"] && node["digitalObjects"].length > 0 ){
+        const digitalObjects = node["digitalObjects"].sort(orderDigitalObjects)
         let image = "";
-        for (let element of node["digitalObjects"]) {
+        for (let element of digitalObjects) {          
+          if(element['images'] && element['images'].length > 0){
+            element['images'] =  element['images'].sort(orderDigitalObjects);
+          } 
           if( element.doType == "IIPURLS" ){
             return element['images'][0].url + "&WID=500&CVT=jpeg";            
           } else if (element.doType == "pdf" ) {

@@ -1,5 +1,5 @@
 import { createFields } from "./utils"
-import { orderRelatedEntities } from "./utils"
+import { orderRelatedEntities, orderDigitalObjects } from "./utils"
 import * as sources from '../datasources/datasources'
 
 export const resolvers = {
@@ -25,8 +25,12 @@ export const resolvers = {
 
     },*/
     img: (node) => {
-      if( node['fields']["images"] && node['fields']["images"].length > 0 ){      
+      if( node['fields']["images"] && node['fields']["images"].length > 0 ){  
+        node['fields']["images"] = node['fields']["images"].sort(orderDigitalObjects);
         for (let element of node['fields']["images"]) {
+          if(element['images'] && element['images'].length > 0){
+            element['images'] =  element['images'].sort(orderDigitalObjects);
+          } 
           if( element.doType == "IIPURLS" ){
             return element['images'][0].url + "&WID=50&CVT=jpeg";            
           } else if (element['images'] && element['images'].length > 0) {
