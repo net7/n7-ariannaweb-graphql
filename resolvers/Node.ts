@@ -25,17 +25,14 @@ export const resolvers = {
 
     },*/
     img: (node) => {
-      if( node['fields']["images"] && node['fields']["images"] .length > 0 ){      
+      if( node['fields']["images"] && node['fields']["images"].length > 0 ){      
         for (let element of node['fields']["images"]) {
           if( element.doType == "IIPURLS" ){
             return element['images'][0].url + "&WID=50&CVT=jpeg";            
-          } else if ( element.doType == "jpg-png" ) {
+          } else if (element['images'] && element['images'].length > 0) {
             return element['images'][0].url_s;
           } 
         }
-      }
-      if( node['fields']["digitalObjects"] && node['fields']["digitalObjects"].length > 0 ){
-        
       }
     },
     relatedEntities(node) {
