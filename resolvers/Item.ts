@@ -91,10 +91,12 @@ export const resolvers = {
           if( element.doType == "IIPURLS" ){
             return element['images'][0].url + "&WID=500&CVT=jpeg";            
           } else if (element.doType == "pdf" ) {
-            image = image == "" ? "/assets/images/arianna/pdf-thumb.jpg" : image; 
+            image = element['images'][0].url_m  ? element['images'][0].url_m : "/assets/images/arianna/pdf-thumb.jpg"; 
+            return image;
           }
           else if ( element.doType == "jpg-png" ) {
             image = image == "" ? element['images'][0].url_m : image;
+            return image;
           } 
         }
         return image;
