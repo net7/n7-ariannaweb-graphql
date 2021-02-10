@@ -7,11 +7,13 @@ export function createFields(object: any): any {
 				array.push({ key: prop, value: object[prop] })
       		else if (typeof object[prop] == 'object' ) {				
 				let isArrayString:boolean = true;
-				object[prop].forEach(element => {
-					if (isArrayString) {
-						isArrayString = typeof element === "string";
-					}
-				});				
+				if(object[prop] != null){
+					object[prop].forEach(element => {
+						if (isArrayString) {
+							isArrayString = typeof element === "string";
+						}
+					});		
+				}
 				if (isArrayString){
 					array.push({key: prop, value: object[prop].join(", ")  })
 				}
