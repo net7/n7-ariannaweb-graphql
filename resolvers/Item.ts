@@ -92,7 +92,7 @@ export const resolvers = {
           if(element['images'] && element['images'].length > 0){
             element['images'] =  element['images'].sort(orderDigitalObjects);
           } 
-          if( element.doType == "IIPURLS" ){
+          if( element.doType == "iip" ){
             return element['images'][0].url + "&WID=500&CVT=jpeg";            
           } else if (element.doType == "pdf" ) {
             image = element['images'][0].url_m  ? element['images'][0].url_m : "/assets/images/arianna/pdf-thumb.jpg"; 
