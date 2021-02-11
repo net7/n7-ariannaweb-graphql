@@ -5,13 +5,13 @@ export function createFields(object: any): any {
 		if (object.hasOwnProperty(prop)) {
 			if (typeof object[prop] === 'string' || typeof object[prop] === 'boolean' )
 				array.push({ key: prop, value: object[prop] })
-      		else if (typeof object[prop] == 'object' ) {				
-				let isArrayString:boolean = true;
+      		else if (typeof object[prop] == 'object' && object[prop] != null) {				
+				let isArrayString:boolean = true;				
 				object[prop].forEach(element => {
 					if (isArrayString) {
 						isArrayString = typeof element === "string";
 					}
-				});				
+				});						
 				if (isArrayString){
 					array.push({key: prop, value: object[prop].join(", ")  })
 				}
