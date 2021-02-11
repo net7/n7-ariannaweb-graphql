@@ -19,6 +19,8 @@ export const resolvers = {
 		type(node) {
 			if( node.doType && node.doType == "jpg-png" ){
 				return "images-simple"
+			} else if( node.doType && node.doType == "iip" ){
+				return "images-iiif"
 			} else if( node.doType && node.doType != "" ){
 				return node.doType
 			} else if( node.externalViewerUrl && node.externalViewerUrl != "" ){
