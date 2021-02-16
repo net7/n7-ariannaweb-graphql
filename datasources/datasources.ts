@@ -9,6 +9,7 @@ class Page {
   limit: number
 }
 const TREE_INDEX = config['index']['treeIndex'] || "tree";
+const TREE_SIZE = config['treeSize'] || 35000;
 const GLOBAL_INDEX = config['index']['globalIndex'] || "global"
 const ENTITIES_INDEX = config['index']['entitiesIndex'] || "entities"
 const OC_INDEX = config['index']['ocIndex'] || "cultural_objects"
@@ -604,7 +605,7 @@ export async function getTree(info) {
     },
     sort: {
     },
-    size: 35000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
+    size: TREE_SIZE //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
   }
   query.sort[POSITION] = { "order": "asc" }
   const request = el.requestBuilder(TREE_INDEX, query)
