@@ -635,6 +635,8 @@ const ENTITY_LINKS = "entity-links"
 const ACTIVE_ENTITY_LINKS = "active-entity-links"
 const ENTITY_TYPES = "entity-types"
 const ENTITY_SEARCH = "entity-search"
+const RESOURCE_ID = "resource-id"
+const DOC_CLASSIFICATION = "doc-classification"
 
 const AGGS = "aggs"
 const AGGS_NESTED_FIELD = "entities"
@@ -648,6 +650,7 @@ const SHOULD = 'should'
 const MUST = "must"
 
 const DOCUMENT_TYPE = "document_type"
+const DOCUMENT_CLASSIFICATION = "fields.document_classification.keyword"
 const OC = "oggetto-culturale"
 
 async function makeElement(element: any) {
@@ -910,8 +913,48 @@ export async function search(searchParameters: any) {
           aggrActive['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ACTIVE_ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ACTIVE_ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ACTIVE_ENTITY_LINKS + "_label"]  
           body[AGGS][ACTIVE_ENTITY_LINKS] = aggrActive;
         }
-
         break
+        case RESOURCE_ID: 
+          if (filter && filter.value && filter.value != "") {
+            let searchIn = filter.searchIn[0].key
+            let value = filter.value[0]
+            let termObject = { [searchIn] : value};   
+            let termQuery = el.queryTerm(termObject).query
+            let bools = el.queryBool([termQuery]).query
+            if (body[QUERY] == null)
+              body[QUERY] = bools
+            else if (body[QUERY][BOOL] == null)
+              body[QUERY][BOOL] = bools.bool
+            else if (body[QUERY][BOOL][MUST] == null)
+              body[QUERY][BOOL][MUST] = bools.bool.must
+            else
+              bools.bool.must.map(x => {
+                body[QUERY][BOOL][MUST].push(x)
+              })          
+          }
+        break;
+        case DOC_CLASSIFICATION: 
+          if (filter && filter.value) {
+            let value = filter.value[0]
+            let termObject1 = { [DOCUMENT_CLASSIFICATION] : value};   
+            let termObject2 = { [DOCUMENT_TYPE] : value};   
+            let termQuery1 = el.queryTerm(termObject1).query
+            let termQuery2 = el.queryTerm(termObject2).query
+            let shouldBoolQuery = el.queryBool(null, [termQuery1, termQuery2]).query;
+
+            let bools = el.queryBool([{[BOOL]: shouldBoolQuery.bool}]).query
+            if (body[QUERY] == null)
+              body[QUERY] = bools
+            else if (body[QUERY][BOOL] == null)
+              body[QUERY][BOOL] = bools.bool
+            else if (body[QUERY][BOOL][MUST] == null)
+              body[QUERY][BOOL][MUST] = bools.bool.should
+            else
+              bools.bool.must.map(x => {
+                body[QUERY][BOOL][MUST].push(x)
+              })          
+          }
+        break;
     }
   })
 
@@ -939,7 +982,7 @@ export async function search(searchParameters: any) {
   body['highlight'] = highlight;
 
   let request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("SEARCH",JSON.stringify(request))
+  console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
 
   let aggregations = [];
@@ -1073,6 +1116,26 @@ export async function getEventObjects(field) {
   if (body.length > 0) {
     body.map(x => {       
         elements.push({item: x._source})
+      });
+  }
+
+  return elements; 
+}
+
+export async function getResourceById(id) {
+
+  const termObject = {"id": id}
+  const q1 = el.queryTerms(termObject);
+  
+  const queryBool = el.queryBool([q1.query]);
+  const request = el.requestBuilder(GLOBAL_INDEX, queryBool)
+  const body = await el.search(request).then(x => x.hits.hits);
+
+  let elements = [];
+
+  if (body.length > 0) {
+    body.map(x => {       
+        elements.push(x._source)
       });
   }
 
