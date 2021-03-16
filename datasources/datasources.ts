@@ -9,6 +9,7 @@ class Page {
   limit: number
 }
 const TREE_INDEX = config['index']['treeIndex'] || "tree";
+const TREE_SIZE = config['treeSize'] || 35000;
 const GLOBAL_INDEX = config['index']['globalIndex'] || "global"
 const ENTITIES_INDEX = config['index']['entitiesIndex'] || "entities"
 const OC_INDEX = config['index']['ocIndex'] || "cultural_objects"
@@ -95,7 +96,11 @@ export async function getRelations(entityId: string, itemsPagination: Page = { l
 			}
 		}).filter(x => x.entity.id !== entityId)*/
 
-    return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+    return {
+      total: x.hits.total,
+      items :  x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+    }
+    
   })
   return items;
 }
@@ -121,8 +126,14 @@ export async function getRelationsAl(entityId: string, itemsPagination: Page = {
   })
   var entities = []
   const items = await el.search(req).then(x => {
-    return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+   // return x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+   return {
+      total: x.hits.total,
+      items:  x.hits.hits.map(y => { return makeItemListing(y._source, entityId) })
+    }
+
   })
+
   return items;
 }
 
@@ -152,12 +163,15 @@ export async function getEntity(entityId: string, itemsPagination: Page = { limi
     return null
   }
 
+    const response = await this.getRelations(entityId, itemsPagination, entitiesListSize);
+    const response2 = await this.getRelationsAl(entityId, itemsPagination, entitiesListSize);
+   // item['relatedItemsTotalCount'] = response.total;
+
   results[0].params = {
-    'itemsPagination': itemsPagination,
-    'entitiesListSize': entitiesListSize
+    'relatedItems': response,
+    'relatedAl': response2
   }
-  //results[0][RELATED_ITEMS] = results[1][RELATED_ITEMS]
-  //results[0][RELATED_ENTITIES] = results[1][RELATED_ENTITIES]
+  
   return results[0]
 }
 
@@ -604,7 +618,7 @@ export async function getTree(info) {
     },
     sort: {
     },
-    size: 35000 //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
+    size: TREE_SIZE //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
   }
   query.sort[POSITION] = { "order": "asc" }
   const request = el.requestBuilder(TREE_INDEX, query)

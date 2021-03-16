@@ -43,20 +43,35 @@ export const resolvers = {
     
     },
 
+    relatedItemsTotalCount(item, args, context, info) {
+      const totCount = item.params != null ? item.params.relatedItems.total : null;
+      return totCount;
+    } ,
+
     async relatedItems(item, args, context, info){
+      const relatedItems = item.params != null ? item.params.relatedItems.items : [];
+      return relatedItems;
+     /* const itemPagination = item.params != null ? item.params.itemsPagination : "";
+      const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
+      const response = await sources.getRelations(item.id, itemPagination, entitiesListSize);
+      item['relatedItemsTotalCount'] = response.total;
+      return  response.items;*/
+    },
+    async relatedAl(item, args, context, info){
+      const relatedAl = item.params != null ? item.params.relatedAl.items : [];
+      return relatedAl;
+      /* 
       const itemPagination = item.params != null ? item.params.itemsPagination : "";
       const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
-     return sources.getRelations(item.id, itemPagination, entitiesListSize);
+      return sources.getRelationsAl(item.id, itemPagination, entitiesListSize);
+     */
 
      // return item.relatedEntities;
     },
-    async relatedAl(item, args, context, info){
-      const itemPagination = item.params != null ? item.params.itemsPagination : "";
-      const entitiesListSize = item.params != null ? item.params.entitiesListSize : "";
-     return sources.getRelationsAl(item.id, itemPagination, entitiesListSize);
-
-     // return item.relatedEntities;
-    }
+    relatedAlTotalCount(item, args, context, info) {
+      const totCount = item.params != null ? item.params.relatedAl.total : null;
+      return totCount;
+    } ,
 	}
 }
 
