@@ -21,7 +21,9 @@ type Entity {
     extraTab: String
     wikiTab: WikiTab
     fields: [Field!]
+    relatedItemsTotalCount: Int # related items
     relatedItems: [ItemListing!] # related items
+    relatedAlTotalCount: Int # related items
     relatedAl: [ItemListing!] # related items
     relatedEntities: [EntityCountData!]
 }
@@ -43,7 +45,7 @@ type Item {
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
-    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)
+    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)    
     relatedItems: [ItemListing!] # related items
     breadcrumbs: [LinkElement!]
 }
@@ -149,6 +151,18 @@ type BinaryItem {
     url_s: String
 }
 
+type Collection {
+    title: String
+    items: [CollectionItem]
+}
+type CollectionItem {
+    title: String
+    content: String
+    background: String
+    image: String
+    url: String
+    a4vId: String
+}
 
 #======================================================================================
 #                                INPUT TYPES
@@ -364,7 +378,9 @@ search(searchParameters: SearchParameters!): SearchResponse
 
 getMapObjects(field: String) : [MapObject]
 getEventObjects(field: String) : [EventObject]
-
+getResourceById(id: [ID]) : [SearchResult]
+getCollections( collectionPagination: Page): [Collection]
+getCollection( id:ID, itemPagination: Page ): Collection
 }
 
 
