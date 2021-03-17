@@ -662,6 +662,115 @@ async function makeElement(element: any) {
 }
 
 export async function search(searchParameters: any) {
+  
+  const facets = searchParameters.facets
+  const filters = {}
+  searchParameters.filters.forEach(filter => {
+    filters[filter.facetId] = filter
+  })
+
+  const result = await elasticSearch(searchParameters);  
+  let elements = [];
+  const items = result.hits.hits.map(x => {
+    x._source.highlight = x.highlight;
+    elements.push(x._source)
+  });
+
+  if (result.aggregations) {
+
+    facets.forEach((facet, index) => {
+
+      if( facet.id == QUERY_LINKS_FILTER_FACETS) {
+        facets.splice(index, 1);
+      } 
+
+      if (result.aggregations[facet.id] != null && !facet.data) {
+        switch (facet.id) {
+          case QUERY_LINKS:
+            let data = result.aggregations[facet.id].buckets.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket.key,
+                "counter": bucket.doc_count
+              };
+            });
+            facet.data = data;
+            break;
+          case ENTITY_TYPES:
+            let data2 = result.aggregations[facet.id]['all_entities']['buckets'].buckets.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket.key,
+                "counter": bucket.doc_count
+              };
+            });
+            facet.data = data2;
+            break;
+          case ENTITY_LINKS: {
+            const offset = ( filters[ENTITY_LINKS].pagination != undefined ) ? filters[ENTITY_LINKS].pagination.offset : 0;
+            const data_offset = result.aggregations[facet.id][facet.id][facet.id][facet.id]['buckets'].slice(offset);
+            let data3 = data_offset.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket[facet.id + "_label"].buckets[0].key,
+                "counter": bucket.doc_count,
+                "searchData": facet.searchData.map(y => {
+                  return {
+                    key: y,
+                    value: bucket[facet.id]['buckets'].map(x => x.key)
+                  }
+                })
+              };
+            });
+
+            if(data3.length <= 0 && result.aggregations[ACTIVE_ENTITY_LINKS]){
+              const data_active = result.aggregations[ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS]['buckets'];
+              data3 = data_active.map(bucket => {
+                return {
+                    "value": bucket.key,
+                    "label": bucket[facet.id + "_label"].buckets[0].key,
+                    "counter": 0,
+                    "searchData": facet.searchData.map(y => {
+                      return {
+                        key: y,
+                        value: bucket[facet.id]['buckets'].map(x => x.key)
+                      }
+                    })
+                  };
+                });
+            }            
+
+            facet.data = data3;
+            facet.totalCount = result.aggregations[facet.id][facet.id][facet.id]['distinctTerms'].value
+            break;
+          }
+          case DOC_CLASSIFICATION: {
+            let data4 = result.aggregations[facet.id]['buckets'].buckets.map(bucket => {
+              return {
+                "value": bucket.key,
+                "label": bucket.key,
+                "counter": bucket.doc_count
+              };
+            });
+            facet.data = data4;
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  searchParameters.results.items = elements;
+  let response = {
+    totalCount: result.hits.total,
+    filters: searchParameters.filters,
+    facets: searchParameters.facets,
+    results: searchParameters.results
+  }
+  return response;
+}
+
+export async function elasticSearch( searchParameters ) {
 
   const facets = searchParameters.facets
   const filters = {}
@@ -669,6 +778,7 @@ export async function search(searchParameters: any) {
     filters[filter.facetId] = filter
   })
 
+  let aggregations = [];
   // request for global index
   let body = {}
 
@@ -704,8 +814,6 @@ export async function search(searchParameters: any) {
 
   facets.forEach(facet => {
     const filter = filters[facet.id]
-    //let internalRequest = {}
-    //if (filter && filter.value) {
     switch (facet.id) {
       case QUERY:
         // query full text
@@ -858,10 +966,6 @@ export async function search(searchParameters: any) {
         const offset:number = ( filter.pagination != undefined ) ? filter.pagination.offset : 0; 
         const size:number =  offset + limit;
 
-      //test before deleting
-      //let aggr3 = el.aggsNestedTerms(ENTITY_LINKS, 'relatedEntities.id', null, size, 'relatedEntities');
-      // aggr3['aggs'][ENTITY_LINKS]['aggs'] = el.aggsTerms(ENTITY_LINKS, 'relatedEntities.typeOfEntity', null, size).aggs
-      //aggr3['aggs'][ENTITY_LINKS]['aggs'][ENTITY_LINKS + "_label"] = el.aggsTerms(ENTITY_LINKS + "_label", 'relatedEntities.label.keyword', null, size).aggs[ENTITY_LINKS + "_label"]
         let aggr_filter;
         let filter_object = {};
         let must_list = [];
@@ -934,7 +1038,7 @@ export async function search(searchParameters: any) {
           }
         break;
         case DOC_CLASSIFICATION: 
-          if (filter && filter.value) {
+          if (filter && filter.value && filter.value != "") {
             let value = filter.value[0]
             let termObject1 = { [DOCUMENT_CLASSIFICATION] : value};   
             let termObject2 = { [DOCUMENT_TYPE] : value};   
@@ -954,6 +1058,12 @@ export async function search(searchParameters: any) {
                 body[QUERY][BOOL][MUST].push(x)
               })          
           }
+          let aggr3 = el.globalAggsTerms(DOC_CLASSIFICATION, DOCUMENT_CLASSIFICATION, 10000, null).aggs;
+          if (body[AGGS] == null) {
+            body[AGGS] = aggr3
+          } else {
+            body[AGGS][DOC_CLASSIFICATION] = aggr3[DOC_CLASSIFICATION];
+          }
         break;
     }
   })
@@ -961,10 +1071,6 @@ export async function search(searchParameters: any) {
   if (body['post_filter']) {
     body[AGGS][ENTITY_LINKS]['filter'] = body['post_filter'];
   }
-
-  // returns facets on document Type
-  //body[AGGS] = el.aggsTerms(AGG_FIELD, DOCUMENT_TYPE, null, 10000).aggs
-  
 
   if( searchParameters.gallery ){
     body[QUERY][BOOL][MUST].push({
@@ -984,99 +1090,7 @@ export async function search(searchParameters: any) {
   let request = el.requestBuilder(GLOBAL_INDEX, body)
   console.log("SEARCH",JSON.stringify(request))
   let result = await el.search(request)
-
-  let aggregations = [];
-  let elements = [];
-  const items = result.hits.hits.map(x => {
-    x._source.highlight = x.highlight;
-    elements.push(x._source)
-  });
-
-  if (result.aggregations) {
-
-    facets.forEach((facet, index) => {
-
-      if( facet.id == QUERY_LINKS_FILTER_FACETS) {
-        facets.splice(index, 1);
-      } 
-
-      if (result.aggregations[facet.id] != null && !facet.data) {
-        switch (facet.id) {
-          case QUERY_LINKS:
-            let data = result.aggregations[facet.id].buckets.map(bucket => {
-              return {
-                "value": bucket.key,
-                "label": bucket.key,
-                "counter": bucket.doc_count
-              };
-            });
-            facet.data = data;
-            break;
-          case ENTITY_TYPES:
-            let data2 = result.aggregations[facet.id]['all_entities']['buckets'].buckets.map(bucket => {
-              return {
-                "value": bucket.key,
-                "label": bucket.key,
-                "counter": bucket.doc_count
-              };
-            });
-            facet.data = data2;
-            break;
-          case ENTITY_LINKS: {
-            const offset = ( filters[ENTITY_LINKS].pagination != undefined ) ? filters[ENTITY_LINKS].pagination.offset : 0;
-            const data_offset = result.aggregations[facet.id][facet.id][facet.id][facet.id]['buckets'].slice(offset);
-            let data3 = data_offset.map(bucket => {
-              return {
-                "value": bucket.key,
-                "label": bucket[facet.id + "_label"].buckets[0].key,
-                "counter": bucket.doc_count,
-                "searchData": facet.searchData.map(y => {
-                  return {
-                    key: y,
-                    value: bucket[facet.id]['buckets'].map(x => x.key)
-                  }
-                })
-              };
-            });
-
-            if(data3.length <= 0 && result.aggregations[ACTIVE_ENTITY_LINKS]){
-              const data_active = result.aggregations[ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS][ACTIVE_ENTITY_LINKS]['buckets'];
-              data3 = data_active.map(bucket => {
-                return {
-                    "value": bucket.key,
-                    "label": bucket[facet.id + "_label"].buckets[0].key,
-                    "counter": 0,
-                    "searchData": facet.searchData.map(y => {
-                      return {
-                        key: y,
-                        value: bucket[facet.id]['buckets'].map(x => x.key)
-                      }
-                    })
-                  };
-                });
-            }            
-
-            facet.data = data3;
-            facet.totalCount = result.aggregations[facet.id][facet.id][facet.id]['distinctTerms'].value
-            break;
-          }
-        }
-      }
-    });
-  }
-
-
-  searchParameters.results.items = elements;
-  let response = {
-    totalCount: result.hits.total,
-    filters: searchParameters.filters,
-    facets: searchParameters.facets,
-    results: searchParameters.results
-
-  }
-
-  return response;
-
+  return result;
 }
 
 export async function getMapObjects(field) {
@@ -1141,4 +1155,3 @@ export async function getResourceById(id) {
 
   return elements; 
 }
-

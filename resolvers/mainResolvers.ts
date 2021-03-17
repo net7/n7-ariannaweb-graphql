@@ -10,8 +10,10 @@ import * as mapObject from './MapObject'
 import * as eventObject from './EventObject'
 import * as result from './Result'
 import * as digitalObject from './DigitalObject'
+import * as collection from './Collection'
+import * as collectionItem from './CollectionItem'
 
-const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject, digitalObject].map(x => x.resolvers)
+const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject, digitalObject, collection, collectionItem].map(x => x.resolvers)
 export const resolvers = merge({
 	Query: {
 		getItem: async (parent, args, context, info) => await sources.getItem(args.itemId, args.maxSimilarItems, args.entitiesListSize),

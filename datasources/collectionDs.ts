@@ -26,7 +26,7 @@ export class CollectionAPI extends RESTDataSource {
         const {limit, offset} = page;
         const collection =  await this.get(`collections?limit=${limit}&offset=${offset}`);
         return collection;
-    }
+    } 
 
 }
 

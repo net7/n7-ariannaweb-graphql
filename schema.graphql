@@ -16,6 +16,7 @@ type Entity {
     label: String
     typeOfEntity: String!
     document_type: String
+    parent_type: String
     relation: String
     overviewTab: String
     extraTab: String
@@ -33,6 +34,7 @@ type Item {
     label: String
     title: String!
     document_type: String
+    parent_type: String
     document_classification: String
     text: String
     icon: String
@@ -161,6 +163,7 @@ type CollectionItem {
     image: String
     url: String
     a4vId: String
+    type: String
 }
 
 #======================================================================================
