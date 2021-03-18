@@ -5,6 +5,7 @@ import 'apollo-cache-control';
 import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import {mocks} from "./mocks/mocks";
 import { CollectionAPI } from './datasources/collectionDs';
+import { SliderDs } from './datasources/slidesDs';
 var path = require ( 'path' );
 
 const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
@@ -18,6 +19,7 @@ const server = new ApolloServer({
   dataSources: () => {
     return {
       collectionAPI: new CollectionAPI(),
+      sliderDs: new SliderDs()
     };
   }
   /*cacheControl: {

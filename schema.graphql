@@ -169,6 +169,21 @@ type CollectionItem {
     type: String
 }
 
+type Slide {
+    pretext: String
+    title: String
+    text: String
+    background: Background
+    ctaLabel: String
+    ctaPayload: String
+    metadata: [KeyValueField]
+}
+
+type Background {
+    type: String
+    value: String
+}
+
 #======================================================================================
 #                                INPUT TYPES
 #======================================================================================
@@ -386,6 +401,7 @@ getEventObjects(field: String) : [EventObject]
 getResourceById(id: [ID]) : [SearchResult]
 getCollections( collectionPagination: Page): [Collection]
 getCollection( id:ID, itemPagination: Page ): Collection
+getSlider: [Slide]
 }
 
 
