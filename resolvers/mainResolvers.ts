@@ -27,6 +27,6 @@ export const resolvers = merge({
 		getEventObjects: async (parent, args, context, info) => await sources.getEventObjects(args.field),
 		getResourceById: async (parent, args, context, info) => await sources.getResourceById(args.id),
 		getCollections: async (parent, args, { dataSources }, info) => await dataSources.collectionAPI.getCollections(args.collectionPagination),
-		getCollection: async (parent, args, { dataSources }, info) => await dataSources.collectionAPI.getCollection(args.id, args.itemPagination)
+		getCollection: async (parent, args, { dataSources }, info) => await dataSources.collectionAPI.getCollection(args.id, args.itemPagination),
 	},
 }, ...externalResolvers)

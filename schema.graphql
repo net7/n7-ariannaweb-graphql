@@ -156,6 +156,7 @@ type BinaryItem {
 
 type Collection {
     title: String
+    total: Int
     items: [CollectionItem]
 }
 type CollectionItem {
