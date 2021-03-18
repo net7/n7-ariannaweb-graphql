@@ -16,6 +16,7 @@ type Entity {
     label: String
     typeOfEntity: String!
     document_type: String
+    parent_type: String
     relation: String
     overviewTab: String
     extraTab: String
@@ -35,6 +36,7 @@ type Item {
     label: String
     title: String!
     document_type: String
+    parent_type: String
     document_classification: String
     text: String
     icon: String
@@ -45,7 +47,8 @@ type Item {
     image: String
     fields: [Field!]
     relatedEntities: [EntityCountData!]
-    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)    
+    relatedTypesOfEntity: [TypeOfEntityCountData!] # related types of entities (count and type)
+    relatedItemsTotalCount: Int # related items
     relatedItems: [ItemListing!] # related items
     breadcrumbs: [LinkElement!]
 }
@@ -162,6 +165,7 @@ type CollectionItem {
     image: String
     url: String
     a4vId: String
+    type: String
 }
 
 #======================================================================================

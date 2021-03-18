@@ -10,9 +10,10 @@ import * as mapObject from './MapObject'
 import * as eventObject from './EventObject'
 import * as result from './Result'
 import * as digitalObject from './DigitalObject'
+import * as collection from './Collection'
+import * as collectionItem from './CollectionItem'
 
-const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject, digitalObject].map(x => x.resolvers)
-
+const externalResolvers = [field, item, entity, node, genericNode, globalFilterData, result, mapObject, eventObject, digitalObject, collection, collectionItem].map(x => x.resolvers)
 export const resolvers = merge({
 	Query: {
 		getItem: async (parent, args, context, info) => await sources.getItem(args.itemId, args.maxSimilarItems, args.entitiesListSize),
@@ -23,6 +24,9 @@ export const resolvers = merge({
 		getNode: async (parent, args, context, info) => await sources.getNode(args.id, args.maxSimilarItems, args.entitiesListSize),
 		search: async (parent, args, context, info) => await sources.search(args.searchParameters),
 		getMapObjects: async (parent, args, context, info) => await sources.getMapObjects(args.field),
-		getEventObjects: async (parent, args, context, info) => await sources.getEventObjects(args.field)
+		getEventObjects: async (parent, args, context, info) => await sources.getEventObjects(args.field),
+		getResourceById: async (parent, args, context, info) => await sources.getResourceById(args.id),
+		getCollections: async (parent, args, { dataSources }, info) => await dataSources.collectionAPI.getCollections(args.collectionPagination),
+		getCollection: async (parent, args, { dataSources }, info) => await dataSources.collectionAPI.getCollection(args.id, args.itemPagination)
 	},
 }, ...externalResolvers)

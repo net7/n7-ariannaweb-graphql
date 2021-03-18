@@ -407,6 +407,20 @@ export const queryTerm = (termField: any) => {
 
 
 }
+
+/**
+ *
+ * @param termField object containing the field name as key and the field value to search as the value
+ */
+export const queryTerms = (termField: any) => {
+	return {
+		query: {
+			terms: termField
+		}
+  }
+
+
+}
 /**
  *
  * @param termField object containing the field name to check if exists
