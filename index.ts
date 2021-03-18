@@ -4,6 +4,7 @@ import  { resolvers } from './resolvers/mainResolvers';
 import 'apollo-cache-control';
 import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import {mocks} from "./mocks/mocks";
+import { CollectionAPI } from './datasources/collectionDs';
 var path = require ( 'path' );
 
 const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
@@ -14,9 +15,14 @@ const server = new ApolloServer({
   mocks: false,
   playground: true,
   plugins: [responseCachePlugin()],
-  cacheControl: {
-    defaultMaxAge: 604800,
+  dataSources: () => {
+    return {
+      collectionAPI: new CollectionAPI(),
+    };
   }
+  /*cacheControl: {
+    defaultMaxAge: 604800,
+  }*/
 });
 
 server.listen().then(({ url }) => {
