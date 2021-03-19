@@ -39,7 +39,7 @@ export class CollectionAPI extends RESTDataSource {
                     itemsToShow = node.max - offset;
                 }
             }
-
+            if (itemsToShow == 0) return;
             const searchParameters = {
                 "page" : {
                     "offset": offset,
