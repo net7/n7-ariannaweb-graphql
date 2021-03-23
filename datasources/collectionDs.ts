@@ -116,6 +116,9 @@ export class CollectionAPI extends RESTDataSource {
             }
 
             const results = await sources.elasticSearch(searchParameters);
+            if(node.max) results.total = node.max;
+            results.title = node.title;
+            results.text = node.text;
             return results;
         } 
       

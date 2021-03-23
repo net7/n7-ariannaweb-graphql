@@ -156,6 +156,7 @@ type BinaryItem {
 
 type Collection {
     title: String
+    text: String
     total: Int
     items: [CollectionItem]
 }
@@ -167,6 +168,7 @@ type CollectionItem {
     url: String
     a4vId: String
     type: String
+    classification: String
 }
 
 type Slide {
