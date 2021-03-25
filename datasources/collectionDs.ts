@@ -14,7 +14,7 @@ class Page {
 export class CollectionAPI extends RESTDataSource {
     constructor() {
         super();
-        this.baseURL = config.collectionAPIUrl ?? "";
+        this.baseURL = config['collectionAPIUrl'] ?? "";
       }
 
     async getCollection(id: number, page: Page) {

@@ -4,7 +4,7 @@ import * as config from '../assets/app-config.json';
 export class SliderDs extends RESTDataSource {
     constructor() {
         super();
-        this.baseURL = config.sliderAPIUrl;
+        this.baseURL = config['sliderAPIUrl'] ?? "";
       }
 
     async getSlider() {
