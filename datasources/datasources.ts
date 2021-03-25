@@ -1155,7 +1155,8 @@ export async function getResourceById(id) {
   const q1 = el.queryTerms(termObject);
   
   const queryBool = el.queryBool([q1.query]);
-  const request = el.requestBuilder(GLOBAL_INDEX, queryBool)
+  const request = el.requestBuilder(GLOBAL_INDEX, queryBool);
+  request["size"] = id.length;
   const body = await el.search(request).then(x => x.hits.hits);
 
   let elements = [];
