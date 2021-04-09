@@ -527,7 +527,7 @@ export async function getRelatedItems(entityIds, itemsPagination: Page = { limit
   }
 
   const request = el.requestBuilder(OC_INDEX, body)
-  console.log("GLOBAL FILTER", JSON.stringify( body));
+  //console.log("GLOBAL FILTER", JSON.stringify( body));
   const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
   const typesOfEntity = {};
