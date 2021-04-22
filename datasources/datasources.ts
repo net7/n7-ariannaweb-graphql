@@ -1112,6 +1112,7 @@ export async function getMapObjects(field) {
     field = "fields.coordinate";
   }
   const request = el.requestBuilder(GLOBAL_INDEX, el.queryExists(field))
+  request["body"]["size"] = 999;
   const body = await el.search(request).then(x => x.hits.hits);
 
   let elements = [];
