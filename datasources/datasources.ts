@@ -423,7 +423,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   body[QUERY] = el.queryBool(entities, null, null, excludeQuery).query
 
   const request = el.requestBuilder(GLOBAL_INDEX, body)
-  //console.log("GLOBAL FILTER", JSON.stringify( body));
+ // console.log("GLOBAL FILTER", JSON.stringify( body));
 	const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
   const entitiesCount = {};  
@@ -443,6 +443,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
         count: entitiesCount[element.key]
       });
       element.docsPerEntity.buckets.map(x => {
+        try {
         let entity = JSON.parse(x.key)
         entitiesList.push(
            {
@@ -450,6 +451,9 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
             count: x.cultural_objects.doc_count
           }
         )
+        } catch (error) {
+          console.error(error);
+        }
       })
 
     })
