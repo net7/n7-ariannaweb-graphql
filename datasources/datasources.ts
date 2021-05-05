@@ -451,8 +451,9 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
             count: x.cultural_objects.doc_count
           }
         )
-        } catch (error) {
-          console.error(error);
+      } catch (error) {
+          console.error(x);
+          console.error( error);
         }
       })
 
