@@ -6,10 +6,11 @@ import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import {mocks} from "./mocks/mocks";
 import { CollectionAPI } from './datasources/collectionDs';
 import { SliderDs } from './datasources/slidesDs';
+import * as config from './assets/app-config.json';
 var path = require ( 'path' );
 
 const typeDefs = importSchema(path.join(__dirname, "schema.graphql"));
-
+const port = config['port'] || 4000
 const server = new ApolloServer({
   typeDefs: typeDefs,
   resolvers,
@@ -27,6 +28,6 @@ const server = new ApolloServer({
   }*/
 });
 
-server.listen().then(({ url }) => {
+server.listen(port).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
