@@ -1,6 +1,5 @@
 import * as el from "./elasticsearch"
-import { response } from "express"
-import { mapValues } from "apollo-env"
+//import { response } from "express"
 import * as config from '../assets/app-config.json';
 import 'apollo-cache-control';
 //const config = {};
