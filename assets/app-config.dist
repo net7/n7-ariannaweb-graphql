@@ -12,4 +12,5 @@
   },
   "fuzziness": 1,
   "treeSize": 30000 //ATTENZIONE: treeSize >= numero documenti sull'indice tree && size <= max_results_window nei settings dell'indice,
-  "collectionAddress": ""
+  "collectionAddress": "",
+  "port": 4000
