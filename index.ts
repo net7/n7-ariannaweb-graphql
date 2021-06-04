@@ -22,10 +22,10 @@ const server = new ApolloServer({
       collectionAPI: new CollectionAPI(),
       sliderDs: new SliderDs()
     };
-  }
-  /*cacheControl: {
+  },
+  cacheControl: {
     defaultMaxAge: 604800,
-  }*/
+  }
 });
 
 server.listen(port).then(({ url }) => {
