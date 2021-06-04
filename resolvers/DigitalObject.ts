@@ -9,6 +9,16 @@ export const resolvers = {
 						i.type = node.doType;
 						return i; } 
 				).sort(orderDigitalObjects);
+			} else if( node.doType && node.doType == "iiif" && node.externalViewerUrl  ) {
+				const tmp = {
+					type: "images-iiif",
+					url: node.externalViewerUrl,
+					... node
+				}
+				console.log(tmp)
+				return [				
+					tmp
+				].sort(orderDigitalObjects);
 			}
 		},
 		url(node) {
@@ -20,7 +30,9 @@ export const resolvers = {
 			if( node.doType && node.doType == "jpg-png" ){
 				return "images-simple"
 			} else if( node.doType && node.doType == "iip" ){
-				return "images-iiif"
+				return "images-iip"
+			} else if( node.doType && node.doType == "iiif" ){
+					return "images-iiif"
 			} else if( node.doType && node.doType != "" ){
 				return node.doType
 			} else if( node.externalViewerUrl && node.externalViewerUrl != "" ){
