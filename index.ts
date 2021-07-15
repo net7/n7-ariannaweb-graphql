@@ -16,11 +16,6 @@ const server = new ApolloServer({
   resolvers,
   mocks: false,
   playground: true,
-  uploads: {
-    maxFileSize: 700000000,
-    maxFiles: 30,
-    maxFieldSize: 700000000
-    },
   plugins: [responseCachePlugin()],
   dataSources: () => {
     return {
@@ -32,7 +27,6 @@ const server = new ApolloServer({
     defaultMaxAge: 604800,
   }
 });
-
 
 server.listen(port).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
