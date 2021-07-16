@@ -622,6 +622,18 @@ export async function getTree(info) {
     },
     sort: {
     },
+    "_source": [
+        "level",
+        "position",
+        "parent_id",
+        "path",
+        "label",
+        "label_sort",
+        "id",
+        "fields.document_classification",
+        "fields.node_type",
+        "fields.images"
+    ],
     size: TREE_SIZE //ATTENZIONE: size >= numero documenti sull'indice tree && size <= max_results_window
   }
   query.sort[POSITION] = { "order": "asc" }
