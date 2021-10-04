@@ -422,7 +422,7 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
   body[QUERY] = el.queryBool(entities, null, null, excludeQuery).query
 
   const request = el.requestBuilder(GLOBAL_INDEX, body)
- // console.log("GLOBAL FILTER", JSON.stringify( body));
+  //console.log("GLOBAL FILTER", JSON.stringify( body));
 	const res = await el.search(request)
   const buckets = res.aggregations[ENTITIES][ENTITIES].buckets;
   const entitiesCount = {};  
@@ -431,21 +431,21 @@ export async function getItemsFiltered(entityIds, itemsPagination: Page = { limi
 
   res.aggregations["type"].buckets.buckets.map( x => {
     entitiesCount[x.key] = x.doc_count;
+    typeOfEntityData.push({
+      type: x.key,
+      count: x.doc_count
+    });
   });
 
 	const results = await Promise.all([
 		res.hits.hits.filter(x => !(x._source.id === itemIdToDiscard)).map(x => makeItemListing(x._source)),
 
-    buckets.forEach(element => {
-      typeOfEntityData.push({
-        type: element.key,
-        count: entitiesCount[element.key]
-      });
+    buckets.forEach(element => {     
       element.docsPerEntity.buckets.map(x => {
         try {
         let entity = JSON.parse(x.key)
         entitiesList.push(
-           {
+          {
             entity: entity,
             count: x.cultural_objects.doc_count
           }
